@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
-import { useRouter } from '#vue-router';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
-
-const route = useRouter();
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -16,7 +14,6 @@ export const useAuthStore = defineStore('auth', {
       this.token = token;
       this.user = user;
 
-      // Save to localStorage only on the client-side
       if (process.client) {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
@@ -25,53 +22,64 @@ export const useAuthStore = defineStore('auth', {
 
     // Called when user logs out
     logout() {
+      // const router = useRouter(); // ✅ Define inside function
       this.token = null;
       this.user = null;
 
-      // Remove from localStorage only on the client-side
       if (process.client) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        route.push('/'); // Redirect to the homepage or login page
+        axios.post('api/logout').then(response => {
+
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          navigateTo('/auth/login'); // ✅ Works globally
+        })
       }
     },
 
-    // Initialize state with data from localStorage (on client-side only)
     initialize() {
       if (process.client) {
         this.token = localStorage.getItem('token');
-        this.user = JSON.parse(localStorage.getItem('user'));
+        this.user = JSON.parse(localStorage.getItem('user')) || '0';
       }
     },
 
-    // Check if the current user is an admin
     isAdmin() {
-      return this.user && this.user.role === 2;  // Adjust the role ID as needed
+      return this.user && this.user.role === 2;
     },
 
-    // Update the user's role from backend or token, if needed
     updateUserRole(newRole) {
       if (this.user) {
         this.user.role = newRole;
         if (process.client) {
-          localStorage.setItem('user', JSON.stringify(this.user));  // Update role in localStorage
+          localStorage.setItem('user', JSON.stringify(this.user));
         }
       }
     },
 
-    // Fetch user data from API and update store (optional)
-    // async fetchUserData() {
-    //   try {
-    //     const { data } = await axios.get('/api/user'); // Assuming your API endpoint
-    //     this.user = data;
-    //     if (process.client) {
-    //       localStorage.setItem('user', JSON.stringify(data));  // Store updated user data in localStorage
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching user data:', error);
-    //   }
-    // }
+    startInactivityTimer() {
+      if (process.client) {
+        this.clearInactivityTimer();
+
+        this.inactivityTimer = setTimeout(() => {
+          this.logout();
+          alert("You have been logged out due to inactivity.");
+        }, 60 * 60 * 1000); // 10 seconds
+      }
+    },
+
+    resetInactivityTimer() {
+      this.startInactivityTimer();
+    },
+
+    clearInactivityTimer() {
+      if (this.inactivityTimer) {
+        clearTimeout(this.inactivityTimer);
+      }
+      window.removeEventListener('mousemove', this.resetInactivityTimer);
+      window.removeEventListener('keydown', this.resetInactivityTimer);
+      window.removeEventListener('scroll', this.resetInactivityTimer);
+    }
   },
 
-  persist: true, // Optional: Pinia persistence plugin for automatically saving the state
+  persist: true,
 });

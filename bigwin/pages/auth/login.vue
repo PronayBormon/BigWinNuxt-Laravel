@@ -89,7 +89,7 @@ const getIp = () => {
     fetch("https://api64.ipify.org?format=json")
         .then(response => response.json())
         .then(data => {
-            console.log("User's Public IP: " + data.ip);
+            // console.log("User's Public IP: " + data.ip);
             logIp.value = data.ip;
         })
         .catch(error => console.error("Error fetching IP:", error));
