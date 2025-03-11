@@ -39,7 +39,9 @@
                                     <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#adduser">Add
                                         Banner</button>
                                 </div>
-                                <div style="min-height: 50vh;"></div>
+                                <div class="banner_images">
+                                    <img :src="batting.image" alt="" class="img-fluid">
+                                </div>
 
                                 <!-- Add Batting Modal -->
                                 <div class="modal fade" id="adduser" tabindex="-1" aria-labelledby="adduserLabel"
@@ -79,7 +81,9 @@
                                     <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#baner2">Add
                                         Banner</button>
                                 </div>
-                                <div style="min-height: 50vh;"></div>
+                                <div class="banner_images">
+                                    <img :src="bowling.image" alt="" class="img-fluid">
+                                </div>
 
                                 <!-- Add Bowling Modal -->
                                 <div class="modal fade" id="baner2" tabindex="-1" aria-labelledby="baner2Label"
@@ -119,9 +123,11 @@
                                     <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#baner3">Add
                                         Banner</button>
                                 </div>
-                                <div style="min-height: 50vh;"></div>
+                                <div class="banner_images">
+                                    <img :src="tournament.image" alt="" class="img-fluid">
+                                </div>
 
-                                <!-- Add Tournament Modal -->
+                                <!-- Tournament Prize Banner Modal -->
                                 <div class="modal fade" id="baner3" tabindex="-1" aria-labelledby="baner3Label"
                                     aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
@@ -129,20 +135,21 @@
                                             <div class="modal-body">
                                                 <div class="adduser_form">
                                                     <h1>Tournament Prize Banner</h1>
-                                                    
                                                     <form @submit.prevent="addTournament" id="submitForm2">
                                                         <div class="banner_image_upload">
-                                                            <label for="banner">
-                                                                <!-- This will display the preview image if it exists -->
-                                                                <img v-if="imagePreviewtournament" :src="imagePreviewtournament"
-                                                                    alt="Preview" class="preview-image w-100" />
+                                                            <label for="tournamentBanner">
+                                                                <!-- Ensure image preview is shown when available -->
+                                                                <img v-if="imagePreviewtournament"
+                                                                    :src="imagePreviewtournament" alt="Preview"
+                                                                    class="preview-image w-100" />
                                                                 <h1 v-else>Upload</h1>
                                                             </label>
-                                                            <input type="file" hidden id="banner" @change="tournamentImage">
+                                                            <input type="file" hidden id="tournamentBanner"
+                                                                @change="tournamentImage">
                                                         </div>
-                                                        <div class="form-group">
-                                                            <input type="text" placeholder="Prize Title" v-model="tournament_name"
-                                                                class="form-control">
+                                                        <div class="form-group mb-3">
+                                                            <input type="text" placeholder="Prize Title"
+                                                                v-model="tournament_name" class="form-control">
                                                         </div>
                                                         <button type="submit" class="btn_primary w-100">Submit</button>
                                                     </form>
@@ -151,6 +158,7 @@
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -164,6 +172,11 @@
 import { ref } from 'vue';
 import axios from 'axios';
 
+
+const batting = ref('');
+const bowling = ref('');
+const tournament = ref('');
+
 const bowling_name = ref('');
 const bowling_image = ref('');
 const imagePreview = ref();
@@ -176,16 +189,15 @@ const tournament_name = ref('');
 const tournament_image = ref('');
 const imagePreviewtournament = ref('');
 
-// Preview image for Bowling
-const tournamentImage = () => {
+// Preview image for Tournament
+const tournamentImage = (event) => {
     const file = event.target.files[0];
     if (file) {
         if (imagePreviewtournament.value) {
             URL.revokeObjectURL(imagePreviewtournament.value); // Clear previous URL
         }
         tournament_image.value = file;
-        imagePreviewtournament.value = URL.createObjectURL(file);
-        console.log("file");
+        imagePreviewtournament.value = URL.createObjectURL(file); // Create a new preview URL
     }
 };
 
@@ -212,8 +224,6 @@ const previewImageBatting = (event) => {
         imagePreviewBat.value = URL.createObjectURL(file);
     }
 };
-
-
 // Add Bowling Prize Banner
 const addTournament = () => {
     const formData = new FormData();
@@ -222,7 +232,8 @@ const addTournament = () => {
     formData.append('type', '3');
 
     axios.post('api/add-prize-banner', formData).then(response => {
-        console.log(response.data);
+        // console.log(response.data);
+        getPriceBanner();
 
         // Reset form
         tournament_name.value = '';
@@ -230,7 +241,7 @@ const addTournament = () => {
         imagePreviewtournament.value = ''; // Clear preview
 
         // Close modal
-        let modalElement = document.getElementById("baner2");
+        let modalElement = document.getElementById("baner3");
         if (modalElement) {
             let modalInstance = bootstrap.Modal.getInstance(modalElement);
             if (modalInstance) {
@@ -239,7 +250,6 @@ const addTournament = () => {
         }
     });
 };
-
 // Add Bowling Prize Banner
 const addBowling = () => {
     const formData = new FormData();
@@ -248,8 +258,9 @@ const addBowling = () => {
     formData.append('type', '2');
 
     axios.post('api/add-prize-banner', formData).then(response => {
-        console.log(response.data);
+        // console.log(response.data);
 
+        getPriceBanner();
         // Reset form
         bowling_name.value = '';
         bowling_image.value = '';
@@ -265,7 +276,6 @@ const addBowling = () => {
         }
     });
 };
-
 // Add Batting Prize Banner
 const addbatting = () => {
     const formData = new FormData();
@@ -274,14 +284,11 @@ const addbatting = () => {
     formData.append('type', '1');
 
     axios.post('api/add-prize-banner', formData).then(response => {
-        console.log(response.data);
-
+        getPriceBanner();
         // Reset form
         batting_name.value = '';
         batting_image.value = '';
-        imagePreviewBat.value = ''; // Clear preview
-
-        // Close modal
+        imagePreviewBat.value = '';
         let modalElement = document.getElementById("adduser");
         if (modalElement) {
             let modalInstance = bootstrap.Modal.getInstance(modalElement);
@@ -291,4 +298,18 @@ const addbatting = () => {
         }
     });
 };
+const getPriceBanner = () => {
+    axios.get('api/prize-banner').then(response => {
+        batting.value = response.data.batting;
+        bowling.value = response.data.bowling;
+        tournament.value = response.data.tournament;
+
+        console.log(response.data.batting);
+
+    })
+}
+
+onMounted(() => {
+    getPriceBanner();
+});
 </script>

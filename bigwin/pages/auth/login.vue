@@ -67,22 +67,31 @@ const userLogin = async () => {
     formData.append('login_ip', logIp.value);
 
     // console.log(formData);
-
-    try {
-        const response = await axios.post('/login', formData);
-
+    axios.post('/login', formData).then(response =>{
         const token = response.data.token;
         const user = response.data.user;
 
-        // Store globally in Pinia
         const authStore = useAuthStore();
         authStore.login(token, user);
 
-        window.location.reload();  // Or use router.replace('/')
-    } catch (error) {
+        window.location.reload();
+    }).catch(error =>{
         console.error("Login failed:", error);
-        // Optionally handle errors, show notifications, etc.
-    }
+    })
+
+    // try {
+    //     const response = await axios.post('/login', formData);
+
+    //     const token = response.data.token;
+    //     const user = response.data.user;
+
+    //     const authStore = useAuthStore();
+    //     authStore.login(token, user);
+
+    //     window.location.reload();
+    // } catch (error) {
+    //     console.error("Login failed:", error);
+    // }
 };
 
 const getIp = () => {

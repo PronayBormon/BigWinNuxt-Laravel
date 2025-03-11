@@ -107,7 +107,7 @@
     const showPassword = ref(false);
     const country_name = ref('');
     const country_image = ref('');
-    const countries = ref(['']);
+    const countries = ref([]);
 
     const delete_id = ref(['']);
     const delete_name = ref(['']);

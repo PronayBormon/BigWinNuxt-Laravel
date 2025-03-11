@@ -50,7 +50,7 @@ class UserController extends Controller
                 'last_page' => $users->lastPage(),
                 'per_page' => $users->perPage(),
                 'total' => $users->total(),
-                'links' => $users->links()  // Includes pagination links
+                'links' => $users->links() 
             ]
         ]);
     }

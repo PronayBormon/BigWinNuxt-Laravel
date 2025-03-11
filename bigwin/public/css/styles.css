@@ -946,19 +946,42 @@ input[type=number] {
     color: var(--primary_color);
     margin: 0px 3px;
 }
-.page-link:hover{
+
+.page-link:hover {
     background-color: var(--primary_color) !important;
     color: var(--white_color);
     transition: .4s all ease-in-out;
 }
+
 .page-item:not(:first-child) .page-link {
     margin: 0px 3px !important;
 }
-.banner_image_upload label{
+
+.banner_image_upload label {
     overflow: hidden;
 }
-.banner_image_upload label img{
-height: 100%;
-  width: 100%;
-  object-fit: cover;
+
+.banner_image_upload label img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+.banner_images{
+    min-height: 50vh;
+}
+.banner_images img {
+    width: 100%;
+    max-width: 510px;
+    height: 165px;
+    margin:
+        auto;
+    display: flex;
+    object-fit: cover;
+    border-radius:
+        20px;
+    box-shadow: 2px 3px 5px 3px #00000038;
+}
+.message{
+    font-size: 12px;
+    color: red;
 }

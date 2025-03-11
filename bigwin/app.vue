@@ -13,6 +13,6 @@ const authStore = useAuthStore(); // ✅ Initialize store
 
 onMounted(() => {
     authStore.initialize(); // ✅ Load user from localStorage
-    authStore.startInactivityTimer(); // ✅ Start auto logout timer
+    // authStore.startInactivityTimer(); // ✅ Start auto logout timer
 });
 </script>

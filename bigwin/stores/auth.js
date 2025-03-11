@@ -56,29 +56,29 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    startInactivityTimer() {
-      if (process.client) {
-        this.clearInactivityTimer();
+    // startInactivityTimer() {
+    //   if (process.client) {
+    //     this.clearInactivityTimer();
 
-        this.inactivityTimer = setTimeout(() => {
-          this.logout();
-          alert("You have been logged out due to inactivity.");
-        }, 60 * 60 * 1000); // 10 seconds
-      }
-    },
+    //     this.inactivityTimer = setTimeout(() => {
+    //       this.logout();
+    //       alert("You have been logged out due to inactivity.");
+    //     }, 60 * 60 * 1000); // 10 seconds
+    //   }
+    // },
 
-    resetInactivityTimer() {
-      this.startInactivityTimer();
-    },
+    // resetInactivityTimer() {
+    //   this.startInactivityTimer();
+    // },
 
-    clearInactivityTimer() {
-      if (this.inactivityTimer) {
-        clearTimeout(this.inactivityTimer);
-      }
-      window.removeEventListener('mousemove', this.resetInactivityTimer);
-      window.removeEventListener('keydown', this.resetInactivityTimer);
-      window.removeEventListener('scroll', this.resetInactivityTimer);
-    }
+    // clearInactivityTimer() {
+    //   if (this.inactivityTimer) {
+    //     clearTimeout(this.inactivityTimer);
+    //   }
+    //   window.removeEventListener('mousemove', this.resetInactivityTimer);
+    //   window.removeEventListener('keydown', this.resetInactivityTimer);
+    //   window.removeEventListener('scroll', this.resetInactivityTimer);
+    // }
   },
 
   persist: true,

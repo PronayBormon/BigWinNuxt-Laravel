@@ -69,7 +69,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // 'timezone' => 'UTC',
+    'timezone' => 'Asia/Dhaka',  // Set Bangladesh Timezone
+    // 'timezone' => 'Asia/Karachi',  // Set Pakistan Timezone
 
     /*
     |--------------------------------------------------------------------------
