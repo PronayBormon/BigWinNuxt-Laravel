@@ -15,11 +15,6 @@
                         <img src="/assets/icons/allUser.svg" alt="" class="img-fluid"> All Users
                     </NuxtLink>
                 </li>
-                <li class="menu_group" :class="{ active: route.path === '/player-list' }">
-                    <NuxtLink class="menu_link" to="/player-list">
-                        <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Player List
-                    </NuxtLink>
-                </li>
                 <li class="menu_group" :class="{ active: route.path === '/add-single-match' }">
                     <NuxtLink class="menu_link" to="/add-single-match">
                         <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Add Single Match
@@ -35,19 +30,29 @@
                         <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Add Tournament
                     </NuxtLink>
                 </li>
-                <li class="menu_group" :class="{ active: route.path === '/tournament' }">
-                    <NuxtLink class="menu_link" to="/tournament">
-                        <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Tournament Reports
+                <li class="menu_group" :class="{ active: route.path === '/reports' }">
+                    <NuxtLink class="menu_link" to="/reports">
+                        <img src="/assets/icons/report.svg" alt="" class="img-fluid">Single Match Reports
                     </NuxtLink>
                 </li>
-                <li class="menu_group" :class="{ active: route.path === '/all-winners' }">
-                    <NuxtLink class="menu_link" to="/all-winners">
-                        <img src="/assets/icons/allwinner.svg" alt="" class="img-fluid"> All Winners
+                <li class="menu_group" :class="{ active: route.path === '/reports' }">
+                    <NuxtLink class="menu_link" to="/reports">
+                        <img src="/assets/icons/report.svg" alt="" class="img-fluid">Max Predict Reports
+                    </NuxtLink>
+                </li>
+                <li class="menu_group" :class="{ active: route.path === '/tournament' }">
+                    <NuxtLink class="menu_link" to="/tournament">
+                        <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Tournament Reports
                     </NuxtLink>
                 </li>
                 <li class="menu_group" :class="{ active: route.path === '/spin-list' }">
                     <NuxtLink class="menu_link" to="/spin-list">
                         <img src="/assets/icons/spinList.svg" alt="" class="img-fluid"> Spin List
+                    </NuxtLink>
+                </li>
+                <li class="menu_group" :class="{ active: route.path === '/all-winners' }">
+                    <NuxtLink class="menu_link" to="/all-winners">
+                        <img src="/assets/icons/allwinner.svg" alt="" class="img-fluid"> All Winners
                     </NuxtLink>
                 </li>
                 <li class="menu_group" :class="{ active: route.path === '/notification' }">
@@ -60,24 +65,24 @@
                         <img src="/assets/icons/deposit.svg" alt="" class="img-fluid"> Deposit
                     </NuxtLink>
                 </li>
-                <li class="menu_group" :class="{ active: route.path === '/reports' }">
-                    <NuxtLink class="menu_link" to="/reports">
-                        <img src="/assets/icons/report.svg" alt="" class="img-fluid">Single Match Reports
-                    </NuxtLink>
-                </li>
                 <li class="menu_group" :class="{ active: route.path === '/prize' }">
                     <NuxtLink class="menu_link" to="/prize">
-                        <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Prize
+                        <img src="/assets/icons/images.svg" alt="" class="img-fluid"> Prize
                     </NuxtLink>
                 </li>
                 <li class="menu_group" :class="{ active: route.path === '/sliders' }">
                     <NuxtLink class="menu_link" to="/sliders">
-                        <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Sliders
+                        <img src="/assets/icons/images.svg" alt="" class="img-fluid"> Sliders
                     </NuxtLink>
                 </li>
                 <li class="menu_group" :class="{ active: route.path === '/team-list' }">
                     <NuxtLink class="menu_link" to="/team-list">
-                        <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Team List
+                        <img src="/assets/icons/list.svg" alt="" class="img-fluid"> Team List
+                    </NuxtLink>
+                </li>
+                <li class="menu_group" :class="{ active: route.path === '/player-list' }">
+                    <NuxtLink class="menu_link" to="/player-list">
+                        <img src="/assets/icons/list.svg" alt="" class="img-fluid"> Player List
                     </NuxtLink>
                 </li>
                     <li class="menu_group active position-sticky bottom-0 mt-2" @click="handleLogout()">

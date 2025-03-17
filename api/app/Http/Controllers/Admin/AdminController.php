@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Carbon\Carbon;
 use App\Models\Slider;
 use App\Models\Players;
 use App\Models\SpinList;
 use App\Models\MatchList;
 use App\Models\Tournament;
+use App\Models\PredictTeam;
 use App\Models\PrizeBanner;
 use App\Models\TeamPlayers;
 use App\Models\Notification;
+use App\Models\PredictMatch;
 use Illuminate\Http\Request;
+use App\Models\PredictPlayer;
 use App\Models\TournamentTeam;
 use App\Http\Controllers\Controller;
 use App\Models\TournamentTeamsPlayers;
@@ -538,7 +542,117 @@ class AdminController extends Controller
         return response()->json(['message' => "Player successfully Update"], 201);
     }
 
-    public function maxpredict(request $request){
-        dd($request->all());
+    public function maxpredict(Request $request)
+    {
+        // Log the incoming request data for debugging purposes
+
+        // Validate the request
+        $request->validate([
+            'start_date' => 'required',
+            'end_date' => 'required',
+            'teams' => 'required|array',
+            'teams.*.team_id' => 'required', // Ensure team exists
+            'teams.*.players' => 'required|array|min:15',
+            // 'teams.*.players.*' => 'exists,id'
+        ]);
+
+        // Create Match
+        $match = PredictMatch::create([
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+        ]);
+        // dd($request->teams);
+
+        // Attach Teams and Players
+        foreach ($request->teams as $teamData) {
+
+            // dd($teamData);
+
+            $team = PredictTeam::create([
+                'predict_match_id' =>  $match->id,
+                'country_id' => $teamData['team_id'],
+            ]);
+
+
+            foreach ($teamData['players'] as $playerId) {
+                PredictPlayer::create([
+                    'predict_match_id' => $match->id,
+                    'predict_team_id' => $team->id,
+                    'player_id' => $playerId,
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'Predict Match created successfully!'], 201);
+    }
+
+    public function maxpredictList(request $request)
+    {
+        // $data = PredictMatch::with(['teams', 'teams.country'])
+        //     ->orderBy('id', 'desc')
+        //     ->get();
+
+        $query = PredictMatch::with(['teams', 'teams.country']); // No need for ->query()
+
+        if ($request->filled('searchInput')) {
+            $query->whereHas('teams.country', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->searchInput . '%');
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $data = $query->orderBy('id', 'desc')->paginate($request->items);
+
+        $data->getCollection()->transform(function ($match) {
+            $match->start_date = Carbon::parse($match->start_date)->format('d M Y, h:i A');
+            $match->end_date = Carbon::parse($match->end_date)->format('d M Y, h:i A');
+            return $match;
+        });
+
+        return response()->json([
+            'data' => $data->items(),
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'next_page_url' => $data->nextPageUrl(),
+                'prev_page_url' => $data->previousPageUrl(),
+                'links' => $this->generatePaginationLinks($data),
+            ]
+        ]);
+    }
+
+    public function maxpredictPlayerList(request $request){
+        $query = PredictPlayer::where('predict_match_id', $request->id)->with(['player','team','team.country','match']);
+
+        
+        if ($request->filled('searchInput')) {
+            $query->whereHas('team', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->searchInput . '%');
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $data = $query->orderBy('id', 'desc')->paginate($request->items);
+        
+        return response()->json([
+            'data' => $data->items(),
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'next_page_url' => $data->nextPageUrl(),
+                'prev_page_url' => $data->previousPageUrl(),
+                'links' => $this->generatePaginationLinks($data),
+            ]
+        ]);
     }
 }

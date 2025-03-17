@@ -30,9 +30,8 @@
                                         </div>
                                     </div>
                                     <div class="d-flex align-items-center">
-                                        <button @click="DelId(item.id,item.name)" data-bs-toggle="modal" :data-bs-target="'#deleteConfirm'+ item.id" class="btn btn-danger"><i class="fa-regular fa-trash text-white"
+                                        <button @click="DelId(item.id,item.name)" data-bs-toggle="modal" :data-bs-target="'#deleteConfirm'+ item.id" class="btn "><i class="fa-regular fa-trash text-danger"
                                             ></i></button>
-                                        <nuxt-link :to="`/team-list/player-list?id=${item.id}`" class="btn btn_primary ms-2">P. List</nuxt-link>
                                     </div>
                                 </nuxt-link>
                                 <!-- Modal  -->

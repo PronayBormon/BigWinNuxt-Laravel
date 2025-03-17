@@ -37,6 +37,10 @@ class Country extends Model
     {
         return $this->hasMany(Country::class, 'team_id');  
     }
+    public function maxPredictTeam()
+    {
+        return $this->hasMany(PredictTeam::class, 'team_id'); // Assuming teams are stored in the countries table
+    }
 
     // Get all matches where this country is either 'team_a' or 'team_b'
     public function allMatches(){

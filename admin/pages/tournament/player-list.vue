@@ -46,8 +46,8 @@
                                 </div>
                             </div>
                         </form>
-                        <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#editList">Edit List
-                        </button>
+                        <!-- <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#editList">Edit List
+                        </button> -->
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -56,7 +56,7 @@
                                     <tr>
                                         <!-- <th class="text-start">Tournament name</th> -->
                                         <th>Player Name</th>
-                                        <th>Status</th>
+                                        <!-- <th>Status</th> -->
                                         <!-- <th>Action</th> -->
                                     </tr>
                                 </thead>
@@ -69,11 +69,11 @@
                                                 items.status == 1 ? 'Active' : 'Inactive' }}</span>
                                         </td> -->
 
-                                        <td>
+                                        <!-- <td>
                                             <button data-bs-toggle="modal" data-bs-target="#edituser"
                                                 @click="playseDetails(items.id)" class="btn btn_default">Details
                                                 Action</button>
-                                        </td>
+                                        </td> -->
                                     </tr>
                                     <tr v-else>
                                         <td colspan="6" class="text-center"><span class="my-4">No data available</span>

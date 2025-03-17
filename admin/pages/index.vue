@@ -13,6 +13,24 @@
             <!-- content setion  -->
             <div class="content_section">
                 <h1 class="page_title">Dashboard</h1>
+                <!-- ================================= -->
+
+                <button type="button" class="btn btn-primary" id="liveToastBtn">Show live toast</button>
+
+                <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <img src="..." class="rounded me-2" alt="...">
+                            <strong class="me-auto">Bootstrap</strong>
+                            <small>11 mins ago</small>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            Hello, world! This is a toast message.
+                        </div>
+                    </div>
+                </div>
+                <!-- ================================= -->
                 <div class="card app_card">
                     <div class="card-header">
                         <form @submit.prevent="UserList">
@@ -37,7 +55,7 @@
 
                                 <div class="form-group">
                                     <select name="status" id="status-select" v-model="statusFilter" @change="UserList">
-                                       
+
                                         <option value="">All</option>
                                         <option value="1">Active</option>
                                         <option value="2">Inactive</option>
@@ -80,7 +98,7 @@
                                         <td>
                                             <p>{{ items.register_ip }}</p>
                                             <p v-if="fetchLocation(items.register_ip)">{{ locations[items.register_ip]
-                                                }}</p>
+                                            }}</p>
                                             <p v-else>Loading location...</p>
                                         </td>
                                         <td>
@@ -226,7 +244,8 @@
                                             <div class="input_group">
                                                 <select name="" v-model="userDataStatus" id="" class="form-control">
                                                     <option value="1" :selected="userDataStatus == '1'">Active</option>
-                                                    <option :selected="userDataStatus == '2'" value="2">Inactive</option>
+                                                    <option :selected="userDataStatus == '2'" value="2">Inactive
+                                                    </option>
                                                 </select>
                                             </div>
                                         </div>
@@ -274,6 +293,14 @@ const userDataEmail = ref({});
 const userDataPhone = ref({});
 const userDataStatus = ref({});
 const userDataPassword = ref({});
+
+function showToast() {
+    toast.add({
+        title: 'Success',
+        description: 'Your action was completed successfully.',
+        color: 'success'
+    })
+}
 
 const showHidePass = () => {
     showPassword.value = !showPassword.value;
@@ -389,8 +416,8 @@ const updateUser = () => {
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-const checkAdmin = () =>{
-    if(!isAdmin ){
+const checkAdmin = () => {
+    if (!isAdmin) {
         handleLogout();
     }
 }
@@ -400,11 +427,11 @@ const handleLogout = () => {
 
 
     // axios.post('/api/logout').then(response => {
-        // router.push('/');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        console.log("success Logout");
-        router.push('/auth/login');
+    // router.push('/');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    console.log("success Logout");
+    router.push('/auth/login');
     // });
 
     // // Redirect to login page
@@ -414,6 +441,8 @@ onMounted(() => {
     UserList();
     fetchLocation();
     // authStore.fetchUserData(); 
+    // const toastElList = document.querySelectorAll('.toast')
+    // const toastList = [...toastElList].map(toastEl => new bootstrap.Toast(toastEl, option))
 });
 
 

@@ -75,7 +75,9 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     Route::get('/update-player', [AdminController::class, 'updatePlayer']);
 
     // Max predict     
-    Route::post('/make-maxpredict', [AdminController::class, 'addmaxpredict']);
+    Route::post('/add-max-predict', [AdminController::class, 'maxpredict']);
+    Route::get('/get-maxpredictList', [AdminController::class, 'maxpredictList']);
+    Route::get('/maxpredict-playerList', [AdminController::class, 'maxpredictPlayerList']);
 });
 
 Route::prefix('tournament')->middleware('isAdmin')->group(function () {
