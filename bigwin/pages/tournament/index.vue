@@ -19,7 +19,7 @@
                         <div class="header_filter">
                             <div class="show_">
                                 <p>Show</p>
-                                <select name="" v-model="items" id="" @change="getMatchList(1)">
+                                <select name="" v-model="items" id="" @change="getTournamentList(1)">
                                     <option value="10">10</option>
                                     <option value="20">20</option>
                                     <option value="50">50</option>
@@ -30,7 +30,7 @@
                             <div class="form-group d-none d-md-block">
                                 <div class="seach_box">
                                     <i class="fa-solid fa-search"></i>
-                                    <input type="text" v-model="searchInput" @input="getMatchList(1)"
+                                    <input type="text" v-model="searchInput" @input="getTournamentList(1)"
                                         placeholder="Search team" class="form-control nav_search">
                                 </div>
                             </div>
@@ -38,13 +38,13 @@
                     </div>
                     <div class="card-body">
                         <ul class="report_user">
-                            <li v-for="(item, index) in matchList" :key="index">
-                                <nuxt-link :to="`/report-details/${item.id}`">
+                            <li v-for="(item, index) in tournamentList" :key="index">
+                                <nuxt-link :to="`/tournament/tournament-users?id=${item.id}&tournament=${item.name}`">
                                     <div class="img_part">
                                         <div>
-                                            <h3>{{ item.teamA }} A Vs {{ item.teamB }}</h3>
-                                            <p><strong>Start:</strong> {{ item.start_time }}, <strong>End:</strong> {{
-                                                item.end_time }}</p>
+                                            <h3>{{ item.name }} </h3>
+                                            <p><strong>Start:</strong> {{ item.start_date	 }}, <strong>End:</strong> {{
+                                                item.end_date }}</p>
                                                 <p>Total Participate: 20</p>
                                         </div>
                                     </div>
@@ -56,7 +56,7 @@
                         <ul class="pagination">
                             <li v-for="link in pagination" :key="link.label"
                                 :class="{ 'active page-item': link.active, 'disabled page-item': !link.url }">
-                                <a v-if="link.url" href="#" @click.prevent="getMatchList(link.url.split('page=')[1])"
+                                <a v-if="link.url" href="#" @click.prevent="getTournamentList(link.url.split('page=')[1])"
                                     class="page-link">
                                     {{ link.label }}
                                 </a>
@@ -80,28 +80,27 @@ import { useGlobalScript } from '@/stores/globalScript';
 const globalScript = useGlobalScript();
 import axios from "axios";
 
-const matchList = ref([]);
+const tournamentList = ref([]);
 const pagination = ref([]);
 const items = ref('10');
 const searchInput = ref();
 
 
 
-const getMatchList = (pages) => {
-
-    axios.get('api/get-matchList', {
+const getTournamentList = (pages) => {
+    axios.get('api/get-tournamentList', {
         params: {
             items: items.value,
             search: searchInput.value,
             page: pages,
         }
     }).then(response => {
-        matchList.value = response.data.data;
+        tournamentList.value = response.data.data;
         pagination.value = response.data.pagination.links;
     });
 }
 onMounted(() => {
-    getMatchList();
+    getTournamentList();
 })
 
 

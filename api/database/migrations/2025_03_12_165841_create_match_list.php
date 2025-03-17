@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('match_list', function (Blueprint $table) {
             $table->id();
-            $table->integer('team-a')->nullable();
-            $table->integer('team-b')->nullable();
+            $table->integer('team_a')->nullable();
+            $table->integer('team_b')->nullable();
             $table->dateTime('time')->nullable();
             $table->integer('match_type')->nullable()->comment('1=oneday, 2= t20, 3=championship, 4=test, 5=worldcup');
             $table->string('game_type')->nullable()->comment('football,cricket,buscatball,tanis');

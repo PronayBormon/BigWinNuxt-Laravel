@@ -20,9 +20,9 @@ export default defineNuxtConfig({
         : "http://127.0.0.1:8000/api",
     }
   },
-  router: {
-    middleware: ['auth'] // Register the 'auth' middleware
-  },
+  // router: {
+  //   middleware: ['auth'] // Register the 'auth' middleware
+  // },
 
   app: {
     head: {

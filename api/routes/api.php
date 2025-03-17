@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Mobile\authController;
+use App\Http\Controllers\User\UnauthenticateController;
+use App\Models\Tournament;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +39,7 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     Route::delete('/delete-country/{id}', [UserController::class, 'removeCountry']);
     Route::post('/add-match', [UserController::class, 'addMatch']);
     Route::get('/getteamlist', [UserController::class, 'getTemaList']);
+    Route::get('/get-matchList', [UserController::class, 'matchList']);
 
     Route::post('/add-prize-banner', [AdminController::class, 'addPrizeBanner']);
     Route::get('/prize-banner', [AdminController::class, 'PrizeBanner']);
@@ -48,4 +51,60 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
 
     Route::post('/new-message', [AdminController::class, 'newMessage']);
     Route::get('/notificaion-list', [AdminController::class, 'messageList']);
+    Route::get('/message-details/{id}', [AdminController::class, 'messageDetails']);
+    Route::post('/update-message', [AdminController::class, 'updateMessage']);
+
+    Route::post('/add-slider', [AdminController::class, 'addSlider']);
+    Route::get('/slider-list', [AdminController::class, 'sliderList']);
+    Route::get('/delete-slider/{id}', [AdminController::class, 'deleteSlider']);
+    Route::get('/match-details/{id}', [AdminController::class, 'matchDetails']);
+    Route::post('/update-match', [AdminController::class, 'update_match']);
+    Route::post('/add-player', [AdminController::class, 'addPlayer']);
+    Route::get('/player-details/{id}', [AdminController::class, 'player']);
+    Route::post('/update-player', [AdminController::class, 'updateplayer']);
+
+    Route::post('/make-tournament', [AdminController::class, 'saveTournament']);
+
+    Route::get('/tournament-details/{id}', [AdminController::class, 'tournamentDetails']);
+    Route::post('/add-tournament-teams', [AdminController::class, 'addTournamentTeam']);
+    Route::post('/add-tournament-teams', [AdminController::class, 'addTournamentTeam']);
+
+    Route::post('/add-team-player', [AdminController::class, 'addNewPlayer']);
+    Route::get('/get-team-players', [AdminController::class, 'teamPlayers']);
+    Route::get('/get-player-details/{id}', [AdminController::class, 'playerDetails']);
+    Route::get('/update-player', [AdminController::class, 'updatePlayer']);
+
+    // Max predict     
+    Route::post('/make-maxpredict', [AdminController::class, 'addmaxpredict']);
+});
+
+Route::prefix('tournament')->middleware('isAdmin')->group(function () {
+    Route::post('/update-tournament', [AdminController::class, 'UpdateTournament']);
+});
+Route::prefix('api')->group(function () {
+    // ========== User list for select ==========
+    Route::get('/user-data', [UnauthenticateController::class, 'user_list']);
+    
+    // ========== Team list By Match Id ==========
+    Route::get('/team-data/{id}', [UnauthenticateController::class, 'teamList']);
+
+    Route::post('/add-bastsman-predict', [UnauthenticateController::class, 'addBatsman']);
+    Route::post('/add-bowler-predict', [UnauthenticateController::class, 'addBowler']);
+    Route::get('/batsman/{id}', [UnauthenticateController::class, 'batsmanMatch']);
+    Route::get('/baller/{id}', [UnauthenticateController::class, 'ballerMatch']);
+    Route::get('/batsman-data', [UnauthenticateController::class, 'batsman']);
+    Route::get('/bowlers-data', [UnauthenticateController::class, 'bowlers']);
+    Route::get('/single-match/{id}', [UnauthenticateController::class, 'singleMatchData']);
+    Route::get('/player-list/{id}', [UnauthenticateController::class, 'player_list']);
+    // ========== Team list for select ==========
+    Route::get('/team-list', [UnauthenticateController::class, 'countryList']);
+    // ========== Tournament list for SHow with Pagination ==========
+    Route::get('/get-tournamentList', [UnauthenticateController::class, 'tournamentList']);
+    // Tournament team List 
+    Route::get('/tournament-teams/{id}', [UnauthenticateController::class, 'tournamentTeamList']);
+    Route::post('/remove-team', [UnauthenticateController::class, 'removeTeam']);
+    // ========== Player list for select ==========
+    Route::get('/player-list', [UnauthenticateController::class, 'playerlist']);
+    Route::get('/tournament-playerList', [UnauthenticateController::class, 'tournamentPlayers']);
+
 });

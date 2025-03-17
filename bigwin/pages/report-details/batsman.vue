@@ -36,26 +36,13 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>Name 1</td>
-                                                <td class="text-center">80</td>
-                                                <td class="text-center">10</td>
-                                                <td class="text-center">70</td>
-                                                <td class="text-center">4</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Name 1</td>
-                                                <td class="text-center">80</td>
-                                                <td class="text-center">10</td>
-                                                <td class="text-center">70</td>
-                                                <td class="text-center">4</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Name 1</td>
-                                                <td class="text-center">80</td>
-                                                <td class="text-center">10</td>
-                                                <td class="text-center">70</td>
-                                                <td class="text-center">4</td>
+                                            <tr v-for="item in batsmanList">
+                                                <!-- {{ item }} -->
+                                                <td>{{item.player_name}}</td>
+                                                <td class="text-center">{{item.run}}</td>
+                                                <td class="text-center">{{item.ball}}</td>
+                                                <td class="text-center">{{item.total_4}}</td>
+                                                <td class="text-center">{{item.total_6}}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -78,19 +65,39 @@
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
 const globalScript = useGlobalScript();
-import { useRouter } from '#app';
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const showPassword = ref(false);
+import { useRoute } from 'vue-router';
+import axios from 'axios';
 
-const showHidePass = () => {
-    showPassword.value = !showPassword.value;
-};
+const route = useRoute();
+const matchId = route.query.id;
+const userId = route.query.user_id;
 
+const batsmanList = ref([]);
+
+// console.log(matchId, userId);  // These will contain the ID values
+
+const getbatsMandata = () =>{
+    axios.get('api/batsman-data', {
+        params:{
+            matchId: matchId,
+            userId: userId,
+        }
+    }).then(response =>{
+        console.log(response.data);
+        batsmanList.value = response.data;
+    })
+}
 const back = () =>{
     router.back();
 }
+
+onMounted(()=>{
+    getbatsMandata();
+})
 
 
 

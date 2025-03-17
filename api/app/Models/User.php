@@ -28,12 +28,15 @@ class User extends Authenticatable
         'register_ip',
         'status',
     ];
-    // public function generateToken()
-    // {
-    //     $this->api_token = bin2hex(random_bytes(40)); // Generate a unique API token
-    //     $this->save();
-    //     return $this->api_token;
-    // }
+
+    public function batsman()
+    {
+        return $this->hasMany(Batsman::class, 'user_id');
+    }
+    
+    public function boller(){
+        return $this->hasMany(Boller::class, 'user_id');
+    }
     /**
      * The attributes that should be hidden for serialization.
      *

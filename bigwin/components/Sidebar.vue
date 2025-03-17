@@ -15,9 +15,29 @@
                         <img src="/assets/icons/allUser.svg" alt="" class="img-fluid"> All Users
                     </NuxtLink>
                 </li>
+                <li class="menu_group" :class="{ active: route.path === '/player-list' }">
+                    <NuxtLink class="menu_link" to="/player-list">
+                        <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Player List
+                    </NuxtLink>
+                </li>
                 <li class="menu_group" :class="{ active: route.path === '/add-single-match' }">
                     <NuxtLink class="menu_link" to="/add-single-match">
                         <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Add Single Match
+                    </NuxtLink>
+                </li>
+                <li class="menu_group" :class="{ active: route.path === '/add-maxpredict' }">
+                    <NuxtLink class="menu_link" to="/add-maxpredict">
+                        <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Add Max Predict
+                    </NuxtLink>
+                </li>
+                <li class="menu_group" :class="{ active: route.path === '/add-tournament' }">
+                    <NuxtLink class="menu_link" to="/add-tournament">
+                        <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Add Tournament
+                    </NuxtLink>
+                </li>
+                <li class="menu_group" :class="{ active: route.path === '/tournament' }">
+                    <NuxtLink class="menu_link" to="/tournament">
+                        <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Tournament Reports
                     </NuxtLink>
                 </li>
                 <li class="menu_group" :class="{ active: route.path === '/all-winners' }">
@@ -42,7 +62,7 @@
                 </li>
                 <li class="menu_group" :class="{ active: route.path === '/reports' }">
                     <NuxtLink class="menu_link" to="/reports">
-                        <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Reports
+                        <img src="/assets/icons/report.svg" alt="" class="img-fluid">Single Match Reports
                     </NuxtLink>
                 </li>
                 <li class="menu_group" :class="{ active: route.path === '/prize' }">
@@ -50,21 +70,26 @@
                         <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Prize
                     </NuxtLink>
                 </li>
-                <li class="menu_group" :class="{ active: route.path === '/country' }">
-                    <NuxtLink class="menu_link" to="/country">
+                <li class="menu_group" :class="{ active: route.path === '/sliders' }">
+                    <NuxtLink class="menu_link" to="/sliders">
+                        <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Sliders
+                    </NuxtLink>
+                </li>
+                <li class="menu_group" :class="{ active: route.path === '/team-list' }">
+                    <NuxtLink class="menu_link" to="/team-list">
                         <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Team List
                     </NuxtLink>
                 </li>
-            </ul>
-            <div class="sidebar_footer">
-                <ul class="sidebar_menu">
-                    <li class="menu_group active" @click="handleLogout()">
+                    <li class="menu_group active position-sticky bottom-0 mt-2" @click="handleLogout()">
                         <NuxtLink class="menu_link" to="/">
                             <img src="/assets/icons/logout.svg" alt="" class="img-fluid"> Logout
                         </NuxtLink>
                     </li>
+            </ul>
+            <!-- <div class="sidebar_footer">
+                <ul class="sidebar_menu">
                 </ul>
-            </div>
+            </div> -->
         </div>
     </aside>
 </template>

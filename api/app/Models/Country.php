@@ -14,4 +14,34 @@ class Country extends Model
         'image',
         'status',
     ];
+    public function batsman(){
+        return $this->hasMany(Batsman::class, 'team_id');
+    }
+    public function boller(){
+        return $this->hasMany(Boller::class, 'team_id');
+    }
+        
+    // Matches where this country is 'team_a'
+    public function teamAMatches(){
+        return $this->hasMany(MatchList::class, 'team_a', 'id');
+    }
+
+    // Matches where this country is 'team_b'
+    public function teamBMatches(){
+        return $this->hasMany(MatchList::class, 'team_b', 'id');
+    }
+    public function palyers(){
+        return $this->hasMany(TeamPlayers::class, 'team_id', 'id');
+    }
+    public function tournament()
+    {
+        return $this->hasMany(Country::class, 'team_id');  
+    }
+
+    // Get all matches where this country is either 'team_a' or 'team_b'
+    public function allMatches(){
+        return MatchList::where('team_a', $this->id)
+                        ->orWhere('team_b', $this->id);
+    }
+    
 }

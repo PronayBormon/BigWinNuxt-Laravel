@@ -12,6 +12,42 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+    // 🔹 **Generate Pagination Links with Ellipsis**
+    private function generatePaginationLinks($data)
+    {
+        $links = [];
+        $currentPage = $data->currentPage();
+        $lastPage = $data->lastPage();
+
+        if ($currentPage > 1) {
+            $links[] = ['label' => 'Prev', 'url' => $data->url($currentPage - 1)];
+        }
+
+        $links[] = ['label' => 1, 'url' => $data->url(1), 'active' => $currentPage == 1];
+
+        if ($currentPage > 3) {
+            $links[] = ['label' => '...', 'url' => null];
+        }
+
+        for ($i = max(2, $currentPage - 1); $i <= min($lastPage - 1, $currentPage + 1); $i++) {
+            $links[] = ['label' => $i, 'url' => $data->url($i), 'active' => $i == $currentPage];
+        }
+
+        if ($currentPage < $lastPage - 2) {
+            $links[] = ['label' => '...', 'url' => null];
+        }
+
+        if ($lastPage > 1) {
+            $links[] = ['label' => $lastPage, 'url' => $data->url($lastPage), 'active' => $currentPage == $lastPage];
+        }
+
+        if ($currentPage < $lastPage) {
+            $links[] = ['label' => 'Next', 'url' => $data->url($currentPage + 1)];
+        }
+
+        return $links;
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -50,7 +86,7 @@ class UserController extends Controller
                 'last_page' => $users->lastPage(),
                 'per_page' => $users->perPage(),
                 'total' => $users->total(),
-                'links' => $users->links() 
+                'links' => $users->links()
             ]
         ]);
     }
@@ -180,6 +216,7 @@ class UserController extends Controller
             "teamA" => "required|integer",
             "teamB" => "required|integer",
             "dateTime" => "required",
+            "enddateTime" => "required",
         ]);
 
         if ($validate->fails()) {
@@ -187,18 +224,57 @@ class UserController extends Controller
         }
 
         $query = MatchList::create([
-            'team-a'        => $request->teamA,
-            'team-b'        => $request->teamB,
+            'team_a'        => $request->teamA,
+            'team_b'        => $request->teamB,
             'time'          => $request->dateTime,
+            'end_date'      => $request->enddateTime,
             'match_type'    => '1',
             'game_type'     => '1',
             'status'        => '1',
         ]);
 
-        if($query){
+        if ($query) {
             return response()->json([
                 'message' => "Successfully add New Match",
             ]);
         }
+    }
+    public function matchList(request $request)
+    {
+
+        // dd($request->all());
+        $query = MatchList::query()
+            ->join('countries as ta', 'match_list.team_a', '=', 'ta.id')
+            ->join('countries as tb', 'match_list.team_b', '=', 'tb.id')
+            ->select('match_list.*', 'ta.name as teamA', 'tb.name as teamB');
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('ta.name', 'like', "%$search%")
+                    ->orWhere('tb.name', 'like', "%$search%");
+            });
+        }
+
+        $data = $query->orderBy('match_list.id', 'desc')->paginate($request->items);
+
+        $data->getCollection()->transform(function ($item) {
+            $item->start_time = $item->time ? \Carbon\Carbon::parse($item->time)->format('d M Y h:i A') : null;
+            $item->end_time = $item->end_date ? \Carbon\Carbon::parse($item->end_date)->format('d M Y h:i A') : null;
+            return $item;
+        });
+
+        return response()->json([
+            'data' => $data->items(),
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'next_page_url' => $data->nextPageUrl(),
+                'prev_page_url' => $data->previousPageUrl(),
+                'links' => $this->generatePaginationLinks($data),
+            ]
+        ]);
     }
 }

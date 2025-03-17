@@ -37,7 +37,8 @@
 
                                 <div class="form-group">
                                     <select name="status" id="status-select" v-model="statusFilter" @change="UserList">
-                                        <option selected disabled>Status</option>
+                                       
+                                        <option value="">All</option>
                                         <option value="1">Active</option>
                                         <option value="2">Inactive</option>
                                     </select>

@@ -12,13 +12,13 @@
 
             <!-- content setion  -->
             <div class="content_section">
-                <h1 class="page_title">Country</h1>
+                <h1 class="page_title">Team List</h1>
                 <div class="card app_card">
                     <div class="card-body">
 
                         <div class="d-flex justify-content-end align-items-center m-3">
                             <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#baner3">Add
-                                Country</button>
+                                New Team</button>
                         </div>
                         <ul class="report_user country_team">
                             <li v-if="countries && countries.length" v-for="(item, index) in countries" :key="index">
@@ -29,8 +29,11 @@
                                             <h3>{{ item.name }}</h3>
                                         </div>
                                     </div>
-                                    <i class="fa-regular fa-trash" @click="DelId(item.id,item.name)"
-                                        data-bs-toggle="modal" :data-bs-target="'#deleteConfirm'+ item.id"></i>
+                                    <div class="d-flex align-items-center">
+                                        <button @click="DelId(item.id,item.name)" data-bs-toggle="modal" :data-bs-target="'#deleteConfirm'+ item.id" class="btn btn-danger"><i class="fa-regular fa-trash text-white"
+                                            ></i></button>
+                                        <nuxt-link :to="`/team-list/player-list?id=${item.id}`" class="btn btn_primary ms-2">P. List</nuxt-link>
+                                    </div>
                                 </nuxt-link>
                                 <!-- Modal  -->
                                 <div class="modal fade" :id="'deleteConfirm'+ item.id" tabindex="-1"
@@ -64,7 +67,7 @@
                         <div class="modal-content">
                             <div class="modal-body">
                                 <div class="adduser_form">
-                                    <h1>Add Country</h1>
+                                    <h1>Add New Team</h1>
                                     <form @submit.prevent="submitForm" id="submitForm">
                                         <div class="banner_image_upload">
                                             <label for="banner">
@@ -79,7 +82,7 @@
 
                                         <div class="form-group mb-3">
                                             <input type="text" v-model="country_name" class="form-control"
-                                                placeholder="Country Name">
+                                                placeholder="Team Name">
                                         </div>
 
                                         <button type="submit" class="btn_primary w-100">Submit</button>

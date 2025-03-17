@@ -279,7 +279,19 @@ body {
     margin-top: 20px;
 }
 
-.btn_default {}
+.btn_default {
+    border: 1px solid var(--white_color);
+    width: 90px;
+    font-size: 12px;
+    background: var(--white_color);
+    color: var(--black_color);
+    font-weight: 400;
+    border-radius:
+        10px;
+    height: auto;
+    margin: 0px 5px;
+    padding: 8px 5px;
+}
 
 .app_card {
     border-radius: 20px;
@@ -435,10 +447,10 @@ body {
     text-align: center;
 }
 
-.adduser_form input {
+.adduser_form input[type="text"] {
 
     border-radius: 10px;
-    background: var(--color_gray);
+    /*! background: var(--color_gray); */
     font-size: 14px;
     padding: 10px;
     outline: 0 !important;
@@ -966,9 +978,11 @@ input[type=number] {
     width: 100%;
     object-fit: cover;
 }
-.banner_images{
+
+.banner_images {
     min-height: 50vh;
 }
+
 .banner_images img {
     width: 100%;
     max-width: 510px;
@@ -981,7 +995,25 @@ input[type=number] {
         20px;
     box-shadow: 2px 3px 5px 3px #00000038;
 }
-.message{
+
+.message {
     font-size: 12px;
     color: red;
 }
+
+input[type="checkbox"]:checked {
+    background: auto !important;
+}
+
+.form-check-input:checked {
+    /*! background-color: var(--primary_color); */
+    border-color:
+        #0d6efd;
+}
+.select_title{
+    color: #fff !important;
+}
+/* <!-- <select name="" multiple id="" v-model="tteams" class="form-control">
+<option v-for="item in teamList" :value="item.id">{{ item.name }}
+</option>
+</select> --> */
