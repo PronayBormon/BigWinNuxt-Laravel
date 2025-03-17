@@ -87,7 +87,7 @@ const getbatsMandata = () =>{
             userId: userId,
         }
     }).then(response =>{
-        console.log(response.data);
+        // console.log(response.data);
         batsmanList.value = response.data;
     })
 }

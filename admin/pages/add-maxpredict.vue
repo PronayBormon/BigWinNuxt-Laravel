@@ -129,7 +129,8 @@
                                         <!-- =2=== {{ item.teams }} -->
                                         <td class="text-center">
                                             <span v-if="item.teams.length === 2">
-                                                {{ item.teams[0].country?.name }} <strong>VS</strong> {{ item.teams[1].country?.name }}
+                                                {{ item.teams[0].country?.name }} <strong>VS</strong> {{
+                                                item.teams[1].country?.name }}
                                             </span>
                                         </td>
 
@@ -145,7 +146,8 @@
                                                 data-bs-target="#editMatch"><i class="fa-regular fa-pencil-square"
                                                     style="font-size: 16px;"></i></button> -->
 
-                                            <NuxtLink :to="`/max-predict/players?predict_id=${item.id}`" class="btn btn_default py-2 ms-2">Team List</NuxtLink>
+                                            <NuxtLink :to="`/max-predict/players?predict_id=${item.id}`"
+                                                class="btn btn_default py-2 ms-2">Players</NuxtLink>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -171,6 +173,8 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
 
 const tdate = ref('');
 const tenddate = ref('');
@@ -204,22 +208,22 @@ const playersdata = () => {
     })
 }
 const getMaxPredict = (page) => {
-    axios.get('api/get-maxpredictList',{
-        params:{
+    axios.get('api/get-maxpredictList', {
+        params: {
             searchInput: searchInput.value,
-            items:itemsperpage.value,
+            items: itemsperpage.value,
             status: status.value,
             page: page,
         }
     }).then(response => {
-        console.log(response.data);
+        // console.log(response.data);
         maxPredictList.value = response.data.data;
         pagination.value = response.data.pagination.links;
     })
 }
 // Form Submission with Validation
 const addmaxpredict = () => {
-    console.log("Submitting Form...");
+    // console.log("Submitting Form...");
 
     // Validation: Ensure each team is selected and has at least 15 players
     for (let i = 0; i < teams.value.length; i++) {
@@ -244,18 +248,32 @@ const addmaxpredict = () => {
         });
     });
 
-    console.log("FormData Entries:");
+    // console.log("FormData Entries:");
     for (let [key, value] of formData.entries()) {
-        console.log(key, value);
+        // console.log(key, value);
     }
 
     axios.post("api/add-max-predict", formData)
         .then(response => {
-            console.log("✅ Success:", response.data);
-        })
-        .catch(error => {
-            console.error("❌ Error:", error);
-        });
+            $notyf.success(response.data.message);
+    getMaxPredict();
+        }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            $notyf.error("An error occurred. Please try again.");
+        }
+    });
 };
 onMounted(() => {
     teamsdata();

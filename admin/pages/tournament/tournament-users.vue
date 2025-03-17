@@ -174,7 +174,7 @@ const tournamename = route.query.tournament;
 const userdata = ref([]);
 const bat_user_id = ref("");
 
-console.log(tid);
+// console.log(tid);
 
 const back = () => {
     router.back(); // Correct method to navigate back

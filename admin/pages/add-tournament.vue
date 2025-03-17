@@ -153,10 +153,10 @@
                                                 item.status == 1 ? "Active" : "inactive" }}</span>
                                         </td>
                                         <td class="text-center">
-                                            <button type="button" class="btn btn-default p-2"
+                                            <!-- <button type="button" class="btn btn-default p-2"
                                                 @click="getdetails(item.id)" data-bs-toggle="modal"
                                                 data-bs-target="#editMatch"><i class="fa-regular fa-pencil-square"
-                                                    style="font-size: 16px;"></i></button>
+                                                    style="font-size: 16px;"></i></button> -->
 
                                             <button type="button" @click="teamlistId(item.id, item.name)"
                                                 class="btn btn-default py-2 ms-2">Team List</button>
@@ -186,6 +186,10 @@
 import { ref, onMounted } from 'vue';
 import axios from "axios";
 import { useRouter } from 'vue-router';
+
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
+// $notyf.success(response.data.message);
 const router = useRouter();
 
 const availableTeams = ref([]);
@@ -206,15 +210,15 @@ const teamlistId = (id, name) => {
     router.push(`/tournament/team-list?id=${id}`);
 }
 
-const teamsdata =  ()=>{
+const teamsdata = () => {
     axios.get('api/team-list').then(response => {
-        console.log(response.data);
+        // console.log(response.data);
         availableTeams.value = response.data;
     })
 }
-const playersdata =  ()=>{
+const playersdata = () => {
     axios.get('api/player-list').then(response => {
-        console.log(response.data);
+        // console.log(response.data);
         availablePlayers.value = response.data;
     })
 }
@@ -247,8 +251,26 @@ const addTournament = async () => {
     // Example: sending formData via Axios
     // console.log(formData);
     axios.post('api/make-tournament', formData).then(response => {
-        console.log(response.data);
-    })
+        // console.log(response.data);
+
+        $notyf.success(response.data.message);
+    }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            $notyf.error("An error occurred. Please try again.");
+        }
+    });
 };
 const getTournamentList = (pages) => {
     axios.get('api/get-tournamentList', {
@@ -263,7 +285,7 @@ const getTournamentList = (pages) => {
         // console.log(response.data.data);
     });
 }
-onMounted(()=>{
+onMounted(() => {
     teamsdata();
     playersdata();
     getTournamentList();

@@ -86,7 +86,7 @@ const getBollerdata = () =>{
             userId: userId,
         }
     }).then(response =>{
-        console.log(response.data);
+        // console.log(response.data);
         bowlersList.value = response.data;
     })
 }

@@ -14,22 +14,7 @@
             <div class="content_section">
                 <h1 class="page_title">Dashboard</h1>
                 <!-- ================================= -->
-
-                <button type="button" class="btn btn-primary" id="liveToastBtn">Show live toast</button>
-
-                <div class="toast-container position-fixed bottom-0 end-0 p-3">
-                    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                        <div class="toast-header">
-                            <img src="..." class="rounded me-2" alt="...">
-                            <strong class="me-auto">Bootstrap</strong>
-                            <small>11 mins ago</small>
-                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                        </div>
-                        <div class="toast-body">
-                            Hello, world! This is a toast message.
-                        </div>
-                    </div>
-                </div>
+                 
                 <!-- ================================= -->
                 <div class="card app_card">
                     <div class="card-header">
@@ -98,7 +83,7 @@
                                         <td>
                                             <p>{{ items.register_ip }}</p>
                                             <p v-if="fetchLocation(items.register_ip)">{{ locations[items.register_ip]
-                                            }}</p>
+                                                }}</p>
                                             <p v-else>Loading location...</p>
                                         </td>
                                         <td>
@@ -272,6 +257,10 @@ const authStore = useAuthStore();
 import axios from "axios";
 import $ from "jquery";
 
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
+// $notyf.success(response.data.message);
+
 // Check if the user is an admin
 const isAdmin = authStore.isAdmin();
 
@@ -294,13 +283,6 @@ const userDataPhone = ref({});
 const userDataStatus = ref({});
 const userDataPassword = ref({});
 
-function showToast() {
-    toast.add({
-        title: 'Success',
-        description: 'Your action was completed successfully.',
-        color: 'success'
-    })
-}
 
 const showHidePass = () => {
     showPassword.value = !showPassword.value;
@@ -395,7 +377,7 @@ const updateUser = () => {
     formData.append('status', userDataStatus.value);
 
     axios.post('/api/update', formData).then(response => {
-        console.log(response.data.data);
+        console.log(response.data.message);
         // Reset the form correctly
         const form = document.getElementById("updateForm");
         if (form) {
@@ -411,6 +393,7 @@ const updateUser = () => {
             }
         }
         UserList();
+        $notyf.success(response.data.message);
     });
 }
 import { useRouter } from 'vue-router';
@@ -440,9 +423,7 @@ const handleLogout = () => {
 onMounted(() => {
     UserList();
     fetchLocation();
-    // authStore.fetchUserData(); 
-    // const toastElList = document.querySelectorAll('.toast')
-    // const toastList = [...toastElList].map(toastEl => new bootstrap.Toast(toastEl, option))
+    
 });
 
 

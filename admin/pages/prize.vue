@@ -171,6 +171,8 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
 
 
 const batting = ref('');
@@ -248,6 +250,24 @@ const addTournament = () => {
                 modalInstance.hide();
             }
         }
+        $notyf.success(response.data.message);
+    }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
+        }
     });
 };
 // Add Bowling Prize Banner
@@ -274,6 +294,24 @@ const addBowling = () => {
                 modalInstance.hide();
             }
         }
+        $notyf.success(response.data.message);
+    }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
+        }
     });
 };
 // Add Batting Prize Banner
@@ -296,6 +334,24 @@ const addbatting = () => {
                 modalInstance.hide();
             }
         }
+        $notyf.success(response.data.message);
+    }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
+        }
     });
 };
 const getPriceBanner = () => {
@@ -304,7 +360,7 @@ const getPriceBanner = () => {
         bowling.value = response.data.bowling;
         tournament.value = response.data.tournament;
 
-        console.log(response.data.batting);
+        // console.log(response.data.batting);
 
     })
 }

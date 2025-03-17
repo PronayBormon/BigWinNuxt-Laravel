@@ -71,8 +71,7 @@
                                         </td>
 
                                         <td>
-                                            <NuxtLink :to="`/tournament/player-list?tid=${items.id}?team_id=${items.team.id}`"  class="btn btn_default">Details
-                                                Action</NuxtLink>
+                                            <NuxtLink :to="`/tournament/player-list?tid=${items.id}?team_id=${items.team.id}`"  class="btn btn_default">Players</NuxtLink>
                                         </td>
                                     </tr>
                                     <tr v-else>
@@ -173,7 +172,7 @@ const addTeams = () =>{
     });
     // console.log(formData);
     axios.post('api/add-tournament-teams', formData).then( response =>{
-        console.log(response.data);
+        // console.log(response.data);
         let modalElement = document.getElementById('editList');
         if (modalElement) {
             let modalInstance = bootstrap.Modal.getInstance(modalElement);

@@ -29,7 +29,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                <nuxt-link class="forget_link" to="/auth/forgetpassword">Forget Password?</nuxt-link>
+                                <!-- <nuxt-link class="forget_link" to="/auth/forgetpassword">Forget Password?</nuxt-link> -->
                                 <button class="btn_submit" type="submit">Login</button>
                             </form>
                         </div>
@@ -47,6 +47,9 @@ const globalScript = useGlobalScript();
 import axios from "axios";
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';  // Import useAuthStore
+
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
 
 const router = useRouter();
 
@@ -67,31 +70,46 @@ const userLogin = async () => {
     formData.append('login_ip', logIp.value);
 
     // console.log(formData);
-    axios.post('/login', formData).then(response =>{
+    axios.post('/login', formData).then(response => {
         const token = response.data.token;
         const user = response.data.user;
 
-        const authStore = useAuthStore();
-        authStore.login(token, user);
+        if (token != null) {
+            if (user.role == 2) {
 
-        window.location.reload();
-    }).catch(error =>{
-        console.error("Login failed:", error);
+                const authStore = useAuthStore();
+                authStore.login(token, user);
+                $notyf.success(response.data.message);
+                window.location.reload();
+            } else {
+                $notyf.error("Your Are Not Admin");
+            }
+        } else {
+
+            $notyf.error(response.data.error);
+        }
+
+
     })
+    // .catch(error => {
+    //     // If the error response is validation errors, show them using Notyf
+    //     if (error.response && error.response.data && error.response.data.errors) {
+    //         const errorMessages = error.response.data.errors;
 
-    // try {
-    //     const response = await axios.post('/login', formData);
+    //         // Loop through the errors object and show each error message
+    //         for (const field in errorMessages) {
+    //             if (errorMessages.hasOwnProperty(field)) {
+    //                 errorMessages[field].forEach((msg) => {
+    //                     $notyf.error(msg); // Show each error message using Notyf
+    //                 });
+    //             }
+    //         }
+    //     } else {
+    //         // If it's not validation errors, show a general error message
+    //         $notyf.error("An error occurred. Please try again.");
+    //     }
+    // });
 
-    //     const token = response.data.token;
-    //     const user = response.data.user;
-
-    //     const authStore = useAuthStore();
-    //     authStore.login(token, user);
-
-    //     window.location.reload();
-    // } catch (error) {
-    //     console.error("Login failed:", error);
-    // }
 };
 
 const getIp = () => {

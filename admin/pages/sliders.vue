@@ -74,6 +74,8 @@
 <script setup>
 import { onMounted } from "vue";
 import axios from "axios";
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
 
 const sliderListdata = ref([]);
 const imagePreview = ref();
@@ -105,7 +107,26 @@ const addBanner = () =>{
             }
         }
         sliderList();
-    })
+        $notyf.success(response.data.message);
+
+    }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
+        }
+    });
 }
 const bannerslider = () => {
     new Swiper(".mySwiper", {
@@ -130,7 +151,25 @@ const deleteSlider = (id) =>{
     axios.get(`api/delete-slider/${id}`).then(response =>{
         console.log(response.data);
         sliderList();
-    })
+        $notyf.success(response.data.message);
+    }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
+        }
+    });
 }
 
 onMounted(() => {

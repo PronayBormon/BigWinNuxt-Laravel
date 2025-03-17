@@ -131,7 +131,7 @@ class AdminController extends Controller
         if ($save) {
 
             return response()->json([
-                'message' => "success",
+                'message' => "successfully Create a new spin",
                 'data' => $save,
             ]);
         }
@@ -153,8 +153,11 @@ class AdminController extends Controller
         // Apply pagination (default 10 items per page)
         $data = $query->orderBy('id', 'desc')->paginate($request->items ?? 10);
 
+        $count = SpinList::count();
+
         return response()->json([
             'data' => $data->items(),
+            'count' => $count,
             'pagination' => [
                 'current_page' => $data->currentPage(),
                 'last_page' => $data->lastPage(),
@@ -201,7 +204,7 @@ class AdminController extends Controller
         if ($save) {
 
             return response()->json([
-                'message' => "success",
+                'message' => "Update success",
                 'data' => $save,
             ]);
         }
@@ -362,6 +365,18 @@ class AdminController extends Controller
         // Replace the request input with properly formatted teams
         $request->merge(['teams' => $teams]);
 
+        $messages = [
+            'tname.required' => 'Tournament name is required.',
+            'tdate.required' => 'Tournament Start date is required.',
+            'tenddate.required' => 'Tournament End date is required.',
+            'teams.required' => 'At least one team is required.',
+            'teams.array' => 'Teams should be an array.',
+            'teams.*.team_id.required' => 'Each team must have a valid ID.',
+            'teams.*.team_id.exists' => 'The selected team is invalid.',
+            'teams.*.players.required' => 'Each team must have at least one player.',
+            'teams.*.players.*.required' => 'Each player in the team is required.',
+            'teams.*.players.*.exists' => 'The selected player is invalid.',
+        ];
         // Validate the request
         $Validate = $request->validate([
             'tname' => 'required|string',
@@ -371,7 +386,7 @@ class AdminController extends Controller
             'teams.*.team_id' => 'required|integer|exists:countries,id', // Ensure team exists
             'teams.*.players' => 'required|array|min:1',
             'teams.*.players.*' => 'required|integer|exists:team_players,id', // Ensure players exist
-        ]);
+        ], $messages);
 
 
         // Create the tournament

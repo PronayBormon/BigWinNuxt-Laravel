@@ -158,6 +158,8 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
 
 const route = useRoute();
 // const teamId = route.query.id;
@@ -190,7 +192,25 @@ const updatePlayer = () =>{
                 modalInstance.hide();
             }
         }
-    })
+        $notyf.success(response.data.message);
+    }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
+        }
+    });
 }
 
 const playerDetails = (id) =>{
@@ -217,8 +237,25 @@ const addPlayer = () => {
                 modalInstance.hide();
             }
         }
+        $notyf.success(response.data.message);
+    }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
 
-    })
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
+        }
+    });
 }
 
 const getPlayers = (page) =>{
@@ -230,7 +267,7 @@ const getPlayers = (page) =>{
             page: page,
         }
     }).then( response =>{
-        console.log(response.data.data);
+        // console.log(response.data.data);
         playerlist.value = response.data.data;
     });
 }

@@ -30,19 +30,20 @@
                                         </div>
                                     </div>
                                     <div class="d-flex align-items-center">
-                                        <button @click="DelId(item.id,item.name)" data-bs-toggle="modal" :data-bs-target="'#deleteConfirm'+ item.id" class="btn "><i class="fa-regular fa-trash text-danger"
-                                            ></i></button>
+                                        <button @click="DelId(item.id, item.name)" data-bs-toggle="modal"
+                                            :data-bs-target="'#deleteConfirm' + item.id" class="btn "><i
+                                                class="fa-regular fa-trash text-danger"></i></button>
                                     </div>
                                 </nuxt-link>
                                 <!-- Modal  -->
-                                <div class="modal fade" :id="'deleteConfirm'+ item.id" tabindex="-1"
+                                <div class="modal fade" :id="'deleteConfirm' + item.id" tabindex="-1"
                                     aria-labelledby="adduserLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
                                             <div class="modal-body">
                                                 <div class="adduser_form">
                                                     <h1>Are you sure?</h1>
-                                                    <p class="text-danger text-center">{{delete_name}}</p>
+                                                    <p class="text-danger text-center">{{ delete_name }}</p>
                                                     <a @click="deletCountry(item.id)" type="button"
                                                         class="btn w-100 text-white bg-danger text-center d-flex justify-content-center">Delete</a>
                                                 </div>
@@ -101,86 +102,124 @@
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue';
-    import axios from 'axios';
-    import { useGlobalScript } from '@/stores/globalScript';
-    const globalScript = useGlobalScript();
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import { useGlobalScript } from '@/stores/globalScript';
+const globalScript = useGlobalScript();
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
 
-    const showPassword = ref(false);
-    const country_name = ref('');
-    const country_image = ref('');
-    const countries = ref([]);
+const showPassword = ref(false);
+const country_name = ref('');
+const country_image = ref('');
+const countries = ref([]);
 
-    const delete_id = ref(['']);
-    const delete_name = ref(['']);
+const delete_id = ref(['']);
+const delete_name = ref(['']);
 
-    const imagePreview = ref(null);
+const imagePreview = ref(null);
 
-    const previewImage = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            country_image.value = file;
-            imagePreview.value = URL.createObjectURL(file); // Generate preview URL
-        }
-    };
-
-    const DelId = (id, name) => {
-        delete_id.value = id;
-        delete_name.value = name;
+const previewImage = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        country_image.value = file;
+        imagePreview.value = URL.createObjectURL(file); // Generate preview URL
     }
-    const submitForm = () => {
-        const formData = new FormData();
-        formData.append('name', country_name.value);
-        if (country_image.value) {
-            formData.append("image", country_image.value);
-        }
-        axios.post('/api/add-country', formData).then(response => {
-            // console.log(response.data);
-            getCountryList();
+};
 
-            const form = document.getElementById("submitForm");
-            if (form) {
-                form.reset(); // Correct method to reset the form
-            }
-
-            let modalElement = document.getElementById("baner3");
-            if (modalElement) {
-                let modalInstance = bootstrap.Modal.getInstance(modalElement);
-                if (modalInstance) {
-                    modalInstance.hide();
-                }
-            }
-        })
-    };
-
-    const showHidePass = () => {
-        showPassword.value = !showPassword.value;
-    };
-    const getCountryList = () => {
-
-        axios.post('/api/get-country').then(response => {
-            // console.log(response.data.data);
-            countries.value = response.data.data;
-
-        })
+const DelId = (id, name) => {
+    delete_id.value = id;
+    delete_name.value = name;
+}
+const submitForm = () => {
+    const formData = new FormData();
+    formData.append('name', country_name.value);
+    if (country_image.value) {
+        formData.append("image", country_image.value);
     }
-    const deletCountry = (id) => {
-
-        axios.delete(`/api/delete-country/${id}`).then(response => {
-
-            let modalElement = document.getElementById(`deleteConfirm${id}`);
-            if (modalElement) {
-                let modalInstance = bootstrap.Modal.getInstance(modalElement);
-                if (modalInstance) {
-                    modalInstance.hide();
-                }
-            }
-            getCountryList();
-        })
-    }
-
-    onMounted(() => {
+    axios.post('/api/add-country', formData).then(response => {
+        // console.log(response.data);
         getCountryList();
+
+        const form = document.getElementById("submitForm");
+        if (form) {
+            form.reset(); // Correct method to reset the form
+        }
+
+        let modalElement = document.getElementById("baner3");
+        if (modalElement) {
+            let modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
+        $notyf.success(response.data.message);
+    }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
+        }
     });
+};
+
+const showHidePass = () => {
+    showPassword.value = !showPassword.value;
+};
+const getCountryList = () => {
+
+    axios.post('/api/get-country').then(response => {
+        // console.log(response.data.data);
+        countries.value = response.data.data;
+
+    })
+}
+const deletCountry = (id) => {
+
+    axios.delete(`/api/delete-country/${id}`).then(response => {
+
+        let modalElement = document.getElementById(`deleteConfirm${id}`);
+        if (modalElement) {
+            let modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
+        getCountryList();
+        $notyf.success(response.data.message);
+    }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
+        }
+    });
+}
+
+onMounted(() => {
+    getCountryList();
+});
 
 </script>

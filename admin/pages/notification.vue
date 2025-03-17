@@ -146,7 +146,10 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
-import axios from 'axios';
+import axios from 'axios';	
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
+
 const globalScript = useGlobalScript();
 
 const items = ref('10');
@@ -173,13 +176,23 @@ const addmessage = () => {
                 modalInstance.hide();
             }
         }
-
+        $notyf.success(response.data.message);
     }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
         if (error.response && error.response.data && error.response.data.errors) {
-            console.log("Validation Errors:", error.response.data.errors);
-            errors.value = error.response.data.errors;
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
         } else {
-            console.log("Error:", error.message);
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
         }
     });
 }
@@ -226,8 +239,25 @@ const UpdateMessage = () =>{
             }
         }
         getNotificaitonList();
+        
+        $notyf.success(response.data.message);
     }).catch(error => {
-        console.error("Error fetching message details:", error);
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
+        }
     });
 }
 onMounted(() => {

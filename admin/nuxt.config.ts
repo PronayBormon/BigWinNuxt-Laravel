@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  devtools: { enabled: true },
+  devtools: { enabled: false },
 
   modules: ['@pinia/nuxt', 'nuxt-swiper'],
 
@@ -16,7 +16,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       baseURL: process.env.NODE_ENV === "production"
-        ? "https://fakestoreapi.com"
+        ? "https://api.bigwin.futuregenit.com/api"
+        // : "https://api.bigwin.futuregenit.com/api",
         : "http://127.0.0.1:8000/api",
     }
   },

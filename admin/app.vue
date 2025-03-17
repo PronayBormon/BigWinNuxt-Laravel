@@ -9,10 +9,9 @@
 import { onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth'; // ✅ Import Pinia store
 
-const authStore = useAuthStore(); // ✅ Initialize store
+const authStore = useAuthStore(); 
 
 onMounted(() => {
-    authStore.initialize(); // ✅ Load user from localStorage
-    // authStore.startInactivityTimer(); // ✅ Start auto logout timer
+    authStore.initialize();  
 });
 </script>

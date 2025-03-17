@@ -315,7 +315,7 @@ const BowlersData = () =>{
 const batsmanData = () =>{    
     const id = matchId;     
     axios.get(`api/baller/${id}`).then( response =>{
-        console.log(response.data);
+        // console.log(response.data);
         ballerDataList.value = response.data.data;
     })
 }

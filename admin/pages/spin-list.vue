@@ -14,7 +14,7 @@
             <div class="content_section">
                 <div class="d-flex justify-content-between align-items-center">
                     <h1 class="page_title">Spin List</h1>
-                    <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#addSpin">Add New</button>
+                    <button v-if="count <= 20 || count != 20" class="btn_primary" data-bs-toggle="modal" data-bs-target="#addSpin">Add New</button>
                 </div>
                 <div class="card app_card">
                     <div class="card-header">
@@ -172,12 +172,16 @@
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
 import axios from 'axios';
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
+
 const globalScript = useGlobalScript();
 
 const showPassword = ref(false);
 const errors = ref('');
 const name = ref('');
 const prize = ref('');
+const count = ref('');
 
 const editname = ref('');
 const editprize = ref('');
@@ -220,12 +224,23 @@ const UpdateSpinList = () => {
             }
         }
         getSpinList();
+        $notyf.success(response.data.message);
     }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
         if (error.response && error.response.data && error.response.data.errors) {
-            console.log("Validation Errors:", error.response.data.errors.name);
-            errors.value = error.response.data.errors;
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
         } else {
-            console.log("Error:", error.message);
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
         }
     });
 }
@@ -245,12 +260,23 @@ const addSpinList = () => {
             }
         }
         getSpinList();
+        $notyf.success(response.data.message)
     }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
         if (error.response && error.response.data && error.response.data.errors) {
-            console.log("Validation Errors:", error.response.data.errors.name);
-            errors.value = error.response.data.errors;
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
         } else {
-            console.log("Error:", error.message);
+            // If it's not validation errors, show a general error message
+            $notyf.error("An error occurred. Please try again.");
         }
     });
 }
@@ -263,6 +289,7 @@ const getSpinList = (page = 1) => {
     formData.append('page', page);
     axios.post('api/getspinList', formData).then(response => {
         spinList.value = response.data.data;
+        count.value = response.data.count;
         pagination.value = response.data.pagination.links;  // Set pagination links
     })
 }

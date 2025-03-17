@@ -738,8 +738,10 @@ body {
     height: 50px;
     margin-right: 10px;
     letter-spacing: 1px;
-    width: 100px !important;
+    width: 50px !important;
     object-fit: cover;
+    border-radius: 50%;
+    background: #adadad;
 }
 
 .country_ h3 {

@@ -177,7 +177,7 @@ const teamData = (page) => {
             page: page,
         }
     }).then(response => {
-        console.log(response.data.data);
+        // console.log(response.data.data);
         playersList.value = response.data.data;
         pagination.value = response.data.pagination.links;
 

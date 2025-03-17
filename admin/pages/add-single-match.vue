@@ -190,8 +190,10 @@
 <script setup>
 import { onMounted } from "vue";
 import axios from "axios";
-
 import { useRouter } from 'vue-router';
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
+// $notyf.success(response.data.message);
 
 const router = useRouter();
 
@@ -244,6 +246,7 @@ const updateMatch = () => {
             }
         }
         getMatchList();
+        $notyf.success(response.data.message);
     });
 }
 
@@ -277,6 +280,23 @@ const addMatch = () => {
     axios.post('api/add-match', formData).then(response => {
         // console.log(response.data);
         getMatchList();
+        $notyf.success(response.data.message);
+    }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            $notyf.error("An error occurred. Please try again.");
+        }
     });
 }
 const getTeamList = () => {
