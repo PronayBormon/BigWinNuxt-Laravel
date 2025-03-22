@@ -12,14 +12,14 @@
 
             <!-- content setion  -->
             <div class="content_section">
-                <h1 class="page_title">Single Match List</h1>
+                <h1 class="page_title">Max-predict Match List</h1>
 
                 <div class="card app_card">
                     <div class="card-header">
                         <div class="header_filter">
                             <div class="show_">
                                 <p>Show</p>
-                                <select name="" v-model="items" id="" @change="getMatchList(1)">
+                                <select name="" v-model="items" id="" @change="getTournamentList(1)">
                                     <option value="10">10</option>
                                     <option value="20">20</option>
                                     <option value="50">50</option>
@@ -30,7 +30,7 @@
                             <div class="form-group d-none d-md-block">
                                 <div class="seach_box">
                                     <i class="fa-solid fa-search"></i>
-                                    <input type="text" v-model="searchInput" @input="getMatchList(1)"
+                                    <input type="text" v-model="searchInput" @input="getTournamentList(1)"
                                         placeholder="Search team" class="form-control nav_search">
                                 </div>
                             </div>
@@ -38,13 +38,17 @@
                     </div>
                     <div class="card-body">
                         <ul class="report_user">
-                            <li v-for="(item, index) in matchList" :key="index">
-                                <nuxt-link :to="`/report-details/${item.id}`">
+                            <li v-for="(item, index) in maxPredictList" :key="index">
+                                <nuxt-link :to="`/max-predict/predict-users?id=${item.id}`">
                                     <div class="img_part">
                                         <div>
-                                            <h3>{{ item.teamA }} A Vs {{ item.teamB }}</h3>
-                                            <p><strong>Start:</strong> {{ item.start_time }}, <strong>End:</strong> {{
-                                                item.end_time }}</p>
+                                            <span v-if="item.teams.length === 2">
+                                                {{ item.teams[0].country?.name }} <strong>VS</strong> {{
+                                                    item.teams[1].country?.name }}
+                                            </span>
+                                            <h3>{{ item.name }} </h3>
+                                            <p><strong>Start:</strong> {{ item.start_date	 }}, <strong>End:</strong> {{
+                                                item.end_date }}</p>
                                                 <p>Total Participate: 20</p>
                                         </div>
                                     </div>
@@ -56,7 +60,7 @@
                         <ul class="pagination">
                             <li v-for="link in pagination" :key="link.label"
                                 :class="{ 'active page-item': link.active, 'disabled page-item': !link.url }">
-                                <a v-if="link.url" href="#" @click.prevent="getMatchList(link.url.split('page=')[1])"
+                                <a v-if="link.url" href="#" @click.prevent="getTournamentList(link.url.split('page=')[1])"
                                     class="page-link">
                                     {{ link.label }}
                                 </a>
@@ -80,28 +84,28 @@ import { useGlobalScript } from '@/stores/globalScript';
 const globalScript = useGlobalScript();
 import axios from "axios";
 
-const matchList = ref([]);
+const maxPredictList = ref([]);
 const pagination = ref([]);
 const items = ref('10');
 const searchInput = ref();
 
 
 
-const getMatchList = (pages) => {
-
-    axios.get('api/get-matchList', {
+const getMaxPredict = (page) => {
+    axios.get('api/get-maxpredictList', {
         params: {
+            searchInput: searchInput.value,
             items: items.value,
-            search: searchInput.value,
-            page: pages,
+            page: page,
         }
     }).then(response => {
-        matchList.value = response.data.data;
+        // console.log(response.data);
+        maxPredictList.value = response.data.data;
         pagination.value = response.data.pagination.links;
-    });
+    })
 }
 onMounted(() => {
-    getMatchList();
+    getMaxPredict();
 })
 
 

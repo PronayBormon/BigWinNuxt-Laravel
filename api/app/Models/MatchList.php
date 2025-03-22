@@ -31,13 +31,17 @@ class MatchList extends Model
     public function teamB(){
         return $this->belongsTo(Country::class, 'team_b', 'id');
     }
-
-    public function batsman()
-    {
-        return $this->hasMany(Batsman::class, 'match_id');
+    public function report(){
+        return $this->hasMany(singleMatchReport::class, 'match_id', 'id');
     }
+    
+  
+    // public function batsman()
+    // {
+    //     return $this->hasMany(Batsman::class, 'match_id');
+    // }
 
-    public function boller(){
-        return $this->hasMany(Boller::class, 'match_id');
-    }
+    // public function boller(){
+    //     return $this->hasMany(Boller::class, 'match_id');
+    // }
 }

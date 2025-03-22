@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('batsman', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('match_id')->constrained('match_list')->onDelete('cascade');
-            $table->foreignId('team_id')->constrained('countries')->onDelete('cascade'); // Corrected from 'tema_id'
-            $table->string('player_name');
+            $table->integer('match_id')->nullable();
+            $table->integer('team_id')->nullable();
+            $table->integer('player_id')->nullable();
+            $table->integer('user_id')->nullable();
             $table->integer('run')->default(0);
             $table->integer('ball')->default(0);
             $table->integer('total_4')->default(0);
             $table->integer('total_6')->default(0);
-            $table->string('status')->default('not out');
+            $table->string('status')->default(0);
             $table->timestamps();
         });
     }

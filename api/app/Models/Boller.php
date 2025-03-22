@@ -15,7 +15,7 @@ class Boller extends Model
         'match_id',
         'team_id',
         'user_id',
-        'player_name',
+        'player_id',
         'over',
         'maden_over',
         'run',
@@ -25,15 +25,19 @@ class Boller extends Model
 
     public function match()
     {
-        return $this->belongsTo(MatchList::class, 'match_id');
+        return $this->belongsTo(PredictMatch::class, 'match_id');
     }
 
     public function team()
     {
-        return $this->belongsTo(Country::class, 'team_id');
+        return $this->belongsTo(PredictTeam::class, 'team_id');
     }
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+    public function TeamPlayers()
+    {
+        return $this->belongsTo(PredictPlayer::class, 'player_id', 'id');
     }
 }

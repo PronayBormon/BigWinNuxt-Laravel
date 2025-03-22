@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('boller', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('match_id')->constrained('match_list')->onDelete('cascade');
-            $table->foreignId('team_id')->constrained('countries')->onDelete('cascade');
-            $table->string('player_name');
-            $table->integer('over');
+            $table->integer('match_id')->nullable();
+            $table->integer('team_id')->nullable();
+            $table->integer('user_id')->nullable();
+            $table->integer('player_id')->nullable();
+            $table->integer('over')->nullable();
             $table->integer('maden_over')->default(0);
             $table->integer('run')->default(0);
             $table->integer('wicket')->default(0);

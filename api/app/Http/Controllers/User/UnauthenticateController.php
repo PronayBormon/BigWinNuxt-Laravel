@@ -13,6 +13,10 @@ use App\Models\TeamPlayers;
 use Illuminate\Http\Request;
 use App\Models\TournamentTeam;
 use App\Http\Controllers\Controller;
+use App\Models\PredictMatch;
+use App\Models\PredictPlayer;
+use App\Models\PredictTeam;
+use App\Models\singleMatchReport;
 use App\Models\TournamentTeamsPlayers;
 use Illuminate\Support\Facades\Validator;
 
@@ -63,18 +67,18 @@ class UnauthenticateController extends Controller
     public function teamList($id)
     {
 
-        $matchList = MatchList::where('id', $id)
-            ->with(['teamA', 'teamB'])
+        $matchList = PredictMatch::where('id', $id)
+            ->with(['teams', 'teams.country'])
             ->first();
         return response()->json($matchList);
     }
     public function addBatsman(Request $request)
     {
         $validated = $request->validate([
-            'match_id' => 'required|exists:match_list,id',  // Assuming `match_list` is the name of the matches table
-            'team_id' => 'required|exists:countries,id',  // Assuming `teams` is the name of the teams table
+            'match_id' => 'required',  // Assuming `match_list` is the name of the matches table
+            'team_id' => 'required',  // Assuming `teams` is the name of the teams table
             'user_id' => 'required|exists:users,id',  // Assuming `teams` is the name of the teams table
-            'player_name' => 'required|string|max:255',
+            'player_id' => 'required|string|max:255',
             'run' => 'required|integer',
             'ball' => 'required|integer',
             'four' => 'required|integer',
@@ -86,7 +90,7 @@ class UnauthenticateController extends Controller
             'match_id' => $validated['match_id'],
             'user_id' => $validated['user_id'],
             'team_id' => $validated['team_id'],
-            'player_name' => $validated['player_name'],
+            'player_id' => $validated['player_id'],
             'run' => $validated['run'],
             'ball' => $validated['ball'],
             'total_4' => $validated['four'],
@@ -100,10 +104,10 @@ class UnauthenticateController extends Controller
     {
         // Validate the incoming request
         $validated = $request->validate([
-            'match_id' => 'required|exists:match_list,id',  // Ensure match exists in match_list table
+            'match_id' => 'required ',  // Ensure match exists in match_list table
             'user_id' => 'required|exists:users,id',  // Ensure user exists in users table
-            'team_id' => 'required|exists:countries,id',  // Ensure team exists in teams table
-            'player_name' => 'required|string|max:255',
+            'team_id' => 'required',  // Ensure team exists in teams table
+            'player_id' => 'required|string|max:255',
             'over' => 'required|numeric',
             'maden_over' => 'required|numeric',
             'run' => 'required|numeric',
@@ -115,7 +119,7 @@ class UnauthenticateController extends Controller
             'match_id' => $validated['match_id'],
             'user_id' => $validated['user_id'],
             'team_id' => $validated['team_id'],
-            'player_name' => $validated['player_name'],
+            'player_id' => $validated['player_id'],
             'over' => $validated['over'],
             'maden_over' => $validated['maden_over'],
             'run' => $validated['run'],
@@ -131,11 +135,13 @@ class UnauthenticateController extends Controller
     public function batsmanMatch($id)
     {
         $batsmen = Batsman::where('match_id', $id)
-            ->orderby('batsman.id', 'desc')
-            ->with(['user', 'team'])
+            ->orderby('id', 'desc')
+            ->with(['user', 'team', 'match', 'TeamPlayers'])
             ->get()
             ->unique('user_id')
             ->values();
+
+        // dd($batsmen);
 
         return response()->json([
             'data' => $batsmen,
@@ -160,14 +166,17 @@ class UnauthenticateController extends Controller
 
     public function batsman(request $request)
     {
-        $data = Batsman::where('match_id', $request->matchId)->where('user_id', $request->userId)->orderby('id', 'desc')->get();
+        $data = Batsman::where('match_id', $request->matchId)->where('user_id', $request->userId)->orderby('id', 'desc')->with('TeamPlayers.player')->get();
         return response()->json($data);
     }
     public function bowlers(request $request)
     {
-        // dd($request->all());
-        $data = Boller::where('match_id', $request->matchId)->where('user_id', $request->userId)->orderby('id', 'desc')->get();
-        // dd($data);
+
+        $data = Boller::where('match_id', $request->matchId)->where('user_id', $request->userId)
+
+            ->with(['user', 'team', 'match', 'TeamPlayers', 'TeamPlayers.player'])
+            ->orderby('id', 'desc')->get();
+
         return response()->json($data);
     }
     public function singleMatchData($id)
@@ -293,12 +302,12 @@ class UnauthenticateController extends Controller
     }
     public function removeTeam(request $request)
     {
-        $validate = Validator::make($request->all(),[
-                "tournament_id"     => "required",
-                "team_id"           => "required",
+        $validate = Validator::make($request->all(), [
+            "tournament_id"     => "required",
+            "team_id"           => "required",
         ]);
-        
-        if($validate->fails()){
+
+        if ($validate->fails()) {
             return response()->json(['error' => $validate->errors(),], 401);
         }
 
@@ -307,19 +316,21 @@ class UnauthenticateController extends Controller
         // dd($data);
         $delete = $data->delete();
 
-        if($delete){
+        if ($delete) {
             return response()->json(['message' => "Suceefully deleted"]);
         }
     }
 
-    public function playerlist(){
+    public function playerlist()
+    {
         $data = TeamPlayers::get();
         return response()->json($data);
     }
-    public function tournamentPlayers(request $request){
+    public function tournamentPlayers(request $request)
+    {
         // $data = ->with(['player'])->get();
-        
-        
+
+
         $query = TournamentTeamsPlayers::where('tournament_team_id', $request->tournamentId);
 
         // Filter by status if provided
@@ -358,5 +369,35 @@ class UnauthenticateController extends Controller
                 'links' => $this->generatePaginationLinks($data),
             ]
         ]);
+    }
+
+    public function makeSiglePredict(request $request)
+    {
+        $validate = Validator::make($request->all(), [
+            'match_id',
+            'user_id',
+            'team_id',
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json(['error' => $validate->errors()]);
+        }
+
+        $data = singleMatchReport::create([
+            'match_id'  => $request->match_id,
+            'user_id'   => $request->user_id,
+            'predict_team_id'   => $request->team_id,
+        ]);
+
+        return response()->json(['message' => "successfully Added"]);
+    }
+    public function maxPredictPlayers(request $request)
+    {
+        // dd($request->all());
+        //  "match_id" => "7"
+        // "team_id" => "10"
+        $data = PredictPlayer::where('predict_match_id', $request->match_id)->where('predict_team_id', $request->team_id)->with(["player"])->get();
+        // dd($data);
+        return response()->json($data);
     }
 }

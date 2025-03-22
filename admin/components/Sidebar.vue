@@ -35,8 +35,8 @@
                         <img src="/assets/icons/report.svg" alt="" class="img-fluid">Single Match Reports
                     </NuxtLink>
                 </li>
-                <li class="menu_group" :class="{ active: route.path === '/reports' }">
-                    <NuxtLink class="menu_link" to="/reports">
+                <li class="menu_group" :class="{ active: route.path === '/max-predict/report' }">
+                    <NuxtLink class="menu_link" to="/max-predict/report">
                         <img src="/assets/icons/report.svg" alt="" class="img-fluid">Max Predict Reports
                     </NuxtLink>
                 </li>

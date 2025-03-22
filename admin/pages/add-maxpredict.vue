@@ -130,7 +130,7 @@
                                         <td class="text-center">
                                             <span v-if="item.teams.length === 2">
                                                 {{ item.teams[0].country?.name }} <strong>VS</strong> {{
-                                                item.teams[1].country?.name }}
+                                                    item.teams[1].country?.name }}
                                             </span>
                                         </td>
 
@@ -256,24 +256,24 @@ const addmaxpredict = () => {
     axios.post("api/add-max-predict", formData)
         .then(response => {
             $notyf.success(response.data.message);
-    getMaxPredict();
+            getMaxPredict();
         }).catch(error => {
-        // If the error response is validation errors, show them using Notyf
-        if (error.response && error.response.data && error.response.data.errors) {
-            const errorMessages = error.response.data.errors;
+            // If the error response is validation errors, show them using Notyf
+            if (error.response && error.response.data && error.response.data.errors) {
+                const errorMessages = error.response.data.errors;
 
-            // Loop through the errors object and show each error message
-            for (const field in errorMessages) {
-                if (errorMessages.hasOwnProperty(field)) {
-                    errorMessages[field].forEach((msg) => {
-                        $notyf.error(msg); // Show each error message using Notyf
-                    });
+                // Loop through the errors object and show each error message
+                for (const field in errorMessages) {
+                    if (errorMessages.hasOwnProperty(field)) {
+                        errorMessages[field].forEach((msg) => {
+                            $notyf.error(msg); // Show each error message using Notyf
+                        });
+                    }
                 }
+            } else {
+                $notyf.error("An error occurred. Please try again.");
             }
-        } else {
-            $notyf.error("An error occurred. Please try again.");
-        }
-    });
+        });
 };
 onMounted(() => {
     teamsdata();

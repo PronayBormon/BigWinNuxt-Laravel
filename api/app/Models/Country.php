@@ -42,6 +42,9 @@ class Country extends Model
         return $this->hasMany(PredictTeam::class, 'team_id'); // Assuming teams are stored in the countries table
     }
 
+    public function SingleReport(){
+        return $this->hasMany(singleMatchReport::class, 'user_id', 'id');
+    }
     // Get all matches where this country is either 'team_a' or 'team_b'
     public function allMatches(){
         return MatchList::where('team_a', $this->id)

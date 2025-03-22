@@ -57,7 +57,6 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     Route::post('/add-slider', [AdminController::class, 'addSlider']);
     Route::get('/slider-list', [AdminController::class, 'sliderList']);
     Route::get('/delete-slider/{id}', [AdminController::class, 'deleteSlider']);
-    Route::get('/match-details/{id}', [AdminController::class, 'matchDetails']);
     Route::post('/update-match', [AdminController::class, 'update_match']);
     Route::post('/add-player', [AdminController::class, 'addPlayer']);
     Route::get('/player-details/{id}', [AdminController::class, 'player']);
@@ -78,6 +77,25 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     Route::post('/add-max-predict', [AdminController::class, 'maxpredict']);
     Route::get('/get-maxpredictList', [AdminController::class, 'maxpredictList']);
     Route::get('/maxpredict-playerList', [AdminController::class, 'maxpredictPlayerList']);
+    Route::get('/match-report-users', [AdminController::class, 'singleMatchpredictUsers']);
+
+    // =========================================================================================
+    
+    Route::get('/tournament-details/{id}', [AdminController::class, 'TournamentDetails']);
+    Route::get('/tournamet/team-players', [AdminController::class, 'tournamentPlayers']);
+
+
+    Route::post('/predictions/semi-final', [AdminController::class, 'storeSemiFinal']);
+    Route::post('/predictions/final', [AdminController::class, 'storeFinal']);
+    Route::post('/predictions/champion', [AdminController::class, 'storeChampion']);
+
+    Route::get('/predictions/semi-final/{user_id}', [AdminController::class, 'showSemiFinal']);
+    Route::get('/predictions/final/{user_id}', [AdminController::class, 'showFinal']);
+    Route::get('/predictions/champion/{user_id}', [AdminController::class, 'showChampion']);
+
+    // New route to get users who have made predictions in all categories
+    // Route::get('/predictions/users', [AdminController::class, 'getUsersWithPredictions']);
+    Route::get('/users-with-predictions', [AdminController::class, 'getUsersWithPredictions']);
 });
 
 Route::prefix('tournament')->middleware('isAdmin')->group(function () {
@@ -108,5 +126,14 @@ Route::prefix('api')->group(function () {
     // ========== Player list for select ==========
     Route::get('/player-list', [UnauthenticateController::class, 'playerlist']);
     Route::get('/tournament-playerList', [UnauthenticateController::class, 'tournamentPlayers']);
+    // ---------------------- Single Match Predict ------------------
+    Route::post('/add-singlematch-predict', [UnauthenticateController::class, 'makeSiglePredict']);
+    Route::get('/max-match-players', [UnauthenticateController::class, 'maxPredictPlayers']);
+
+    Route::get('/getUserPredictions/{userId}', [AdminController::class, 'getUserPredictions']);
+
+    Route::get('/banner-sliders', [AdminController::class, 'sliderList']);
+    Route::get('/singleMatch', [AdminController::class, 'singleMatch']);
+    Route::get('/match-details/{id}', [AdminController::class, 'matchDetails']);
 
 });

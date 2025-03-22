@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('batsman', function (Blueprint $table) {
-            $table->integer('user_id')->after('team_id')->nullable();
+        Schema::create('tournament_participant', function (Blueprint $table) {
+            $table->id();
+            $table->integer('tournament_id')->nullable();
+            $table->integer('user_id')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('batsman', function (Blueprint $table) {
-            $table->dropColumn('user_id');
-        });
+        Schema::dropIfExists('tournament_participant');
     }
 };

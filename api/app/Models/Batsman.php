@@ -14,7 +14,7 @@ class Batsman extends Model
         'match_id',
         'team_id',
         'user_id',
-        'player_name',
+        'player_id',
         'run',
         'ball',
         'total_4',
@@ -22,15 +22,19 @@ class Batsman extends Model
         'status',
     ];
     public function match(){        
-        return $this->belongsTo(MatchList::class, 'match_id');
+        return $this->belongsTo(PredictMatch::class, 'match_id');
     }
 
     public function team()
     {
-        return $this->belongsTo(Country::class, 'team_id');
+        return $this->belongsTo(PredictTeam::class, 'team_id');
     }
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+    public function TeamPlayers()
+    {
+        return $this->belongsTo(PredictPlayer::class, 'player_id', 'id');
     }
 }

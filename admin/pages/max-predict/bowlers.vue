@@ -15,13 +15,13 @@
 
                 <div class="d-flex align-items-center my-2">
                     <button type="button" @click="back" class="btn btn-default py-0"><i class="fa-solid fa-arrow-left"></i></button>
-                    <h3 class="page_title my-0">Batsman</h3>
+                    <h3 class="page_title my-0">Bowlers</h3>
                 </div>
                 <div class="card app_card ">
                     <div class="card-body card_report_body">
                         <div class="card card_report">
                             <div class="card-header">
-                                <h3>Batsman</h3>
+                                <h3>Bowlers</h3>
                             </div>
                             <div class="card-body">
                                 <div class="history_details table-responsive">
@@ -29,20 +29,19 @@
                                         <thead>
                                             <tr>
                                                 <th>Player Name</th>
+                                                <th class="text-center">O</th>
+                                                <th class="text-center">M</th>
                                                 <th class="text-center">R</th>
-                                                <th class="text-center">B</th>
-                                                <th class="text-center">4s</th>
-                                                <th class="text-center">6s</th>
+                                                <th class="text-center">W</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="item in batsmanList">
-                                                <!-- {{ item }} -->
-                                                <td>{{item.player_name}}</td>
+                                            <tr v-for="item in bowlersList">
+                                                <td>{{item.team_players.player.player_name}}</td>
+                                                <td class="text-center">{{item.over}}</td>
+                                                <td class="text-center">{{item.maden_over}}</td>
                                                 <td class="text-center">{{item.run}}</td>
-                                                <td class="text-center">{{item.ball}}</td>
-                                                <td class="text-center">{{item.total_4}}</td>
-                                                <td class="text-center">{{item.total_6}}</td>
+                                                <td class="text-center">{{item.wicket}}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -76,19 +75,19 @@ const route = useRoute();
 const matchId = route.query.id;
 const userId = route.query.user_id;
 
-const batsmanList = ref([]);
+const bowlersList = ref([]);
 
 // console.log(matchId, userId);  // These will contain the ID values
 
-const getbatsMandata = () =>{
-    axios.get('api/batsman-data', {
+const getBollerdata = () =>{
+    axios.get('api/bowlers-data', {
         params:{
             matchId: matchId,
             userId: userId,
         }
     }).then(response =>{
         // console.log(response.data);
-        batsmanList.value = response.data;
+        bowlersList.value = response.data;
     })
 }
 const back = () =>{
@@ -96,9 +95,8 @@ const back = () =>{
 }
 
 onMounted(()=>{
-    getbatsMandata();
+    getBollerdata();
 })
-
 
 
 </script>

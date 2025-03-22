@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('boller', function (Blueprint $table) {
-            $table->integer('user_id')->after('team_id')->nullable();
+        Schema::table('finalist', function (Blueprint $table) {
+            $table->integer('match_id')->after('id')->nullable();
+            $table->integer('user_id')->after('id')->nullable();
         });
     }
 
@@ -21,7 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('boller', function (Blueprint $table) {
+        Schema::table('finalist', function (Blueprint $table) {
+            $table->dropColumn('match_id');
             $table->dropColumn('user_id');
         });
     }
