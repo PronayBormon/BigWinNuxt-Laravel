@@ -253,8 +253,8 @@ const updateMatch = () => {
 const getdetails = (id) => {
     axios.get(`api/match-details/${id}`).then(response => {
         // console.log(response.data);
-        editteamA.value = response.data.team_a;
-        editteamB.value = response.data.team_b;
+        editteamA.value = response.data.team_a.id;
+        editteamB.value = response.data.team_b.id;
         editdateTime.value = response.data.time;
         editenddateTime.value = response.data.end_date;
         editstatus.value = response.data.status;

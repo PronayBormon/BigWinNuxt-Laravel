@@ -12,7 +12,7 @@
 
             <!-- content setion  -->
             <div class="content_section">
-                <h1 class="page_title">Reports</h1>
+                <h1 class="page_title">Tournament List</h1>
 
                 <div class="card app_card">
                     <div class="card-header">

@@ -139,7 +139,7 @@
                     </div>
                 </div>
 
-                
+
             </div>
 
 
@@ -152,13 +152,31 @@
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
 const globalScript = useGlobalScript();
+import { useRoute } from 'vue-router';
+import axios from 'axios';
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
 
-const showPassword = ref(false);
 
-const showHidePass = () => {
-    showPassword.value = !showPassword.value;
+
+const getSingleMatchWinner = () => {
+    const id = 1;
+    axios.get(`/api/single-match-result/${id}`).then(response => {
+        console.log(response.data);
+    })
 };
 
+const getPredictBollerBatsmanResult = () => {
+    const id = 9;
+    axios.get(`/api/predict-match-result/${id}`).then(response => {
+        console.log(response.data);
+    })
+};
+
+onMounted(() => {
+    getSingleMatchWinner();
+    getPredictBollerBatsmanResult();
+})
 
 
 </script>

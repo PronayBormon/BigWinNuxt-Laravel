@@ -83,7 +83,7 @@
                                 <li v-for="link in pagination" :key="link.label"
                                     :class="{ 'active page-item': link.active, 'disabled page-item': !link.url }">
                                     <a v-if="link.url" href="#"
-                                        @click.prevent="getMatchList(link.url.split('page=')[1])" class="page-link">
+                                        @click.prevent="getPlayers(link.url.split('page=')[1])" class="page-link">
                                         {{ link.label }}
                                     </a>
                                     <span v-else>{{ link.label }}</span>
@@ -176,6 +176,7 @@ const searchInput = ref();
 const status = ref('');
 
 const playerlist = ref([]);
+const pagination = ref([]);
 
 const updatePlayer = () =>{
     const formData = new FormData();
@@ -269,6 +270,7 @@ const getPlayers = (page) =>{
     }).then( response =>{
         // console.log(response.data.data);
         playerlist.value = response.data.data;
+        pagination.value = response.data.pagination.links;
     });
 }
 

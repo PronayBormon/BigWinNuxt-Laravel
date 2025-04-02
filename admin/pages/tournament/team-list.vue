@@ -71,7 +71,7 @@
                                         </td>
 
                                         <td>
-                                            <NuxtLink :to="`/tournament/player-list?tid=${items.id}?team_id=${items.team.id}`"  class="btn btn_default">Players</NuxtLink>
+                                            <NuxtLink :to="`/tournament/player-list?tid=${items.id}&&tournament_id=${items.tournament_id}`"  class="btn btn_default">Players</NuxtLink>
                                         </td>
                                     </tr>
                                     <tr v-else>

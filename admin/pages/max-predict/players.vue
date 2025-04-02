@@ -14,29 +14,137 @@
             <div class="content_section">
                 <h1 class="page_title"> <button @click.prevent="back" class="border-0 bg-transparent" type="button"><i
                             class="fa-solid fa-arrow-left"></i></button>Max Predict Player List </h1>
-                <div class="card app_card">
-                    <div class="card-header">
-                        <form>
-                            <div class="header_filter">
-                                <div class="show_">
-                                    <p>Show</p>
-                                    <select name="item" id="item-select" v-model="items" @change="teamData(1)">
-                                        <option value="10" selected>10</option>
-                                        <option value="20">20</option>
-                                        <option value="50">50</option>
-                                        <option value="100">100</option>
-                                    </select>
-                                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card app_card">
+                            <div class="card-body">
+                                <div class="adduser_form">
+                                    <nav class="mb-3 tabnav">
+                                        <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
+                                            <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab"
+                                                data-bs-target="#result_Batting-home" type="button" role="tab"
+                                                aria-controls="nav-home" aria-selected="true">Batting</button>
+                                            <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab"
+                                                data-bs-target="#result_Bowling-profile" type="button" role="tab"
+                                                aria-controls="nav-profile" aria-selected="false">Bowling</button>
+                                        </div>
+                                    </nav>
+                                    <div class="tab-content" id="nav-tabContent">
+                                        <div class="tab-pane fade show active" id="result_Batting-home" role="tabpanel"
+                                            aria-labelledby="nav-home-tab" tabindex="0">
+                                            <form @submit.prevent="addbatsmanresult">
+                                                <div class="form-group mb-3">
+                                                    <select name="" id="" required autocomplete="off"
+                                                        class="form-control" v-model="result_bat_team_id"
+                                                        @change="resultplayersData">
+                                                        <option value="">Select Team</option>
+                                                        <option v-for="item in teamlist" :value="item.id">
+                                                            {{ item.country.name }}</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <select name="" id="" required autocomplete="off"
+                                                        class="form-control" v-model="result_bat_player_id">
+                                                        <option value="" disabled>Select Player</option>
+                                                        <option :value="item.id" v-for="item in result_bat_playeslist">
+                                                            {{ item.player.player_name }}</option>
+                                                    </select>
+                                                </div>
+                                                <!-- match_id	team_id	user_id	player_id	run	ball	total_4	total_6	status -->
+                                                <div class="form-group mb-3">
+                                                    <input type="text" class="form-control" id=""
+                                                        v-model="result_bat_run" placeholder="run">
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <input type="text" class="form-control" id=""
+                                                        v-model="result_bat_ball" placeholder="ball">
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <input type="text" class="form-control" id=""
+                                                        v-model="result_bat_four" placeholder="Total Four">
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <input type="text" class="form-control" id=""
+                                                        v-model="result_bat_six" placeholder="Total six">
+                                                </div>
+                                                <button type="submit" class="btn_primary w-100">Submit</button>
+                                            </form>
+                                        </div>
+                                        <div class="tab-pane fade" id="result_Bowling-profile" role="tabpanel"
+                                            aria-labelledby="nav-profile-tab" tabindex="0">
+                                            <form @submit.prevent="addResultbowlers">
 
-                                <div class="form-group d-none d-md-block">
-                                    <div class="seach_box">
-                                        <i class="fa-solid fa-search"></i>
-                                        <input type="text" placeholder="Search" v-model="searchInput"
-                                            @input="teamData(1)" name="search" class="form-control nav_search" />
+                                                <div v-if="teamlist" class="form-group mb-3">
+                                                    <select name="" id="" class="form-control"
+                                                        v-model="result_ball_team_id" @change="resultplayersDataboll">
+                                                        <option value="">Select Team</option>
+                                                        <option v-for="item in teamlist" :value="item.id">
+                                                            {{ item.country.name }}</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <select name="" id="" required autocomplete="off"
+                                                        class="form-control" v-model="result_boll_player_id">
+                                                        <option value="" disabled>Select Player</option>
+                                                        <option :value="item.id" v-for="item in result_boll_playeslist">
+                                                            {{ item.player.player_name }}</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <input type="text" class="form-control" v-model="result_ball_over"
+                                                        id="name" placeholder="Over">
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <input type="text" class="form-control" id="name"
+                                                        v-model="result_ball_maden_over" placeholder="Maden Over">
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <input type="text" class="form-control" v-model="result_ball_run"
+                                                        id="name" placeholder="Run">
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <input type="text" class="form-control" v-model="result_ball_wicket"
+                                                        id="name" placeholder="Wicket">
+                                                </div>
+                                                <button type="submit" class="btn_primary w-100">Submit</button>
+                                            </form>
+                                        </div>
+                                        <!-- <div class="tab-pane fade" id="nav-contact" role="tabpanel"
+                                        aria-labelledby="nav-contact-tab" tabindex="0">...</div> -->
                                     </div>
-                                </div>
+                                    <!-- ============ -->
 
-                                <!-- <div class="form-group">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-md-8">
+
+                        <div class="card app_card">
+                            <div class="card-header">
+                                <form>
+                                    <div class="header_filter">
+                                        <div class="show_">
+                                            <p>Show</p>
+                                            <select name="item" id="item-select" v-model="items" @change="teamData(1)">
+                                                <option value="10" selected>10</option>
+                                                <option value="20">20</option>
+                                                <option value="50">50</option>
+                                                <option value="100">100</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group d-none d-md-block">
+                                            <div class="seach_box">
+                                                <i class="fa-solid fa-search"></i>
+                                                <input type="text" placeholder="Search" v-model="searchInput"
+                                                    @input="teamData(1)" name="search"
+                                                    class="form-control nav_search" />
+                                            </div>
+                                        </div>
+
+                                        <!-- <div class="form-group">
                                     <select name="status" id="status-select" v-model="status" @change="teamData(1)">
 
                                         <option value="">All</option>
@@ -44,62 +152,60 @@
                                         <option value="2">Inactive</option>
                                     </select>
                                 </div> -->
-                            </div>
-                        </form>
-                        <!-- <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#editList">Edit List
+                                    </div>
+                                </form>
+                                <!-- <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#editList">Edit List
                         </button> -->
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead class="thead">
-                                    <tr>
-                                        <!-- <th class="text-start">Tournament name</th> -->
-                                        <th>Player Name</th>
-                                        <th>Team</th>
-                                        <!-- <th>Status</th> -->
-                                        <!-- <th>Action</th> -->
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-if="playersList && playersList.length" v-for="(items, index) in playersList"
-                                        :key="items.id">
-                                        <td class="text-start">{{ items.player.player_name }}</td>
-                                        <td class="text-start">{{ items.team.country.name }}</td>
-                                        <!-- <td>
-                                            <span :class="items.status == 1 ? 'badge bg-success' : 'badge bg-danger'">{{
-                                                items.status == 1 ? 'Active' : 'Inactive' }}</span>
-                                        </td> -->
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead class="thead">
+                                            <tr>
+                                                <!-- <th class="text-start">Tournament name</th> -->
+                                                <th>Player Name</th>
+                                                <th>Team</th>
+                                                <!-- <th>Status</th> -->
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-if="playersList && playersList.length"
+                                                v-for="(items, index) in playersList" :key="items.id">
+                                                <td class="text-start">{{ items.player.player_name }}</td>
+                                                <td class="text-start">{{ items.team.country.name }}</td>
 
-                                        <!-- <td>
-                                            <button data-bs-toggle="modal" data-bs-target="#edituser"
-                                                @click="playseDetails(items.id)" class="btn btn_default">Details
-                                                Action</button>
-                                        </td> -->
-                                    </tr>
-                                    <tr v-else>
-                                        <td colspan="6" class="text-center"><span class="my-4">No data available</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <!-- Pagination -->
-                            <ul class="pagination">
-                                <li v-for="link in pagination" :key="link.label"
-                                    :class="{ 'active page-item': link.active, 'disabled page-item': !link.url }">
-                                    <a v-if="link.url" href="#"
-                                        @click.prevent="teamData(link.url.split('page=')[1])" class="page-link">
-                                        {{ link.label }}
-                                    </a>
-                                    <span v-else>{{ link.label }}</span>
-                                </li>
-                            </ul>
+                                                <td>
+                                                    <button @click="addResult(items.predict_team_id, items.id)"
+                                                        class="btn btn_default">Add Result</button>
+                                                </td>
+                                            </tr>
+                                            <tr v-else>
+                                                <td colspan="6" class="text-center"><span class="my-4">No data
+                                                        available</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- Pagination -->
+                                    <ul class="pagination">
+                                        <li v-for="link in pagination" :key="link.label"
+                                            :class="{ 'active page-item': link.active, 'disabled page-item': !link.url }">
+                                            <a v-if="link.url" href="#"
+                                                @click.prevent="teamData(link.url.split('page=')[1])" class="page-link">
+                                                {{ link.label }}
+                                            </a>
+                                            <span v-else>{{ link.label }}</span>
+                                        </li>
+                                    </ul>
 
 
+                                </div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
-
                 <!--add Modal -->
                 <div class="modal fade" id="editList" tabindex="-1" aria-labelledby="adduserLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
@@ -111,7 +217,8 @@
                                     <div class="d-flex align-items-center flex-wrap">
                                         <span v-for="(items, index) in teamList"
                                             class="badge text-dark d-flex align-items-center">{{ items.team.name }}
-                                            <button type="button" @click="removeTeam(items.team.id)" class="btn btn-danger btn-sm ms-1 p-0 px-2">-</button>
+                                            <button type="button" @click="removeTeam(items.team.id)"
+                                                class="btn btn-danger btn-sm ms-1 p-0 px-2">-</button>
                                         </span>
                                     </div>
 
@@ -147,6 +254,9 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import { useNuxtApp } from '#app';
+const { $notyf } = useNuxtApp();
+
 
 const route = useRoute();
 const router = useRouter();
@@ -158,14 +268,146 @@ const status = ref('');
 
 const teamList = ref([]);
 const pagination = ref([]);
-const teams = ref([]); 
-
+const teams = ref([]);
 const playersList = ref([]);
+const teamlist = ref([]);
+
+const result_bat_team_id = ref('');
+const result_bat_player_id = ref('');
+const result_bat_run = ref();
+const result_bat_ball = ref();
+const result_bat_four = ref();
+const result_bat_six = ref();
+const result_bat_playeslist = ref([]);
+
+const result_ball_team_id = ref('');
+const result_boll_player_id = ref('');
+const result_ball_over = ref('');
+const result_ball_maden_over = ref('');
+const result_ball_run = ref('');
+const result_ball_wicket = ref('');
+const result_boll_playeslist = ref([]);
 
 const back = () => {
     router.back();
 }
 
+const addResultbowlers = () => {
+    const formData = new FormData();
+
+    formData.append('match_id', id);
+    formData.append('team_id', result_ball_team_id.value);
+    formData.append('player_id', result_boll_player_id.value);
+    formData.append('over', result_ball_over.value);
+    formData.append('maden_over', result_ball_maden_over.value);
+    formData.append('run', result_ball_run.value);
+    formData.append('wicket', result_ball_wicket.value);
+
+    // console.log(formData);
+    axios.post('api/add-boller-result', formData).then(response => {
+        let modalElement = document.getElementById('result');
+        if (modalElement) {
+            let modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
+        $notyf.success(response.data.message);
+
+        result_ball_team_id.value = "";
+        result_boll_player_id.value = "";
+        result_ball_over.value = "";
+        result_ball_maden_over.value = "";
+        result_ball_run.value = "";
+        result_ball_wicket.value = "";
+
+
+
+    })    .catch(error => {
+        console.error("Error Response:", error.response);
+
+        if (error.response) {
+            const { status, data } = error.response;
+
+            if (status === 422 && data.errors) {
+                // Validation errors
+                Object.values(data.errors).forEach(messages => {
+                    messages.forEach(msg => $notyf.error(msg));
+                });
+            } else if (status === 409) {
+                // Duplicate entry error
+                $notyf.error(data.message);
+            } else {
+                // General error
+                $notyf.error(data.message || "An error occurred. Please try again.");
+            }
+        } else {
+            // Network or unknown error
+            $notyf.error("Unable to connect to the server. Please check your internet connection.");
+        }
+    });
+
+}
+const addbatsmanresult = () => {
+    const formData = new FormData();
+
+    formData.append('match_id', id);
+    formData.append('team_id', result_bat_team_id.value);
+    formData.append('player_id', result_bat_player_id.value);
+    formData.append('run', result_bat_run.value);
+    formData.append('ball', result_bat_ball.value);
+    formData.append('four', result_bat_four.value);
+    formData.append('six', result_bat_six.value);
+
+    // console.log(formData);
+    axios.post('api/add-batsman-result', formData).then(response => {
+        let modalElement = document.getElementById('result');
+        if (modalElement) {
+            let modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
+        $notyf.success(response.data.message);
+    })    .catch(error => {
+        console.error("Error Response:", error.response);
+
+        if (error.response) {
+            const { status, data } = error.response;
+
+            if (status === 422 && data.errors) {
+                // Validation errors
+                Object.values(data.errors).forEach(messages => {
+                    messages.forEach(msg => $notyf.error(msg));
+                });
+            } else if (status === 409) {
+                // Duplicate entry error
+                $notyf.error(data.message);
+            } else {
+                // General error
+                $notyf.error(data.message || "An error occurred. Please try again.");
+            }
+        } else {
+            // Network or unknown error
+            $notyf.error("Unable to connect to the server. Please check your internet connection.");
+        }
+    });
+
+}
+
+
+const addResult = (teamId, playerId) => {
+
+    result_ball_team_id.value = teamId;
+    result_bat_team_id.value = teamId;
+
+    resultplayersData();
+    resultplayersDataboll();
+    result_boll_player_id.value = playerId;
+    result_bat_player_id.value = playerId;
+
+
+}
 
 const teamData = (page) => {
     axios.get(`api/maxpredict-playerList`, {
@@ -184,10 +426,52 @@ const teamData = (page) => {
     });
 }
 
+const resultplayersData = async () => {
+    const mid = id;
+    axios.get("api/max-match-players", {
+        params: {
+            match_id: mid,
+            team_id: result_bat_team_id.value,
+        }
+    }).then(response => {
+        // console.log(response.data);
+        result_bat_playeslist.value = response.data;
+    })
+}
+const resultplayersDataboll = async () => {
+    const mid = id;
+    axios.get("api/max-match-players", {
+        params: {
+            match_id: mid,
+            team_id: result_ball_team_id.value,
+        }
+    }).then(response => {
+        // console.log(response.data);
+        result_boll_playeslist.value = response.data;
+    })
+}
+
+const teamdata = () => {
+    const mid = id;
+    axios.get(`api/team-data/${mid}`).then(response => {
+        // console.log(response.data);
+        teamlist.value = response.data.teams;
+    });
+};
 onMounted(() => {
     teamData();
+    teamdata();
 });
 
 
 
 </script>
+<style>
+.tabnav button {
+    color: #fff;
+}
+
+.tabnav button:hover {
+    color: var(--main_color);
+}
+</style>

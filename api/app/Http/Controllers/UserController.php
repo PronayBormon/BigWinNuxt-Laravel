@@ -205,7 +205,7 @@ class UserController extends Controller
     public function getTemaList()
     {
 
-        $country = Country::where('status', '1')->orderby('id', 'desc')->get();
+        $country = Country::where('status', '1')->orderby('name', 'asc')->get();
         return response()->json($country);
     }
 

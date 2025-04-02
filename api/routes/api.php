@@ -42,7 +42,6 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     Route::get('/get-matchList', [UserController::class, 'matchList']);
 
     Route::post('/add-prize-banner', [AdminController::class, 'addPrizeBanner']);
-    Route::get('/prize-banner', [AdminController::class, 'PrizeBanner']);
 
     Route::post('/make-spin', [AdminController::class, 'newspin']);
     Route::post('/update-spin', [AdminController::class, 'updateSpin']);
@@ -79,15 +78,14 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     Route::get('/maxpredict-playerList', [AdminController::class, 'maxpredictPlayerList']);
     Route::get('/match-report-users', [AdminController::class, 'singleMatchpredictUsers']);
 
-    // =========================================================================================
-    
-    Route::get('/tournament-details/{id}', [AdminController::class, 'TournamentDetails']);
-    Route::get('/tournamet/team-players', [AdminController::class, 'tournamentPlayers']);
 
 
     Route::post('/predictions/semi-final', [AdminController::class, 'storeSemiFinal']);
+    Route::post('/result/semi-final', [AdminController::class, 'storeSemiFinalResult']);
     Route::post('/predictions/final', [AdminController::class, 'storeFinal']);
+    Route::post('/result/final', [AdminController::class, 'storeFinalresult']);
     Route::post('/predictions/champion', [AdminController::class, 'storeChampion']);
+    Route::post('/result/champion', [AdminController::class, 'storeChampionresult']);
 
     Route::get('/predictions/semi-final/{user_id}', [AdminController::class, 'showSemiFinal']);
     Route::get('/predictions/final/{user_id}', [AdminController::class, 'showFinal']);
@@ -96,6 +94,9 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     // New route to get users who have made predictions in all categories
     // Route::get('/predictions/users', [AdminController::class, 'getUsersWithPredictions']);
     Route::get('/users-with-predictions', [AdminController::class, 'getUsersWithPredictions']);
+    Route::post('/add-single-match-result', [AdminController::class, 'SingleMatchResult']);
+    Route::post('/add-batsman-result', [AdminController::class, 'BatsmanResult']);
+    Route::post('/add-boller-result', [AdminController::class, 'BollerResult']);
 });
 
 Route::prefix('tournament')->middleware('isAdmin')->group(function () {
@@ -104,7 +105,7 @@ Route::prefix('tournament')->middleware('isAdmin')->group(function () {
 Route::prefix('api')->group(function () {
     // ========== User list for select ==========
     Route::get('/user-data', [UnauthenticateController::class, 'user_list']);
-    
+
     // ========== Team list By Match Id ==========
     Route::get('/team-data/{id}', [UnauthenticateController::class, 'teamList']);
 
@@ -134,6 +135,37 @@ Route::prefix('api')->group(function () {
 
     Route::get('/banner-sliders', [AdminController::class, 'sliderList']);
     Route::get('/singleMatch', [AdminController::class, 'singleMatch']);
+
+
+    // ============================ Mobile API =====================
+    // ---------------- Single match team predict ----------------
+    Route::get('/matchs', [AdminController::class, 'matchs']);
     Route::get('/match-details/{id}', [AdminController::class, 'matchDetails']);
+    Route::get('/check-match-prediction', [AdminController::class, 'CheckMatchPrediction']);
+
+    // ---------------- Tournament predict ----------------
+    Route::get('/get-last-tournament', [AdminController::class, 'lastTournament']);
+
+    Route::get('/tournament-details/{id}', [AdminController::class, 'TournamentDetails']);
+    Route::get('/tournamet/team-players', [AdminController::class, 'tournamentPlayers']);
+    Route::post('/save-tournament', [AdminController::class, 'SaveTournamentReport']);
+    
+    Route::get('/predict-last-match', [AdminController::class, 'predictMatchget']);
+    Route::get('/predict-match-players/{id}', [AdminController::class, 'predictMatchget']);
+    Route::get('/prize-banner', [AdminController::class, 'PrizeBanner']);
+    Route::get('/user-boller-report/{id}', [AdminController::class, 'userbollerReport']);
+    Route::get('/user-predict-report', [AdminController::class, 'UserBollBat']);
+    Route::get('/count-prediction', [AdminController::class, 'predictCount']);
+    
+    // view result 
+    Route::get('/single-match-result/{id}', [AdminController::class, 'viewSingleMatchResult']);
+    Route::get('/predict-match-result/{id}', [AdminController::class, 'viewPredictMatchResult']);
+
+
+    // Winner 
+    Route::get('/single-match-winner/{id}', [AdminController::class, 'singleWinner']);
+
+
+
 
 });

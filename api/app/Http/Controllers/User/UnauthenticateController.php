@@ -77,8 +77,8 @@ class UnauthenticateController extends Controller
         $validated = $request->validate([
             'match_id' => 'required',  // Assuming `match_list` is the name of the matches table
             'team_id' => 'required',  // Assuming `teams` is the name of the teams table
-            'user_id' => 'required|exists:users,id',  // Assuming `teams` is the name of the teams table
-            'player_id' => 'required|string|max:255',
+            'user_id' => 'required',  // Assuming `teams` is the name of the teams table
+            'player_id' => 'required',
             'run' => 'required|integer',
             'ball' => 'required|integer',
             'four' => 'required|integer',
@@ -105,9 +105,9 @@ class UnauthenticateController extends Controller
         // Validate the incoming request
         $validated = $request->validate([
             'match_id' => 'required ',  // Ensure match exists in match_list table
-            'user_id' => 'required|exists:users,id',  // Ensure user exists in users table
+            'user_id' => 'required',  // Ensure user exists in users table
             'team_id' => 'required',  // Ensure team exists in teams table
-            'player_id' => 'required|string|max:255',
+            'player_id' => 'required',
             'over' => 'required|numeric',
             'maden_over' => 'required|numeric',
             'run' => 'required|numeric',
@@ -326,50 +326,47 @@ class UnauthenticateController extends Controller
         $data = TeamPlayers::get();
         return response()->json($data);
     }
-    public function tournamentPlayers(request $request)
-    {
-        // $data = ->with(['player'])->get();
+    public function tournamentPlayers(Request $request)
+{
+    $query = TournamentTeamsPlayers::where('tournament_team_id', $request->teamId)
+    ->where('tournament_id', $request->tournamentId)
+                                   ->with(['player']);
 
-
-        $query = TournamentTeamsPlayers::where('tournament_team_id', $request->tournamentId);
-
-        // Filter by status if provided
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Filter by team name if search input is provided
-        if ($request->has('searchInput')) {
-            $searchInput = $request->searchInput;
-
-            $query->where(function ($q) use ($searchInput) {
-                // Search within teams
-                $q->whereHas('player', function ($teamQuery) use ($searchInput) {
-                    $teamQuery->where('player_name', 'like', "%{$searchInput}%");
-                })
-                    // OR search within tournaments
-                    ->orWhereHas('tournament', function ($tournamentQuery) use ($searchInput) {
-                        $tournamentQuery->where('name', 'like', "%{$searchInput}%");
-                    });
-            });
-        }
-
-        // Paginate results with default 10 items per page
-        $data = $query->with(['player'])->orderBy('id', 'desc')->paginate($request->items ?? 10);
-
-        return response()->json([
-            'data' => $data->items(),
-            'pagination' => [
-                'current_page' => $data->currentPage(),
-                'last_page' => $data->lastPage(),
-                'per_page' => $data->perPage(),
-                'total' => $data->total(),
-                'next_page_url' => $data->nextPageUrl(),
-                'prev_page_url' => $data->previousPageUrl(),
-                'links' => $this->generatePaginationLinks($data),
-            ]
-        ]);
+    // Filter by status if provided
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
     }
+
+    // Search by player name or tournament name
+    if ($request->filled('searchInput')) {
+        $searchInput = $request->searchInput;
+
+        $query->whereHas('player', function ($q) use ($searchInput) {
+            $q->where('player_name', 'like', "%{$searchInput}%");
+        })->orWhereHas('tournament', function ($q) use ($searchInput) {
+            $q->where('name', 'like', "%{$searchInput}%");
+        });
+    }
+
+    // Paginate with sorting
+    $data = $query->paginate($request->items ?? 10);
+    $data->getCollection()->sortBy('player.player_name');
+
+    return response()->json([
+        'data' => $data->items(),
+        'pagination' => [
+            'current_page' => $data->currentPage(),
+            'last_page' => $data->lastPage(),
+            'per_page' => $data->perPage(),
+            'total' => $data->total(),
+            'next_page_url' => $data->nextPageUrl(),
+            'prev_page_url' => $data->previousPageUrl(),
+            'links' => $this->generatePaginationLinks($data),
+        ]
+    ]);
+}
+
+
 
     public function makeSiglePredict(request $request)
     {

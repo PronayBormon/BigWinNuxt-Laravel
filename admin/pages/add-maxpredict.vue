@@ -250,7 +250,7 @@ const addmaxpredict = () => {
 
     // console.log("FormData Entries:");
     for (let [key, value] of formData.entries()) {
-        // console.log(key, value);
+        console.log(key, value);
     }
 
     axios.post("api/add-max-predict", formData)

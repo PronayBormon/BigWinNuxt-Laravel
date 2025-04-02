@@ -9,7 +9,6 @@
 
             <!-- navbar section  -->
             <Navbar />
-
             <!-- content setion  -->
             <div class="content_section">
 

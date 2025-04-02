@@ -149,8 +149,8 @@ import axios from 'axios';
 
 const route = useRoute();
 const router = useRouter();
-const tournamentId = route.query.tid;
-const teamId = route.query.team_id;
+const teamId = route.query.tid;
+const tournamentId = route.query.tournament_id;
 
 const matchdetails = ref();
 const items = ref("10");

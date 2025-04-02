@@ -19,6 +19,6 @@ class PredictPlayer extends Model {
     }
 
     public function player() {
-        return $this->belongsTo(TeamPlayers::class);
+        return $this->belongsTo(TeamPlayers::class, 'player_id');
     }
 }
