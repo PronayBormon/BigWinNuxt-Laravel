@@ -21,4 +21,15 @@ class PredictPlayer extends Model {
     public function player() {
         return $this->belongsTo(TeamPlayers::class, 'player_id');
     }
+
+    public function bollResult()
+    {
+        return $this->hasOne(BallerResult::class, 'player_id');
+    }
+    
+    
+    public function batResult()
+    {
+        return $this->hasOne(BatsmanResult::class, 'player_id');
+    }
 }

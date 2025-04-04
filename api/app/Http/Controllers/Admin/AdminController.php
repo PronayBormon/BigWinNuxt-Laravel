@@ -669,12 +669,12 @@ class AdminController extends Controller
 
     public function maxpredictPlayerList(request $request)
     {
-        $query = PredictPlayer::where('predict_match_id', $request->id)->with(['player', 'team', 'team.country', 'match']);
+        $query = PredictPlayer::where('predict_match_id', $request->id)->with(['player', 'team', 'team.country', 'match', 'bollResult', 'batResult']);
 
 
         if ($request->filled('searchInput')) {
-            $query->whereHas('team', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->searchInput . '%');
+            $query->whereHas('player', function ($q) use ($request) {
+                $q->where('player_name', 'like', '%' . $request->searchInput . '%');
             });
         }
 
@@ -683,7 +683,7 @@ class AdminController extends Controller
         }
 
         $data = $query->orderBy('id', 'desc')->paginate($request->items);
-        
+
 
         return response()->json([
             'data' => $data->items(),
@@ -700,76 +700,131 @@ class AdminController extends Controller
     }
     public function singleMatchpredictUsers(request $request)
     {
-        // dd($request->all());
-        $query = singleMatchReport::where('match_id', $request->match_id)->with(['user', 'team', 'match', 'match.teamA', 'match.teamB']);
-
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
 
-        // Filter by team name if search input is provided
-        if ($request->has('searchInput')) {
-            $searchInput = $request->searchInput;
+            // dd($request->status);
+            if ($request->status == 'win') {
+                $winner = SingleMatchResult::where('match_id',  $request->match_id)->first();
 
-            $query->where(function ($q) use ($searchInput) {
-                // Search within teams
-                $q->whereHas('user', function ($teamQuery) use ($searchInput) {
-                    $teamQuery->where('name', 'like', "%{$searchInput}%");
+                $winner_team_id = $winner->team_id;
+
+                $query = singleMatchReport::where('match_id',  $request->match_id)->where('predict_team_id', $winner_team_id)->with(['user', 'result.team', 'team', 'match', 'match.teamA', 'match.teamB']);
+
+
+                $data = $query->orderBy('id', 'asc')->paginate($request->items ?? 10);
+
+                return response()->json([
+                    'data' => $data->items(),
+                    'pagination' => [
+                        'current_page' => $data->currentPage(),
+                        'last_page' => $data->lastPage(),
+                        'per_page' => $data->perPage(),
+                        'total' => $data->total(),
+                        'next_page_url' => $data->nextPageUrl(),
+                        'prev_page_url' => $data->previousPageUrl(),
+                        'links' => $this->generatePaginationLinks($data),
+                    ]
+                ]);
+            }elseif($request->status == 'lose'){
+                $winner = SingleMatchResult::where('match_id',  $request->match_id)->first();
+
+                $winner_team_id = $winner->team_id;
+
+                $query = singleMatchReport::where('match_id',  $request->match_id)->whereNot('predict_team_id', $winner_team_id)->with(['user', 'result.team', 'team', 'match', 'match.teamA', 'match.teamB']);
+
+
+                $data = $query->orderBy('id', 'asc')->paginate($request->items ?? 10);
+
+                return response()->json([
+                    'data' => $data->items(),
+                    'pagination' => [
+                        'current_page' => $data->currentPage(),
+                        'last_page' => $data->lastPage(),
+                        'per_page' => $data->perPage(),
+                        'total' => $data->total(),
+                        'next_page_url' => $data->nextPageUrl(),
+                        'prev_page_url' => $data->previousPageUrl(),
+                        'links' => $this->generatePaginationLinks($data),
+                    ]
+                ]);
+            }
+        } else {
+            // dd($request->all());
+            $query = singleMatchReport::where('match_id', $request->match_id)->with(['user', 'result.team', 'team', 'match', 'match.teamA', 'match.teamB']);
+
+            // if ($request->filled('status')) {
+            //     $query->where('status', $request->status);
+            // }
+
+            // Filter by team name if search input is provided
+            if ($request->has('searchInput')) {
+                $searchInput = $request->searchInput;
+
+                $query->where(function ($q) use ($searchInput) {
+                    // Search within teams
+                    $q->whereHas('user', function ($teamQuery) use ($searchInput) {
+                        $teamQuery->where('username', 'like', "%{$searchInput}%");
+                    });
                 });
+            }
+
+            $data = $query->orderBy('id', 'asc')->paginate($request->items ?? 10);
+
+            // Format created_at before returning
+            $formattedData = $data->map(function ($item) {
+                $item->create_time = Carbon::parse($item->created_at)->format('d M Y, h:i A'); // Example: 25 Jan 2025
+                return $item;
             });
-        }
 
-
-        $data = $query->orderBy('id', 'desc')->paginate($request->items ?? 10);
-
-        return response()->json([
-            'data' => $data->items(),
-            'pagination' => [
-                'current_page' => $data->currentPage(),
-                'last_page' => $data->lastPage(),
-                'per_page' => $data->perPage(),
-                'total' => $data->total(),
-                'next_page_url' => $data->nextPageUrl(),
-                'prev_page_url' => $data->previousPageUrl(),
-                'links' => $this->generatePaginationLinks($data),
-            ]
-        ]);
-    }
-
-    // ===================================================
-    public function storeSemiFinal(Request $request)
-{
-    $request->validate([
-        'user_id' => 'required|exists:users,id',
-        'match_id' => 'required', // Ensure match exists
-        'teams' => 'required|string', // Teams should be a valid JSON string
-    ]);
-
-    $teams = json_decode($request->teams, true);
-
-    foreach ($teams as $team) {
-        // Check if entry already exists
-        $exists = SemiFinal::where('match_id', $request->match_id)
-                           ->where('team_id', $team['team_id'])
-                           ->exists();
-
-        if (!$exists) {
-            SemiFinal::create([
-                'user_id' => $request->user_id,
-                'match_id' => $request->match_id,
-                'team_id' => $team['team_id'],
-                'match' => $team['match'],
-                'win' => $team['win'],
-                'los' => $team['los'],
-                'tie' => $team['tie'],
-                'pts' => $team['pts'],
-                'status' => '1',
+            return response()->json([
+                'data' => $formattedData,
+                'pagination' => [
+                    'current_page' => $data->currentPage(),
+                    'last_page' => $data->lastPage(),
+                    'per_page' => $data->perPage(),
+                    'total' => $data->total(),
+                    'next_page_url' => $data->nextPageUrl(),
+                    'prev_page_url' => $data->previousPageUrl(),
+                    'links' => $this->generatePaginationLinks($data),
+                ]
             ]);
         }
     }
 
-    return response()->json(['message' => 'Semi-final predictions saved successfully!'], 201);
-}
+    // ===================================================
+    public function storeSemiFinal(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'match_id' => 'required', // Ensure match exists
+            'teams' => 'required|string', // Teams should be a valid JSON string
+        ]);
+
+        $teams = json_decode($request->teams, true);
+
+        foreach ($teams as $team) {
+            // Check if entry already exists
+            $exists = SemiFinal::where('match_id', $request->match_id)
+                ->where('team_id', $team['team_id'])
+                ->exists();
+
+            if (!$exists) {
+                SemiFinal::create([
+                    'user_id' => $request->user_id,
+                    'match_id' => $request->match_id,
+                    'team_id' => $team['team_id'],
+                    'match' => $team['match'],
+                    'win' => $team['win'],
+                    'los' => $team['los'],
+                    'tie' => $team['tie'],
+                    'pts' => $team['pts'],
+                    'status' => '1',
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'Semi-final predictions saved successfully!'], 201);
+    }
 
 
     public function storeSemiFinalResult(Request $request)
@@ -1239,7 +1294,7 @@ class AdminController extends Controller
             "four" => "required|integer",
             "six" => "required|integer"
         ]);
-    
+
         if ($validate->fails()) {
             return response()->json([
                 'success' => false,
@@ -1247,20 +1302,20 @@ class AdminController extends Controller
                 'errors' => $validate->errors()
             ], 422);
         }
-    
+
         // Check if the batsman result already exists for this match, team, and player
         $existingResult = BatsmanResult::where('match_id', $request->match_id)
             ->where('team_id', $request->team_id)
             ->where('player_id', $request->player_id)
             ->exists();
-    
+
         if ($existingResult) {
             return response()->json([
                 'success' => false,
                 'message' => 'This player’s batting result is already recorded for this match and team.'
             ], 409); // 409 Conflict
         }
-    
+
         // Save new batsman result
         BatsmanResult::create([
             'match_id'      => $request->match_id,
@@ -1271,13 +1326,13 @@ class AdminController extends Controller
             'total_4'       => $request->four,
             'total_6'       => $request->six,
         ]);
-    
+
         return response()->json([
             'success' => true,
             'message' => 'Batsman result saved successfully!',
         ], 201);
     }
-    
+
 
     public function BollerResult(Request $request)
     {
@@ -1290,7 +1345,7 @@ class AdminController extends Controller
             "run" => "required|integer",
             "wicket" => "required|integer"
         ]);
-    
+
         if ($validate->fails()) {
             return response()->json([
                 'success' => false,
@@ -1298,39 +1353,38 @@ class AdminController extends Controller
                 'errors' => $validate->errors()
             ], 422);
         }
-    
+
         // Check if the record already exists
         $existingResult = BallerResult::where('match_id', $request->match_id)
             ->where('team_id', $request->team_id)
             ->where('player_id', $request->player_id)
             ->exists();
-    
+
         if ($existingResult) {
             return response()->json([
                 'success' => false,
                 'message' => 'This player’s result is already recorded for this match and team.'
             ], 409); // 409 Conflict
-        }else{
-            
-        // Save new result
-        BallerResult::create([
-            'match_id'      => $request->match_id,
-            'team_id'       => $request->team_id,
-            'player_id'     => $request->player_id, // Fixed player_id assignment
-            'over'          => $request->over,
-            'maden_over'    => $request->maden_over,
-            'run'           => $request->run,
-            'wicket'        => $request->wicket,
-        ]);
-    
-        return response()->json([
-            'success' => true,
-            'message' => 'Bowling result saved successfully!',
-        ], 201);
+        } else {
+
+            // Save new result
+            BallerResult::create([
+                'match_id'      => $request->match_id,
+                'team_id'       => $request->team_id,
+                'player_id'     => $request->player_id, // Fixed player_id assignment
+                'over'          => $request->over,
+                'maden_over'    => $request->maden_over,
+                'run'           => $request->run,
+                'wicket'        => $request->wicket,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Bowling result saved successfully!',
+            ], 201);
         }
-    
     }
-    
+
     public function viewSingleMatchResult($id)
     {
         $result = SingleMatchResult::where('match_id', $id)
@@ -1368,7 +1422,7 @@ class AdminController extends Controller
         //     ->with(['team.country', 'match', 'mom', 'mot'])
         //     ->first();
 
- 
+
 
         return response()->json([
             'success' => true,
@@ -1378,7 +1432,8 @@ class AdminController extends Controller
         ]);
     }
 
-    public function singleWinner($id){
+    public function singleWinner($id)
+    {
 
         $winner = SingleMatchResult::where('match_id', $id)->first();
 

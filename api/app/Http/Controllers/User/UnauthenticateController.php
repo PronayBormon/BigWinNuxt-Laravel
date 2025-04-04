@@ -136,7 +136,7 @@ class UnauthenticateController extends Controller
     {
         $batsmen = Batsman::where('match_id', $id)
             ->orderby('id', 'desc')
-            ->with(['user', 'team', 'match', 'TeamPlayers'])
+            ->with(['user', 'team.country', 'match', 'TeamPlayers'])
             ->get()
             ->unique('user_id')
             ->values();

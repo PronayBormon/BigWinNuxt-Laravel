@@ -45,7 +45,7 @@
                                             <h3>{{ item.teamA }} A Vs {{ item.teamB }}</h3>
                                             <p><strong>Start:</strong> {{ item.start_time }}, <strong>End:</strong> {{
                                                 item.end_time }}</p>
-                                                <p>Total Participate: 20</p>
+                                                <!-- <p>Total Participate: 20</p> -->
                                         </div>
                                     </div>
                                     <i class="fa-solid fa-arrow-right"></i>

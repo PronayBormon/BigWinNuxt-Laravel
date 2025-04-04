@@ -12,13 +12,23 @@
 
             <!-- content setion  -->
             <div class="content_section">
-                <h1 class="page_title"> <button @click.prevent="back" class="border-0 bg-transparent" type="button"><i
-                            class="fa-solid fa-arrow-left"></i></button>Max Predict Player List </h1>
+                <div class="d-flex align-items-center justify-content-between">
+                    <h1 class="page_title"> <button @click.prevent="back" class="border-0 bg-transparent"
+                            type="button"><i class="fa-solid fa-arrow-left"></i></button> Max Predict Player List </h1>
+                    <h1 v-if="teamlist && teamlist.length >= 2" class="m-0 page_title">
+                        <span v-if="teamlist[0]?.country?.name && teamlist[1]?.country?.name">
+                            {{ teamlist[0].country.name }} vs {{ teamlist[1].country.name }}
+                        </span>
+                    </h1>
+
+                </div>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card app_card">
                             <div class="card-body">
                                 <div class="adduser_form">
+                                    <h4 class="text-center text-white mb-2">Input Player Result</h4>
+                                    <hr>
                                     <nav class="mb-3 tabnav">
                                         <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
                                             <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab"
@@ -172,7 +182,27 @@
                                         <tbody>
                                             <tr v-if="playersList && playersList.length"
                                                 v-for="(items, index) in playersList" :key="items.id">
-                                                <td class="text-start">{{ items.player.player_name }}</td>
+                                                <td class="text-start">
+                                                    {{ items.player.player_name }}
+
+                                                    <p class=" pt-1" v-if="items.boll_result != null" style="color: #000;">
+                                                        <Strong>Boller Result: </Strong>
+                                                        <span>Over: {{ items.boll_result.over }}</span>
+                                                        <span class="mx-2">Maden Over: {{ items.boll_result.maden_over
+                                                            }}</span>
+                                                        <span class="mx-2">Run: {{ items.boll_result.run }}</span>
+                                                        <span class="mx-2">Wicket: {{ items.boll_result.wicket }}</span>
+                                                    </p>
+                                                    <p class=" pb-1" v-if="items.bat_result != null" style="color: #000;">
+                                                        <Strong>Bat Result: </Strong>
+                                                        <span class="mx-2">Run: {{ items.bat_result.run }}</span>
+                                                        <span>Boll: {{ items.bat_result.ball }}</span>
+                                                        <span class="mx-2">4s: {{ items.bat_result.total_4
+                                                            }}</span>
+                                                        <span class="mx-2">6s: {{ items.bat_result.total_6 }}</span>
+                                                    </p>
+
+                                                </td>
                                                 <td class="text-start">{{ items.team.country.name }}</td>
 
                                                 <td>
@@ -323,7 +353,7 @@ const addResultbowlers = () => {
 
 
 
-    })    .catch(error => {
+    }).catch(error => {
         console.error("Error Response:", error.response);
 
         if (error.response) {
@@ -369,7 +399,7 @@ const addbatsmanresult = () => {
             }
         }
         $notyf.success(response.data.message);
-    })    .catch(error => {
+    }).catch(error => {
         console.error("Error Response:", error.response);
 
         if (error.response) {

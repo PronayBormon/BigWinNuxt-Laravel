@@ -23,9 +23,9 @@
                         <button type="button" class="btn btn-primary m-2" data-bs-target="#result"
                             data-bs-toggle="modal">Add
                             result</button>
-                        <button type="button" class="btn btn-primary m-2" data-bs-target="#addManual"
+                        <!-- <button type="button" class="btn btn-primary m-2" data-bs-target="#addManual"
                             data-bs-toggle="modal">Add
-                            Manual</button>
+                            Manual</button> -->
                     </div>
                 </div>
                 <div class="card app_card ">

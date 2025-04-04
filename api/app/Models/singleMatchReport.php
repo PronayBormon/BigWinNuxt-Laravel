@@ -28,4 +28,9 @@ class singleMatchReport extends Model
     public function team(){
         return $this->belongsTo(Country::class, 'predict_team_id', 'id');
     }
+    public function result()
+    {
+        return $this->hasOne(SingleMatchResult::class, 'match_id', 'match_id');
+    }
+    
 }

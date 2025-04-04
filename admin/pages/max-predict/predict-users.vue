@@ -20,12 +20,12 @@
                         <h3 class="page_title my-0">Max-Predict Reports</h3>
                     </div>
                     <div class="d-flex align-items-center">
-                        <button type="button" class="btn btn-primary" data-bs-target="#result"
+                        <!-- <button type="button" class="btn btn-primary" data-bs-target="#result"
                             data-bs-toggle="modal">Add
-                            result</button>
-                        <button type="button" class="btn btn-primary" data-bs-target="#addManual"
+                            result</button> -->
+                        <!-- <button type="button" class="btn btn-primary" data-bs-target="#addManual"
                             data-bs-toggle="modal">Add
-                            Manual</button>
+                            Manual</button> -->
                     </div>
                 </div>
                 <div class="card app_card ">
@@ -66,6 +66,34 @@
                                         </nuxt-link>
                                     </li>
                                 </ul>
+                                
+                        <div class="table-responsive d-none">
+                            <table class="table">
+                                <thead class="thead">
+                                    <tr>
+                                        <th class="text-center">Join Date</th>
+                                        <th>Winner Name </th>
+                                        <th>Email </th>
+                                        <th class="text-center">Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-center">25 Jan 2025</td>
+                                        <td>
+                                            <div class="winner_">
+                                                <img src="/images/user.png" alt="" class="img-fluid">
+                                                <p>Elena Pena</p>
+                                            </div>
+                                        </td>
+                                        <td>elenapena@gmail.com</td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn_primary">$20</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                             </div>
                             <!-- ============= Bowlers ============= -->
                             <div class="tab-pane fade " id="Bowling-tab-pane" role="tabpanel"
@@ -221,8 +249,6 @@
                         </div>
                     </div>
                 </div>
-
-
 
                 <!-- --------------- Result Modal ------------------  -->
                 <div class="modal fade" id="result" tabindex="-1" aria-labelledby="adduserLabel" aria-hidden="true">

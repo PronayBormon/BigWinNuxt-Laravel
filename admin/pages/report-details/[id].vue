@@ -22,9 +22,9 @@
                     <div class="d-flex align-items-center">
                         <button type="button" class="btn btn-primary me-2" data-bs-target="#result"
                             data-bs-toggle="modal">Add Result</button>
-                        <button type="button" class="btn btn-primary" data-bs-target="#addManual"
+                        <!-- <button type="button" class="btn btn-primary" data-bs-target="#addManual"
                             data-bs-toggle="modal">Add
-                            Manual</button>
+                            Manual</button> -->
                     </div>
                 </div>
                 <div class="card app_card ">
@@ -39,6 +39,14 @@
                                     <option value="100">100</option>
                                 </select>
                             </div>
+                            <div class="show_">
+                                <p>Status</p>
+                                <select name="" @change="predictUsers(1)" v-model="status" id="">
+                                    <option value="">All</option>
+                                    <option value="win">Win</option>
+                                    <option value="lose">Lose</option>
+                                </select>
+                            </div>
 
                             <div class="form-group d-none d-md-block">
                                 <div class="seach_box">
@@ -50,13 +58,61 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <h1 class="page_title text-white ps-4 mb-0">All History</h1>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead class="thead">
+                                    <tr>
+                                        <th class="text-start">User</th>
+                                        <th class="text-center">Match </th>
+                                        <th class="text-center">(PDT) </th>
+                                        <th class="text-center">Predicted</th>
+                                        <th class="text-center">Result</th>
+                                        <th class="text-end">Status (WIn/Lose)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="predictList && predictList.length" v-for="item in predictList">
+                                        <td class="text-start">
+                                            <p class="mb-0">{{ item.user.username }}</p>
+                                            <p class="mb-0">{{ item.user.email }}</p>
+                                        </td>
+                                        <td class="text-center">{{ item.match.team_a.name }} Vs
+                                            {{ item.match.team_b.name }}</td>
+                                        <td class="text-center">
+                                            {{ item.create_time }}
+                                        </td>
+                                        <td class="text-center">{{ item.team.name }}</td>
+                                        <td class="text-center">
+                                            <span v-if="item.result != null">{{ item.result.team.name }}</span><span class="active page-item badge text-danger" v-if="item.result == null">Not Added
+                                                Yet.</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong v-if="item.result != null">
+                                                <span class="badge bg-success"
+                                                    v-if="item.result.team_id == item.predict_team_id && item.result != null">Win</span>
+                                                <span class="badge bg-danger"
+                                                    v-if="item.result.team_id != item.predict_team_id && item.result != null">Lose</span>
+                                            </strong>
 
-                        <ul class="report_user">
+                                            <span class="badge active page-item text-danger" v-if="item.result == null">Not Added
+                                                Yet.</span>
+                                        </td>
+                                    </tr>
+                                    <tr v-else>
+                                        <td colspan="7" class="text-center">
+                                            <p class="mb-0">No Prediction Available Yet.</p>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- <ul class="report_user">
                             <li v-if="predictList && predictList.length" v-for="item in predictList">
                                 <nuxt-link>
                                     <div class="img_part">
-                                        <!-- <img src="/images/user.png" class="img-fluid" alt=""> -->
+                                        <img src="/images/user.png" class="img-fluid" alt="">
                                         <div>
                                             <h3>User: {{ capitalize(item.user.username) }}, {{ item.user.email }}</h3>
                                             <p><strong>Match: </strong>{{ item.match.team_a.name }} Vs
@@ -64,7 +120,7 @@
                                             <p><strong>Predict: </strong>{{ item.team.name }}</p>
                                         </div>
                                     </div>
-                                    <!-- <i class="fa-solid fa-arrow-right"></i> -->
+                                    <i class="fa-solid fa-arrow-right"></i>
                                 </nuxt-link>
                             </li>
                             <li v-else>
@@ -72,7 +128,7 @@
                                     <p class="text-center mb-0">No Prediction Available Yet.</p>
                                 </a>
                             </li>
-                        </ul>
+                        </ul> -->
 
                         <ul class="pagination">
                             <li v-for="link in pagination" :key="link.label"
@@ -86,24 +142,6 @@
                         </ul>
 
                         <hr>
-                        <h5 class="text-white ms-4">Winner List For Test</h5>
-                        <ul class="report_user">
-                            
-                            <li v-if="winner_list && winner_list.length" v-for="item in winner_list">
-                                <nuxt-link>
-                                    <div class="img_part">
-                                        <!-- <img src="/images/user.png" class="img-fluid" alt=""> -->
-                                        <div>
-                                            <h3>User: {{ capitalize(item.user.username) }}, {{ item.user.email }}</h3>
-                                            <p><strong>Match: </strong>{{ item.match.team_a.name }} Vs
-                                                {{ item.match.team_b.name }}</p>
-                                            <p><strong>Predict: </strong>{{ item.team.name }}</p>
-                                        </div>
-                                    </div>
-                                    <!-- <i class="fa-solid fa-arrow-right"></i> -->
-                                </nuxt-link>
-                            </li>
-                        </ul>
 
                     </div>
                 </div>
@@ -152,7 +190,7 @@
                                                 class="form-control">
                                                 <option value="" selected disabled>Select User</option>
                                                 <option v-for="user in userdata" :value="user.id">{{ user.username
-                                                }}
+                                                    }}
                                                 </option>
                                             </select>
                                         </div>
@@ -212,21 +250,22 @@ const winner_list = ref([]);
 
 const searchInput = ref();
 const items = ref('10');
+const status = ref('');
 
 const back = () => {
     router.back();
 }
-const getwinner = () =>{
-    axios.get(`api/single-match-winner/${matchId}`)
-    .then(response =>{
-        // console.log(response.data);
-        winner_list.value = response.data;
-    })
-}
+// const getwinner = () => {
+//     axios.get(`api/single-match-winner/${matchId}`)
+//         .then(response => {
+//             // console.log(response.data);
+//             winner_list.value = response.data;
+//         })
+// }
 const capitalize = (str) => {
     return str.replace(/\b\w/g, (char) => char.toUpperCase());
 };
-const addResult = () =>{
+const addResult = () => {
     const formData = new FormData();
 
     formData.append('match_id', matchId);
@@ -340,6 +379,7 @@ const predictUsers = (page) => {
             items: items.value,
             searchInput: searchInput.value,
             page: page,
+            status: status.value,
         }
     }).then(Response => {
         // console.log(Response.data);
@@ -369,7 +409,7 @@ onMounted(() => {
     userList();
     predictUsers(1);
     teamdata();
-    getwinner();
+    // getwinner();
 })
 
 

@@ -45,7 +45,7 @@
                                             <h3>{{ item.name }} </h3>
                                             <p><strong>Start:</strong> {{ item.start_date	 }}, <strong>End:</strong> {{
                                                 item.end_date }}</p>
-                                                <p>Total Participate: 20</p>
+                                                <!-- <p>Total Participate: 20</p> -->
                                         </div>
                                     </div>
                                     <i class="fa-solid fa-arrow-right"></i>
