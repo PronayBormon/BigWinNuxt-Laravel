@@ -167,7 +167,7 @@ Route::prefix('api')->group(function () {
     // spin list 
     
     // Route::post('/getspinList', [AdminController::class, 'SpinList']);
-    Route::post('/spin-list', [AdminController::class, 'getSpinList']);
+    Route::get('/spin-list', [AdminController::class, 'getSpinList']);
 
 
 
