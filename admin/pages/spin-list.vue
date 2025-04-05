@@ -19,7 +19,7 @@
                 <div class="card app_card">
                     <div class="card-header">
                         <div class="header_filter">
-                            <div class="show_">
+                            <!-- <div class="show_">
                                 <p>Show</p>
                                 <select name="" id="" v-model="items" @change="getSpinList">
                                     <option value="10">10</option>
@@ -27,7 +27,7 @@
                                     <option value="50">50</option>
                                     <option value="100">100</option>
                                 </select>
-                            </div>
+                            </div> -->
 
                             <div class="form-group d-none d-md-block">
                                 <div class="seach_box">
@@ -52,6 +52,7 @@
                             <table class="table">
                                 <thead class="thead">
                                     <tr>
+                                        <th>Sl.</th>
                                         <th class="text-center">Name</th>
                                         <th>Status</th>
                                         <th>Price</th>
@@ -61,6 +62,7 @@
                                 <tbody>
                                     <tr v-if="spinList && spinList.length" v-for="(item, index) in spinList"
                                         :key="index">
+                                        <td>{{ index+1 }}</td>
                                         <td class="text-center">{{ item.name }}</td>
                                         <td>
                                             <p v-if="item.status == 1" class="badge bg-success">Active</p>
@@ -191,7 +193,7 @@ const editstatus = ref();
 const spinList = ref([]);
 const pagination = ref([]);
 
-const items = ref('10');
+const items = ref('16');
 const searchInput = ref('');
 const status = ref('');
 

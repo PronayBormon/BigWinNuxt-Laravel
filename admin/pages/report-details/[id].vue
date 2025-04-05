@@ -22,9 +22,9 @@
                     <div class="d-flex align-items-center">
                         <button type="button" class="btn btn-primary me-2" data-bs-target="#result"
                             data-bs-toggle="modal">Add Result</button>
-                        <!-- <button type="button" class="btn btn-primary" data-bs-target="#addManual"
+                        <button type="button" class="btn btn-primary" data-bs-target="#addManual"
                             data-bs-toggle="modal">Add
-                            Manual</button> -->
+                            Manual</button>
                     </div>
                 </div>
                 <div class="card app_card ">
@@ -63,6 +63,7 @@
                                 <thead class="thead">
                                     <tr>
                                         <th class="text-start">User</th>
+                                        <th class="text-center">Spin Run </th>
                                         <th class="text-center">Match </th>
                                         <th class="text-center">(PDT) </th>
                                         <th class="text-center">Predicted</th>
@@ -75,6 +76,9 @@
                                         <td class="text-start">
                                             <p class="mb-0">{{ item.user.username }}</p>
                                             <p class="mb-0">{{ item.user.email }}</p>
+                                        </td>
+                                        <td class="text-center">
+                                            {{ item.run }} Run
                                         </td>
                                         <td class="text-center">{{ item.match.team_a.name }} Vs
                                             {{ item.match.team_b.name }}</td>
@@ -327,8 +331,15 @@ const addPredict = () => {
             }
         }
         predictUsers(1);
-        $notyf.success(response.data.message);
+        
+        if(response.data.error != null){
+
+            $notyf.error(response.data.error);
+        }else{
+            $notyf.success(response.data.message);
+        }
     }).catch(error => {
+        console.log('error');
         // If the error response is validation errors, show them using Notyf
         if (error.response && error.response.data && error.response.data.errors) {
             const errorMessages = error.response.data.errors;

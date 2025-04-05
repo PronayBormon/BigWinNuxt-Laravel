@@ -182,6 +182,13 @@ class AdminController extends Controller
             ]
         ]);
     }
+    public function getSpinList(Request $request)
+    {
+        $data = SpinList::get();
+
+        return response()->json($data);
+    }
+
 
 
 
@@ -324,7 +331,7 @@ class AdminController extends Controller
 
     public function sliderList()
     {
-        $data =  Slider::orderby('id', 'desc')->get();
+        $data = Slider::orderby('id', 'desc')->get();
 
         $data->transform(function ($item) {
             $item->banner = url('uploads/' . $item->image);
@@ -354,12 +361,14 @@ class AdminController extends Controller
 
         if ($data) {
             $baseUrl = url('uploads/');
+            $data->image = url($data->image);
+
             $data->teamA->image = $baseUrl . '/' . $data->teamA->image;
             $data->teamB->image = $baseUrl . '/' . $data->teamB->image;
 
 
-            $data->time = \Carbon\Carbon::parse($data->time)->format('d M Y h:i A');
-            $data->end_date = \Carbon\Carbon::parse($data->end_date)->format('d M Y h:i A');
+            // $data->time = \Carbon\Carbon::parse($data->time)->format('d M Y h:i A');
+            // $data->end_date = \Carbon\Carbon::parse($data->end_date)->format('d M Y h:i A');
         }
 
 
@@ -367,17 +376,78 @@ class AdminController extends Controller
     }
     public function update_match(request $request)
     {
-        $data = MatchList::where('id', $request->id)->first();
-
-        $data->update([
-            'team_a' => $request->teamA,
-            'team_b' => $request->teamB,
-            'time' => $request->startDate,
-            'end_date' => $request->endDate,
-            'status' => $request->status,
+        $validate = Validator::make($request->all(), [
+            "id" => "required",
+            "teamA" => "required|integer",
+            "teamB" => "required|integer",
+            // "dateTime" => "required",
+            // "enddateTime" => "required",
+            "image" => "image|mimes:png,webp|dimensions:height=350,width=700",
         ]);
 
-        return response()->json(['message' => "successfully Update"]);
+        if ($validate->fails()) {
+            return response()->json(["errors" => $validate->errors()], 422);
+        }
+
+        $data = MatchList::where('id', $request->id)->first();
+
+        if ($request->hasFile('image')) {
+
+            $image = $request->image;
+            $imageName = time() . "." . $image->getClientOriginalExtension();
+            $image->move(public_path('uploads'), $imageName);
+
+            // Set the image path to save in the database
+            $imagePath = 'uploads/' . $imageName;
+
+
+            if ($request->startDate && $request->endDate) {
+                $data->update([
+                    'team_a' => $request->teamA,
+                    'team_b' => $request->teamB,
+                    'time' => $request->startDate,
+                    'end_date' => $request->endDate,
+                    'status' => $request->status,
+                    'image' => $imagePath,
+                ]);
+
+                return response()->json(['message' => "successfully Update"]);
+            } else {
+                $data->update([
+                    'team_a' => $request->teamA,
+                    'team_b' => $request->teamB,
+                    'status' => $request->status,
+                    'image' => $imagePath,
+                ]);
+
+                return response()->json(['message' => "successfully Update"]);
+            }
+
+
+        } else {
+
+            if ($request->startDate && $request->endDate) {
+                $data->update([
+                    'team_a' => $request->teamA,
+                    'team_b' => $request->teamB,
+                    'time' => $request->startDate,
+                    'end_date' => $request->endDate,
+                    'status' => $request->status,
+                ]);
+
+                return response()->json(['message' => "successfully Update"]);
+            } else {
+                $data->update([
+                    'team_a' => $request->teamA,
+                    'team_b' => $request->teamB,
+                    'status' => $request->status,
+                ]);
+
+                return response()->json(['message' => "successfully Update"]);
+            }
+        }
+
+
     }
 
 
@@ -458,10 +528,10 @@ class AdminController extends Controller
     {
         // Validate the request
         $request->validate([
-            'name'       => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'start_date' => 'required|date',
-            'end_date'   => 'required|date|after_or_equal:start_date',
-            'status'     => 'required|in:0,1,2',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'status' => 'required|in:0,1,2',
         ]);
 
         $tournament = Tournament::where("id", $request->id)->first();
@@ -469,10 +539,10 @@ class AdminController extends Controller
         // dd($tournament);
 
         $tournament->update([
-            "name"       => $request->name,
+            "name" => $request->name,
             "start_date" => $request->start_date,
-            "end_date"   => $request->end_date,
-            "status"     => $request->status,
+            "end_date" => $request->end_date,
+            "status" => $request->status,
         ]);
 
         return response()->json([
@@ -485,8 +555,8 @@ class AdminController extends Controller
         // Validate request data
         $validate = Validator::make($request->all(), [
             'tournament_id' => 'required|integer|exists:tournaments,id',
-            'teams'         => 'required|array',
-            'teams.*'       => 'integer|exists:countries,id', // Validate that each team ID exists in the teams table
+            'teams' => 'required|array',
+            'teams.*' => 'integer|exists:countries,id', // Validate that each team ID exists in the teams table
         ]);
         if ($validate->fails()) {
             return response()->json(['error' => $validate->errors()], 422);
@@ -503,8 +573,8 @@ class AdminController extends Controller
             if (!$exists) {
                 TournamentTeam::create([
                     'tournament_id' => $tournamentId,
-                    'team_id'       => $teamId,
-                    'status'        => 1, // Assuming "1" is an active status
+                    'team_id' => $teamId,
+                    'status' => 1, // Assuming "1" is an active status
                 ]);
                 $addedTeams[] = $teamId; // Add the team to the added list
             }
@@ -525,7 +595,7 @@ class AdminController extends Controller
 
         $validate = Validator::make($request->all(), [
             // "team_id"       => "integer|required",
-            "player_name"   => "string|required",
+            "player_name" => "string|required",
         ]);
 
         if ($validate->fails()) {
@@ -576,8 +646,8 @@ class AdminController extends Controller
         $player = teamPlayers::where('id', $request->player_id)->first();
 
         $player->update([
-            "player_name"   => $request->player_name,
-            "status"        => $request->status,
+            "player_name" => $request->player_name,
+            "status" => $request->status,
         ]);
 
         return response()->json(['message' => "Player successfully Update"], 201);
@@ -610,7 +680,7 @@ class AdminController extends Controller
             // dd($teamData);
 
             $team = PredictTeam::create([
-                'predict_match_id' =>  $match->id,
+                'predict_match_id' => $match->id,
                 'country_id' => $teamData['team_id'],
             ]);
 
@@ -704,14 +774,17 @@ class AdminController extends Controller
 
             // dd($request->status);
             if ($request->status == 'win') {
-                $winner = SingleMatchResult::where('match_id',  $request->match_id)->first();
+
+                $winner = SingleMatchResult::where('match_id', $request->match_id)->first();
 
                 $winner_team_id = $winner->team_id;
 
-                $query = singleMatchReport::where('match_id',  $request->match_id)->where('predict_team_id', $winner_team_id)->with(['user', 'result.team', 'team', 'match', 'match.teamA', 'match.teamB']);
+                $query = singleMatchReport::where('match_id', $request->match_id)->where('predict_team_id', $winner_team_id)->with(['run', 'user', 'result.team', 'team', 'match', 'match.teamA', 'match.teamB']);
 
 
                 $data = $query->orderBy('id', 'asc')->paginate($request->items ?? 10);
+
+                // dd($data);
 
                 return response()->json([
                     'data' => $data->items(),
@@ -725,12 +798,12 @@ class AdminController extends Controller
                         'links' => $this->generatePaginationLinks($data),
                     ]
                 ]);
-            }elseif($request->status == 'lose'){
-                $winner = SingleMatchResult::where('match_id',  $request->match_id)->first();
+            } elseif ($request->status == 'lose') {
+                $winner = SingleMatchResult::where('match_id', $request->match_id)->first();
 
                 $winner_team_id = $winner->team_id;
 
-                $query = singleMatchReport::where('match_id',  $request->match_id)->whereNot('predict_team_id', $winner_team_id)->with(['user', 'result.team', 'team', 'match', 'match.teamA', 'match.teamB']);
+                $query = singleMatchReport::where('match_id', $request->match_id)->whereNot('predict_team_id', $winner_team_id)->with(['run', 'user', 'result.team', 'team', 'match', 'match.teamA', 'match.teamB']);
 
 
                 $data = $query->orderBy('id', 'asc')->paginate($request->items ?? 10);
@@ -750,7 +823,25 @@ class AdminController extends Controller
             }
         } else {
             // dd($request->all());
-            $query = singleMatchReport::where('match_id', $request->match_id)->with(['user', 'result.team', 'team', 'match', 'match.teamA', 'match.teamB']);
+            $query = singleMatchReport::query()
+                ->where('match_report.match_id', $request->match_id)
+                ->join('match_run', function ($join) {
+                    $join->on('match_report.match_id', '=', 'match_run.match_id')
+                        ->on('match_report.user_id', '=', 'match_run.user_id');
+                })
+                ->with([
+                    'user',
+                    'result.team',
+                    'team',
+                    'match',
+                    'match.teamA',
+                    'match.teamB'
+                ])
+                ->select([
+                    'match_report.*',
+                    'match_run.run as run',
+                ]);
+
 
             // if ($request->filled('status')) {
             //     $query->where('status', $request->status);
@@ -772,10 +863,10 @@ class AdminController extends Controller
 
             // Format created_at before returning
             $formattedData = $data->map(function ($item) {
-                $item->create_time = Carbon::parse($item->created_at)->format('d M Y, h:i A'); // Example: 25 Jan 2025
+                $item->create_time = Carbon::parse($item->created_at)->format('d M Y, h:i A');
                 return $item;
             });
-
+            // dd($formattedData);
             return response()->json([
                 'data' => $formattedData,
                 'pagination' => [
@@ -867,13 +958,13 @@ class AdminController extends Controller
         ]);
 
         $prediction = Finalist::create([
-            'match_id'  => $request->match_id,
-            'user_id'  => $request->user_id,
-            'team_one'  => $request->team_one,
-            'team_two'  => $request->team_two,
-            'hwt'       => $request->hwt,
-            'hs'        => $request->hs,
-            'status'    => 1,
+            'match_id' => $request->match_id,
+            'user_id' => $request->user_id,
+            'team_one' => $request->team_one,
+            'team_two' => $request->team_two,
+            'hwt' => $request->hwt,
+            'hs' => $request->hs,
+            'status' => 1,
         ]);
 
         return response()->json([
@@ -895,12 +986,12 @@ class AdminController extends Controller
         ]);
 
         $prediction = FinalistResult::create([
-            'match_id'  => $request->match_id,
-            'team_one'  => $request->team_one,
-            'team_two'  => $request->team_two,
-            'hwt'       => $request->hwt,
-            'hs'        => $request->hs,
-            'status'    => 1,
+            'match_id' => $request->match_id,
+            'team_one' => $request->team_one,
+            'team_two' => $request->team_two,
+            'hwt' => $request->hwt,
+            'hs' => $request->hs,
+            'status' => 1,
         ]);
 
         return response()->json([
@@ -925,11 +1016,11 @@ class AdminController extends Controller
         $prediction = Champion::create(
             [
 
-                'match_id'  => $request->match_id,
-                'user_id'  => $request->user_id,
-                'team_id'  => $request->team_id,
-                'mom'  => $request->mom,
-                'mot'  => $request->mot,
+                'match_id' => $request->match_id,
+                'user_id' => $request->user_id,
+                'team_id' => $request->team_id,
+                'mom' => $request->mom,
+                'mot' => $request->mot,
             ]
         );
 
@@ -953,10 +1044,10 @@ class AdminController extends Controller
         $prediction = ChampionResult::create(
             [
 
-                'match_id'  => $request->match_id,
-                'team_id'  => $request->team_id,
-                'mom'  => $request->mom,
-                'mot'  => $request->mot,
+                'match_id' => $request->match_id,
+                'team_id' => $request->team_id,
+                'mom' => $request->mom,
+                'mot' => $request->mot,
             ]
         );
 
@@ -1285,6 +1376,7 @@ class AdminController extends Controller
     }
     public function BatsmanResult(Request $request)
     {
+        // Validate the incoming request
         $validate = Validator::make($request->all(), [
             "match_id" => "required|integer",
             "team_id" => "required|integer",
@@ -1300,42 +1392,72 @@ class AdminController extends Controller
                 'success' => false,
                 'message' => 'Validation failed',
                 'errors' => $validate->errors()
-            ], 422);
+            ], 422); // Return validation error status
         }
 
-        // Check if the batsman result already exists for this match, team, and player
-        $existingResult = BatsmanResult::where('match_id', $request->match_id)
-            ->where('team_id', $request->team_id)
-            ->where('player_id', $request->player_id)
-            ->exists();
+        if ($request->id) {
+            // If `id` exists, we are in update mode
+            $batsmanResult = BatsmanResult::find($request->id);  // Find the result by ID
 
-        if ($existingResult) {
+            if (!$batsmanResult) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Batsman result not found for the provided ID.'
+                ], 404); // Not Found status
+            }
+
+            // Update the batsman result with the new data
+            $batsmanResult->update([
+                'match_id' => $request->match_id,
+                'team_id' => $request->team_id,
+                'player_id' => $request->player_id,
+                'run' => $request->run,
+                'ball' => $request->ball,
+                'total_4' => $request->four,
+                'total_6' => $request->six,
+            ]);
+
             return response()->json([
-                'success' => false,
-                'message' => 'This player’s batting result is already recorded for this match and team.'
-            ], 409); // 409 Conflict
+                'success' => true,
+                'message' => 'Batsman result updated successfully!'
+            ], 200); // HTTP 200 OK status for successful update
+        } else {
+            // If no `id` exists, we are in create mode
+            // Check if the batsman result already exists for this match, team, and player
+            $existingResult = BatsmanResult::where('match_id', $request->match_id)
+                ->where('team_id', $request->team_id)
+                ->where('player_id', $request->player_id)
+                ->exists();
+
+            if ($existingResult) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This player’s batting result is already recorded for this match and team.'
+                ], 409); // HTTP 409 Conflict for already existing record
+            }
+
+            // Save a new batsman result if no existing record found
+            BatsmanResult::create([
+                'match_id' => $request->match_id,
+                'team_id' => $request->team_id,
+                'player_id' => $request->player_id,
+                'run' => $request->run,
+                'ball' => $request->ball,
+                'total_4' => $request->four,
+                'total_6' => $request->six,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Batsman result saved successfully!'
+            ], 201); // HTTP 201 Created status for successful creation
         }
-
-        // Save new batsman result
-        BatsmanResult::create([
-            'match_id'      => $request->match_id,
-            'team_id'       => $request->team_id,
-            'player_id'     => $request->player_id, // Fixed incorrect assignment
-            'run'           => $request->run,
-            'ball'          => $request->ball,
-            'total_4'       => $request->four,
-            'total_6'       => $request->six,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Batsman result saved successfully!',
-        ], 201);
     }
 
 
     public function BollerResult(Request $request)
     {
+        // Validate the incoming request
         $validate = Validator::make($request->all(), [
             "match_id" => "required|integer",
             "team_id" => "required|integer",
@@ -1346,44 +1468,78 @@ class AdminController extends Controller
             "wicket" => "required|integer"
         ]);
 
+        // Return validation errors if validation fails
         if ($validate->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
                 'errors' => $validate->errors()
-            ], 422);
+            ], 422); // 422 Unprocessable Entity for validation errors
         }
 
-        // Check if the record already exists
-        $existingResult = BallerResult::where('match_id', $request->match_id)
-            ->where('team_id', $request->team_id)
-            ->where('player_id', $request->player_id)
-            ->exists();
+        // If `id` exists, we are in update mode
+        if ($request->id) {
+            // Find the existing bowling result by ID
+            $bowlerResult = BallerResult::find($request->id);
 
-        if ($existingResult) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This player’s result is already recorded for this match and team.'
-            ], 409); // 409 Conflict
-        } else {
+            // If the result doesn't exist, return a 404 Not Found
+            if (!$bowlerResult) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bowling result not found for the provided ID.'
+                ], 404); // 404 Not Found
+            }
 
-            // Save new result
-            BallerResult::create([
-                'match_id'      => $request->match_id,
-                'team_id'       => $request->team_id,
-                'player_id'     => $request->player_id, // Fixed player_id assignment
-                'over'          => $request->over,
-                'maden_over'    => $request->maden_over,
-                'run'           => $request->run,
-                'wicket'        => $request->wicket,
+            // Update the bowling result with the new data
+            $bowlerResult->update([
+                'match_id' => $request->match_id,
+                'team_id' => $request->team_id,
+                'player_id' => $request->player_id,
+                'over' => $request->over,
+                'maden_over' => $request->maden_over,
+                'run' => $request->run,
+                'wicket' => $request->wicket,
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Bowling result saved successfully!',
-            ], 201);
+                'message' => 'Bowling result updated successfully!'
+            ], 200); // 200 OK status for successful update
+        } else {
+            // If no `id` is provided, we are in create mode
+
+            // Check if the bowling result already exists for the match, team, and player
+            $existingResult = BallerResult::where('match_id', $request->match_id)
+                ->where('team_id', $request->team_id)
+                ->where('player_id', $request->player_id)
+                ->exists();
+
+            // If the result already exists, return a 409 Conflict
+            if ($existingResult) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This player’s bowling result is already recorded for this match and team.'
+                ], 409); // 409 Conflict
+            }
+
+            // Create a new bowling result
+            BallerResult::create([
+                'match_id' => $request->match_id,
+                'team_id' => $request->team_id,
+                'player_id' => $request->player_id,
+                'over' => $request->over,
+                'maden_over' => $request->maden_over,
+                'run' => $request->run,
+                'wicket' => $request->wicket,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Bowling result saved successfully!'
+            ], 201); // 201 Created status for successful creation
         }
     }
+
 
     public function viewSingleMatchResult($id)
     {
@@ -1441,6 +1597,6 @@ class AdminController extends Controller
 
         $query = singleMatchReport::where('match_id', $id)->where('predict_team_id', $winner_team_id)->with(['user', 'team', 'match', 'match.teamA', 'match.teamB'])->get();
         // dd($query);
-        return  response()->json($query);
+        return response()->json($query);
     }
 }

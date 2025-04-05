@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Models\MatchRun;
 use App\Models\User;
 use App\Models\Boller;
 use App\Models\Batsman;
@@ -368,26 +369,53 @@ class UnauthenticateController extends Controller
 
 
 
-    public function makeSiglePredict(request $request)
-    {
-        $validate = Validator::make($request->all(), [
-            'match_id',
-            'user_id',
-            'team_id',
+public function makeSiglePredict(request $request)
+{
+    // Validate input
+    $validate = Validator::make($request->all(), [
+        'match_id' => 'required|numeric',
+        'user_id'  => 'required|numeric',
+        'team_id'  => 'required|numeric',
+    ]);
+
+    if ($validate->fails()) {
+        return response()->json(['error' => $validate->errors()]);
+    }
+
+    // Check if prediction already exists
+    $check = singleMatchReport::where('match_id', $request->match_id)
+        ->where('user_id', $request->user_id)
+        ->first();
+
+    if ($check == null) {
+        // Create prediction
+        $data = singleMatchReport::create([
+            'match_id' => $request->match_id,
+            'user_id'  => $request->user_id,
+            'predict_team_id' => $request->team_id,
         ]);
 
-        if ($validate->fails()) {
-            return response()->json(['error' => $validate->errors()]);
+        if (!$data) {
+            return response()->json(['error' => 'Error creating prediction']);
         }
 
-        $data = singleMatchReport::create([
-            'match_id'  => $request->match_id,
-            'user_id'   => $request->user_id,
-            'predict_team_id'   => $request->team_id,
+        // Create match run record
+        $makeRun = MatchRun::create([
+            'match_id' => $request->match_id,
+            'user_id'  => $request->user_id,
+            'run'      => "00",
         ]);
 
-        return response()->json(['message' => "successfully Added"]);
+        if (!$makeRun) {
+            return response()->json(['error' => 'Error creating match run']);
+        }
+
+        return response()->json(['message' => 'Prediction successfully added']);
+    } else {
+        return response()->json(['error' => 'Prediction already exists']);
     }
+}
+
     public function maxPredictPlayers(request $request)
     {
         // dd($request->all());

@@ -185,20 +185,22 @@
                                                 <td class="text-start">
                                                     {{ items.player.player_name }}
 
-                                                    <p class=" pt-1" v-if="items.boll_result != null" style="color: #000;">
+                                                    <p class=" pt-1" v-if="items.boll_result != null"
+                                                        style="color: #000;">
                                                         <Strong>Boller Result: </Strong>
                                                         <span>Over: {{ items.boll_result.over }}</span>
                                                         <span class="mx-2">Maden Over: {{ items.boll_result.maden_over
-                                                            }}</span>
+                                                        }}</span>
                                                         <span class="mx-2">Run: {{ items.boll_result.run }}</span>
                                                         <span class="mx-2">Wicket: {{ items.boll_result.wicket }}</span>
                                                     </p>
-                                                    <p class=" pb-1" v-if="items.bat_result != null" style="color: #000;">
+                                                    <p class=" pb-1" v-if="items.bat_result != null"
+                                                        style="color: #000;">
                                                         <Strong>Bat Result: </Strong>
                                                         <span class="mx-2">Run: {{ items.bat_result.run }}</span>
                                                         <span>Boll: {{ items.bat_result.ball }}</span>
                                                         <span class="mx-2">4s: {{ items.bat_result.total_4
-                                                            }}</span>
+                                                        }}</span>
                                                         <span class="mx-2">6s: {{ items.bat_result.total_6 }}</span>
                                                     </p>
 
@@ -206,8 +208,8 @@
                                                 <td class="text-start">{{ items.team.country.name }}</td>
 
                                                 <td>
-                                                    <button @click="addResult(items.predict_team_id, items.id)"
-                                                        class="btn btn_default">Add Result</button>
+                                                    <button @click="addResult(items)" class="btn btn_default">Add
+                                                        Result</button>
                                                 </td>
                                             </tr>
                                             <tr v-else>
@@ -302,6 +304,7 @@ const teams = ref([]);
 const playersList = ref([]);
 const teamlist = ref([]);
 
+const result_bat_id = ref('');
 const result_bat_team_id = ref('');
 const result_bat_player_id = ref('');
 const result_bat_run = ref();
@@ -310,6 +313,7 @@ const result_bat_four = ref();
 const result_bat_six = ref();
 const result_bat_playeslist = ref([]);
 
+const result_ball_id = ref('');
 const result_ball_team_id = ref('');
 const result_boll_player_id = ref('');
 const result_ball_over = ref('');
@@ -325,6 +329,7 @@ const back = () => {
 const addResultbowlers = () => {
     const formData = new FormData();
 
+    formData.append('id', result_ball_id.value);
     formData.append('match_id', id);
     formData.append('team_id', result_ball_team_id.value);
     formData.append('player_id', result_boll_player_id.value);
@@ -351,7 +356,7 @@ const addResultbowlers = () => {
         result_ball_run.value = "";
         result_ball_wicket.value = "";
 
-
+        teamData();
 
     }).catch(error => {
         console.error("Error Response:", error.response);
@@ -381,6 +386,7 @@ const addResultbowlers = () => {
 const addbatsmanresult = () => {
     const formData = new FormData();
 
+    formData.append('id', result_bat_id.value);
     formData.append('match_id', id);
     formData.append('team_id', result_bat_team_id.value);
     formData.append('player_id', result_bat_player_id.value);
@@ -399,6 +405,7 @@ const addbatsmanresult = () => {
             }
         }
         $notyf.success(response.data.message);
+        teamData();
     }).catch(error => {
         console.error("Error Response:", error.response);
 
@@ -426,15 +433,52 @@ const addbatsmanresult = () => {
 }
 
 
-const addResult = (teamId, playerId) => {
+const addResult = (items) => {
 
-    result_ball_team_id.value = teamId;
-    result_bat_team_id.value = teamId;
+
+    if (items.bat_result != null) {
+
+        result_bat_id.value = items.bat_result.id;
+        result_bat_run.value = items.bat_result.run;
+        result_bat_ball.value = items.bat_result.ball;
+        result_bat_four.value = items.bat_result.total_4;
+        result_bat_six.value = items.bat_result.total_6;
+        // console.log(items.bat_result);
+
+    } else {
+        result_bat_id.value = "";
+        result_bat_run.value = "";
+        result_bat_ball.value = "";
+        result_bat_four.value = "";
+        result_bat_six.value = "";
+    }
+    // console.log(items);
+
+    if (items.boll_result != null) {
+
+        result_ball_id.value = items.boll_result.id;
+        result_ball_over.value = items.boll_result.over;
+        result_ball_maden_over.value = items.boll_result.maden_over;
+        result_ball_run.value = items.boll_result.run;
+        result_ball_wicket.value = items.boll_result.wicket;
+
+    } else {
+        result_ball_id.value = "";
+        result_ball_over.value = "";
+        result_ball_maden_over.value = "";
+        result_ball_run.value = "";
+        result_ball_wicket.value = "";
+    }
+
+
+
+    result_ball_team_id.value = items.predict_team_id;
+    result_bat_team_id.value = items.predict_team_id;
 
     resultplayersData();
     resultplayersDataboll();
-    result_boll_player_id.value = playerId;
-    result_bat_player_id.value = playerId;
+    result_boll_player_id.value = items.id;
+    result_bat_player_id.value = items.id;
 
 
 }
@@ -481,7 +525,7 @@ const resultplayersDataboll = async () => {
     })
 }
 
-const teamdata = () => {
+const teamsdata = () => {
     const mid = id;
     axios.get(`api/team-data/${mid}`).then(response => {
         // console.log(response.data);
@@ -490,7 +534,7 @@ const teamdata = () => {
 };
 onMounted(() => {
     teamData();
-    teamdata();
+    teamsdata();
 });
 
 

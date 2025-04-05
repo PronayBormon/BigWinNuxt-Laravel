@@ -164,6 +164,10 @@ Route::prefix('api')->group(function () {
 
     // Winner 
     Route::get('/single-match-winner/{id}', [AdminController::class, 'singleWinner']);
+    // spin list 
+    
+    // Route::post('/getspinList', [AdminController::class, 'SpinList']);
+    Route::post('/spin-list', [AdminController::class, 'getSpinList']);
 
 
 

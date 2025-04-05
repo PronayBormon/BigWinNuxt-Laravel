@@ -20,6 +20,7 @@ class MatchList extends Model
         'match_type',
         'game_type',
         'status',
+        'image',
     ];
     
     // Each match belongs to a Country (Team A)

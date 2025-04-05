@@ -19,6 +19,13 @@ class singleMatchReport extends Model
         'predict_status',
         
     ];
+    public function run()
+    {
+        return MatchRun::where('match_id', $this->match_id)
+        ->where('user_id', $this->user_id)
+        ->first();
+    }
+    
     public function match(){
         return $this->belongsTo(MatchList::class, 'match_id', 'id');
     }

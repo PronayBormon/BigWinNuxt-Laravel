@@ -217,27 +217,42 @@ class UserController extends Controller
             "teamB" => "required|integer",
             "dateTime" => "required",
             "enddateTime" => "required",
+            "image" => "required|image|mimes:png,webp|dimensions:height=350,width=700",
         ]);
 
         if ($validate->fails()) {
             return response()->json(["errors" => $validate->errors()], 422);
         }
+        if($request->hasFile('image')){
 
-        $query = MatchList::create([
-            'team_a'        => $request->teamA,
-            'team_b'        => $request->teamB,
-            'time'          => $request->dateTime,
-            'end_date'      => $request->enddateTime,
-            'match_type'    => '1',
-            'game_type'     => '1',
-            'status'        => '1',
-        ]);
+            $image = $request->image;
+            $imageName = time(). "." . $image->getClientOriginalExtension();
+            $image->move(public_path('uploads'), $imageName);
+        
+            // Set the image path to save in the database
+            $imagePath = 'uploads/' . $imageName;
 
-        if ($query) {
-            return response()->json([
-                'message' => "Successfully add New Match",
+            $query = MatchList::create([
+                'team_a'        => $request->teamA,
+                'team_b'        => $request->teamB,
+                'time'          => $request->dateTime,
+                'end_date'      => $request->enddateTime,
+                'image'         => $imagePath,
+                'match_type'    => '1',
+                'game_type'     => '1',
+                'status'        => '1',
             ]);
+    
+            if ($query) {
+                return response()->json([
+                    'message' => "Successfully add New Match",
+                ]);
+            }
+        }else{
+            return response()->json(["errors" => "Image not found"], 422);
         }
+
+        
     }
     public function matchList(request $request)
     {
