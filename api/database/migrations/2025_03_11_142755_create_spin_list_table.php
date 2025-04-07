@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->nullable();
             $table->unsignedTinyInteger('status')->default(1);  
-            $table->decimal('prize', 10, 2)->nullable();  
+            $table->int('prize')->nullable();  
             $table->timestamps();
         });
     }

@@ -1153,6 +1153,7 @@ class AdminController extends Controller
 
         if ($data) {
             $baseUrl = url('uploads/'); // Adjust the path if necessary
+            $data->image = url($data->image);
 
             // Append full image URL to teamA and teamB
             $data->teamA->image = $baseUrl . '/' . $data->teamA->image;
