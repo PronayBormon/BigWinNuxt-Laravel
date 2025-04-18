@@ -26,10 +26,15 @@ use App\Models\Tournament;
 
 Route::post('/add-account', [authController::class, 'register']);
 Route::post('/login', [authController::class, 'user_login']);
+// Route::post('/register', [authController::class, 'register']);
+
 
 
 
 Route::prefix('api')->middleware('isAdmin')->group(function () {
+    Route::get('/settings', [AdminController::class, 'showsetings']);
+    Route::post('/settings/update', [AdminController::class, 'updatesetings']);
+    
     Route::post('/user-list', [UserController::class, 'userList'])->name('user.list');
     Route::post('/user-data/{id}', [UserController::class, 'user_data']);
     Route::post('/update', [UserController::class, 'updateUser']);
@@ -39,7 +44,6 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     Route::delete('/delete-country/{id}', [UserController::class, 'removeCountry']);
     Route::post('/add-match', [UserController::class, 'addMatch']);
     Route::get('/getteamlist', [UserController::class, 'getTemaList']);
-    Route::get('/get-matchList', [UserController::class, 'matchList']);
 
     Route::post('/add-prize-banner', [AdminController::class, 'addPrizeBanner']);
 
@@ -49,7 +53,6 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     Route::get('/get-spin/{id}', [AdminController::class, 'getspin']);
 
     Route::post('/new-message', [AdminController::class, 'newMessage']);
-    Route::get('/notificaion-list', [AdminController::class, 'messageList']);
     Route::get('/message-details/{id}', [AdminController::class, 'messageDetails']);
     Route::post('/update-message', [AdminController::class, 'updateMessage']);
 
@@ -65,7 +68,7 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
 
     Route::get('/tournament-details/{id}', [AdminController::class, 'tournamentDetails']);
     Route::post('/add-tournament-teams', [AdminController::class, 'addTournamentTeam']);
-    Route::post('/add-tournament-teams', [AdminController::class, 'addTournamentTeam']);
+    // Route::post('/add-tournament-teams', [AdminController::class, 'addTournamentTeam']);
 
     Route::post('/add-team-player', [AdminController::class, 'addNewPlayer']);
     Route::get('/get-team-players', [AdminController::class, 'teamPlayers']);
@@ -74,9 +77,6 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
 
     // Max predict     
     Route::post('/add-max-predict', [AdminController::class, 'maxpredict']);
-    Route::get('/get-maxpredictList', [AdminController::class, 'maxpredictList']);
-    Route::get('/maxpredict-playerList', [AdminController::class, 'maxpredictPlayerList']);
-    Route::get('/match-report-users', [AdminController::class, 'singleMatchpredictUsers']);
 
 
 
@@ -97,6 +97,8 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     Route::post('/add-single-match-result', [AdminController::class, 'SingleMatchResult']);
     Route::post('/add-batsman-result', [AdminController::class, 'BatsmanResult']);
     Route::post('/add-boller-result', [AdminController::class, 'BollerResult']);
+    Route::post('/add-credits', [AdminController::class, 'storecreadit']);
+    Route::post('/update-credit', [AdminController::class, 'updatecreditDetalis']);
 });
 
 Route::prefix('tournament')->middleware('isAdmin')->group(function () {
@@ -168,8 +170,35 @@ Route::prefix('api')->group(function () {
     
     // Route::post('/getspinList', [AdminController::class, 'SpinList']);
     Route::get('/spin-list', [AdminController::class, 'getSpinList']);
+    Route::get('/user-details/{id}', [AdminController::class, 'userData']);
 
+    Route::post('/update-cp', [AdminController::class, 'updateCp']);
+    Route::post('/update-run', [AdminController::class, 'updateRun']);
+    Route::get('/get-user-run', [AdminController::class, 'getRun']);
 
+    
+    // Route::get('/match-report-users', [AdminController::class, 'singleMatchpredictUsers']);
+    Route::get('/matchdetailsusers', [AdminController::class, 'userpredictionrun']);
+    Route::get('/get-result', [AdminController::class, 'getResultStatus']);
+    Route::get('/get-matchList', [UserController::class, 'matchList']);
+    Route::get('/match-winner-list', [AdminController::class, 'singlematchWinners']);
 
+    Route::get('/get-maxpredictList', [AdminController::class, 'maxpredictList']);
+    Route::get('/maxpredict-playerList', [AdminController::class, 'maxpredictPlayerList']);
+    Route::get('/match-report-users', [AdminController::class, 'singleMatchpredictUsers']);
+
+    
+    // Route::get('/batsman/{id}', [UnauthenticateController::class, 'batsmanMatch']);
+    // Route::get('/baller/{id}', [UnauthenticateController::class, 'ballerMatch']);
+
+    
+    Route::get('/bowler-winner-users', [AdminController::class, 'maxpredictmathwinner']);
+    Route::get('/batsman-winner-users', [AdminController::class, 'maxpredictBatsmanmathwinner']);
+    Route::get('/tournament-winners', [AdminController::class, 'TournamentWinnersUsers']);
+    Route::get('/notificaion-list', [AdminController::class, 'messageList']);
+    Route::get('/credit-list', [AdminController::class, 'creditList']);
+    Route::get('/credit-details/{id}', [AdminController::class, 'creditDetalis']);
+    Route::post('/update-user', [AdminController::class, 'update_user_address']);
+    Route::post('/update-user_profile', [AdminController::class, 'updateUser']);
 
 });

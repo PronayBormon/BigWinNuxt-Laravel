@@ -21,10 +21,10 @@ class singleMatchReport extends Model
     ];
     public function run()
     {
-        return MatchRun::where('match_id', $this->match_id)
-        ->where('user_id', $this->user_id)
-        ->first();
+        return $this->hasOne(MatchRun::class, 'match_id', 'match_id')
+                    ->whereColumn('user_id', 'user_id');
     }
+    
     
     public function match(){
         return $this->belongsTo(MatchList::class, 'match_id', 'id');

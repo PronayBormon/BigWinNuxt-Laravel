@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class BatsmanResult extends Model
 {
     use HasFactory;
-    protected $table = "batsmanResult";
+    protected $table = "batsmanresult";
 
     protected $fillable = [
         'match_id',

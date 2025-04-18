@@ -13,13 +13,17 @@ use App\Models\PredictTeam;
 use App\Models\PrizeBanner;
 use App\Models\TeamPlayers;
 use App\Models\Notification;
+use App\Models\NotificationUser;
 use App\Models\PredictMatch;
 use Illuminate\Http\Request;
 use App\Models\PredictPlayer;
+use App\Models\MatchRun;
 use App\Models\TournamentTeam;
 use App\Models\singleMatchReport;
 use App\Http\Controllers\Controller;
 use App\Models\BallerResult;
+use App\Models\Batsman;
+use App\Models\Credit;
 use App\Models\BatsmanResult;
 use App\Models\Boller;
 use App\Models\Champion;
@@ -29,13 +33,14 @@ use App\Models\FinalistResult;
 use App\Models\SemiFinal;
 use App\Models\SemiFinalResult;
 use App\Models\SingleMatchResult;
+use App\Models\SiteSetting;
 use App\Models\TournamentTeamsPlayers;
 use Illuminate\Auth\Events\Validated;
 use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
-    // 🔹 **Generate Pagination Links with Ellipsis**
+    // ðŸ”¹ **Generate Pagination Links with Ellipsis**
     private function generatePaginationLinks($data)
     {
         $links = [];
@@ -230,55 +235,109 @@ class AdminController extends Controller
         }
     }
 
-    public function newMessage(request $request)
-    {
 
+    public function newMessage(Request $request)
+    {
         $validator = Validator::make($request->all(), [
-            'message' => 'required|min:5',
+            'message' => 'required|string|min:5',
         ]);
+
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 401);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $data = Notification::create([
+        // Create the notification
+        $notification = Notification::create([
             'message' => $request->message,
             'status' => "1",
         ]);
 
-        if ($data) {
-            return response()->json(['message' => 'success']);
+        // Attach notification to all users
+        $userIds = User::pluck('id')->toArray(); // cleaner than get()
+
+        $notificationData = [];
+        foreach ($userIds as $userId) {
+            $notificationData[] = [
+                'notification_id' => $notification->id,
+                'user_id' => $userId,
+                'status' => 'unread',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
         }
+
+        NotificationUser::insert($notificationData); // bulk insert is faster
+
+        return response()->json(['message' => 'Notification sent successfully.']);
     }
+
+
+
     public function messageList(Request $request)
     {
         $query = Notification::query();
 
-        // Apply search filter if 'searchInput' is present (use 'has' instead of 'hasFile')
-        if ($request->has('searchInput')) {
-            $query->where('message', 'like', '%' . $request->searchInput . '%');
+
+        if ($request->filled('user_id')) {
+
+            $messageList = NotificationUser::where("user_id", $request->user_id)->with('message')->orderBy('created_at', 'desc')->paginate($request->items);
+
+            if ($messageList) {
+                $data = NotificationUser::where("user_id", $request->user_id)->with('message')->get();
+                foreach ($data as $item) {
+                    $item->update([
+                        'status' => 'read',
+                    ]);
+                }
+            }
+
+            $messageList->getCollection()->transform(function ($item) {
+                $item->created = $item->created_at->format('d M Y h:i A');
+                return $item;
+            });
+
+            return response()->json([
+                'data' => $messageList->items(),
+                'pagination' => [
+                    'current_page' => $messageList->currentPage(),
+                    'last_page' => $messageList->lastPage(),
+                    'per_page' => $messageList->perPage(),
+                    'total' => $messageList->total(),
+                    'next_page_url' => $messageList->nextPageUrl(),
+                    'prev_page_url' => $messageList->previousPageUrl(),
+                    'links' => $this->generatePaginationLinks($messageList),
+                ]
+            ]);
+        } else {
+            if ($request->has('searchInput')) {
+                $query->where('message', 'like', '%' . $request->searchInput . '%');
+            }
+
+            $data = $query->orderBy('id', 'desc')->paginate($request->items);
+
+            $data->getCollection()->transform(function ($item) {
+                $item->created = $item->created_at->format('d M Y h:i A');
+                return $item;
+            });
+            // dd($data);
+
+            return response()->json([
+                'data' => $data->items(),
+                'pagination' => [
+                    'current_page' => $data->currentPage(),
+                    'last_page' => $data->lastPage(),
+                    'per_page' => $data->perPage(),
+                    'total' => $data->total(),
+                    'next_page_url' => $data->nextPageUrl(),
+                    'prev_page_url' => $data->previousPageUrl(),
+                    'links' => $this->generatePaginationLinks($data),
+                ]
+            ]);
         }
-
-        $data = $query->orderBy('id', 'desc')->paginate($request->items);
-
-        $data->getCollection()->transform(function ($item) {
-            $item->created = $item->created_at->format('d M Y h:i A');
-            return $item;
-        });
-        // dd($data);
-
-        return response()->json([
-            'data' => $data->items(),
-            'pagination' => [
-                'current_page' => $data->currentPage(),
-                'last_page' => $data->lastPage(),
-                'per_page' => $data->perPage(),
-                'total' => $data->total(),
-                'next_page_url' => $data->nextPageUrl(),
-                'prev_page_url' => $data->previousPageUrl(),
-                'links' => $this->generatePaginationLinks($data),
-            ]
-        ]);
     }
+
+
+
     public function messageDetails($id)
     {
         $data = Notification::where('id', $id)->first();
@@ -422,8 +481,6 @@ class AdminController extends Controller
 
                 return response()->json(['message' => "successfully Update"]);
             }
-
-
         } else {
 
             if ($request->startDate && $request->endDate) {
@@ -446,8 +503,6 @@ class AdminController extends Controller
                 return response()->json(['message' => "successfully Update"]);
             }
         }
-
-
     }
 
 
@@ -779,7 +834,25 @@ class AdminController extends Controller
 
                 $winner_team_id = $winner->team_id;
 
-                $query = singleMatchReport::where('match_id', $request->match_id)->where('predict_team_id', $winner_team_id)->with(['run', 'user', 'result.team', 'team', 'match', 'match.teamA', 'match.teamB']);
+                $query = singleMatchReport::where('match_report.match_id', $request->match_id)
+                    ->where('match_report.predict_team_id', $winner_team_id)
+                    ->join('match_run', function ($join) {
+                        $join->on('match_report.match_id', '=', 'match_run.match_id')
+                            ->on('match_report.user_id', '=', 'match_run.user_id');
+                    })
+                    ->with([
+                        'user',
+                        'result.team',
+                        'team',
+                        'match',
+                        'match.teamA',
+                        'match.teamB'
+                    ])
+                    ->select([
+                        'match_report.*',
+                        'match_run.run as run',
+                    ]);
+
 
 
                 $data = $query->orderBy('id', 'asc')->paginate($request->items ?? 10);
@@ -803,7 +876,25 @@ class AdminController extends Controller
 
                 $winner_team_id = $winner->team_id;
 
-                $query = singleMatchReport::where('match_id', $request->match_id)->whereNot('predict_team_id', $winner_team_id)->with(['run', 'user', 'result.team', 'team', 'match', 'match.teamA', 'match.teamB']);
+                // $query = singleMatchReport::where('match_id', $request->match_id)->whereNot('predict_team_id', $winner_team_id)->with(['run', 'user', 'result.team', 'team', 'match', 'match.teamA', 'match.teamB']);
+                $query = singleMatchReport::where('match_report.match_id', $request->match_id)
+                    ->whereNot('predict_team_id', $winner_team_id)
+                    ->join('match_run', function ($join) {
+                        $join->on('match_report.match_id', '=', 'match_run.match_id')
+                            ->on('match_report.user_id', '=', 'match_run.user_id');
+                    })
+                    ->with([
+                        'user',
+                        'result.team',
+                        'team',
+                        'match',
+                        'match.teamA',
+                        'match.teamB'
+                    ])
+                    ->select([
+                        'match_report.*',
+                        'match_run.run as run',
+                    ]);
 
 
                 $data = $query->orderBy('id', 'asc')->paginate($request->items ?? 10);
@@ -843,9 +934,6 @@ class AdminController extends Controller
                 ]);
 
 
-            // if ($request->filled('status')) {
-            //     $query->where('status', $request->status);
-            // }
 
             // Filter by team name if search input is provided
             if ($request->has('searchInput')) {
@@ -897,6 +985,7 @@ class AdminController extends Controller
             // Check if entry already exists
             $exists = SemiFinal::where('match_id', $request->match_id)
                 ->where('team_id', $team['team_id'])
+                ->where('user_id', $request->user_id)
                 ->exists();
 
             if (!$exists) {
@@ -911,6 +1000,9 @@ class AdminController extends Controller
                     'pts' => $team['pts'],
                     'status' => '1',
                 ]);
+            } else {
+
+                return response()->json(['error' => 'Allready Exists!'], 401);
             }
         }
 
@@ -926,22 +1018,39 @@ class AdminController extends Controller
         ]);
 
         $teams = json_decode($request->teams, true);
+        $alreadyExists = [];
 
         foreach ($teams as $team) {
-            SemiFinalResult::create([
-                'match_id' => $request->match_id,
-                'team_id' => $team['team_id'],
-                'match' => $team['match'],
-                'win' => $team['win'],
-                'los' => $team['los'],
-                'tie' => $team['tie'],
-                'pts' => $team['pts'],
-                'status' => '1',
-            ]);
+            $exists = SemiFinalResult::where('match_id', $request->match_id)
+                ->where('team_id', $team['team_id'])
+                ->exists();
+
+            if (!$exists) {
+                SemiFinalResult::create([
+                    'match_id' => $request->match_id,
+                    'team_id' => $team['team_id'],
+                    'match' => $team['match'],
+                    'win' => $team['win'],
+                    'los' => $team['los'],
+                    'tie' => $team['tie'],
+                    'pts' => $team['pts'],
+                    'status' => '1',
+                ]);
+            } else {
+                $alreadyExists[] = $team['team_id'];
+            }
+        }
+
+        if (!empty($alreadyExists)) {
+            return response()->json([
+                'error' => 'Some teams already exist.',
+                'existing_teams' => $alreadyExists
+            ], 409); // 409 Conflict
         }
 
         return response()->json(['message' => 'Semi-final predictions saved successfully!'], 201);
     }
+
 
     /**
      * Store a final prediction.
@@ -957,6 +1066,18 @@ class AdminController extends Controller
             'hs' => 'required|integer|min:0',
         ]);
 
+        // Check if a final prediction already exists for this user and match
+        $exists = Finalist::where('user_id', $request->user_id)
+            ->where('match_id', $request->match_id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'error' => 'You have already submitted a final prediction for this match.'
+            ], 409); // 409 Conflict
+        }
+
+        // Create prediction if not exists
         $prediction = Finalist::create([
             'match_id' => $request->match_id,
             'user_id' => $request->user_id,
@@ -972,18 +1093,28 @@ class AdminController extends Controller
             'prediction' => $prediction
         ]);
     }
+
     /**
      * Store a final prediction result.
      */
     public function storeFinalresult(Request $request)
     {
         $validatedData = $request->validate([
-            'match_id' => 'required|integer|unique:finalistresult,match_id',
+            'match_id' => 'required|integer',
             'team_one' => 'required|integer',
             'team_two' => 'required|integer|different:team_one',
             'hwt' => 'required|integer|min:0',
             'hs' => 'required|integer|min:0',
         ]);
+
+        // Manual check
+        $exists = FinalistResult::where('match_id', $request->match_id)->exists();
+
+        if ($exists) {
+            return response()->json([
+                'error' => 'Final result already exists for this match.'
+            ], 409); // 409 Conflict
+        }
 
         $prediction = FinalistResult::create([
             'match_id' => $request->match_id,
@@ -1000,6 +1131,7 @@ class AdminController extends Controller
         ]);
     }
 
+
     /**
      * Store a champion prediction.
      */
@@ -1013,49 +1145,63 @@ class AdminController extends Controller
             'mot' => 'required|integer|min:0',
         ]);
 
-        $prediction = Champion::create(
-            [
+        $exists = Champion::where('user_id', $request->user_id)
+            ->where('match_id', $request->match_id)
+            ->exists();
 
-                'match_id' => $request->match_id,
-                'user_id' => $request->user_id,
-                'team_id' => $request->team_id,
-                'mom' => $request->mom,
-                'mot' => $request->mot,
-            ]
-        );
+        if ($exists) {
+            return response()->json([
+                'error' => 'You have already submitted a champion prediction for this match.'
+            ], 409);
+        }
+
+        $prediction = Champion::create([
+            'match_id' => $request->match_id,
+            'user_id' => $request->user_id,
+            'team_id' => $request->team_id,
+            'mom' => $request->mom,
+            'mot' => $request->mot,
+        ]);
 
         return response()->json([
             'message' => 'Champion prediction saved!',
             'prediction' => $prediction
         ]);
     }
+
     /**
      * Store a champion prediction result.
      */
     public function storeChampionresult(Request $request)
     {
         $validatedData = $request->validate([
-            'match_id' => 'required|unique:championresult,match_id',
+            'match_id' => 'required|integer',
             'team_id' => 'required|integer',
             'mom' => 'required|integer',
             'mot' => 'required|integer|min:0',
         ]);
 
-        $prediction = ChampionResult::create(
-            [
+        $exists = ChampionResult::where('match_id', $request->match_id)->exists();
 
-                'match_id' => $request->match_id,
-                'team_id' => $request->team_id,
-                'mom' => $request->mom,
-                'mot' => $request->mot,
-            ]
-        );
+        if ($exists) {
+            return response()->json([
+                'error' => 'Champion result already exists for this match.'
+            ], 409);
+        }
+
+        $prediction = ChampionResult::create([
+            'match_id' => $request->match_id,
+            'team_id' => $request->team_id,
+            'mom' => $request->mom,
+            'mot' => $request->mot,
+        ]);
 
         return response()->json([
-            'message' => 'Champion prediction saved!',
+            'message' => 'Champion result saved!',
             'prediction' => $prediction
         ]);
     }
+
 
     /**
      * Show semi-final predictions for a specific user.
@@ -1246,6 +1392,16 @@ class AdminController extends Controller
                 'status' => '1',
             ]);
 
+            // if ($batsman != null) {
+            $settings = SiteSetting::first();
+            $user = User::where('id', $request->user_id)->first();
+            $creadit = $user->Credit_Points;
+            $total = $settings->tournament_bonus + $creadit;
+            $user->update([
+                'Credit_Points' => $total,
+            ]);
+            // }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Tournament report saved successfully.',
@@ -1433,7 +1589,7 @@ class AdminController extends Controller
             if ($existingResult) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'This player’s batting result is already recorded for this match and team.'
+                    'message' => 'This playerâ€™s batting result is already recorded for this match and team.'
                 ], 409); // HTTP 409 Conflict for already existing record
             }
 
@@ -1519,7 +1675,7 @@ class AdminController extends Controller
             if ($existingResult) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'This player’s bowling result is already recorded for this match and team.'
+                    'message' => 'This playerâ€™s bowling result is already recorded for this match and team.'
                 ], 409); // 409 Conflict
             }
 
@@ -1599,5 +1755,613 @@ class AdminController extends Controller
         $query = singleMatchReport::where('match_id', $id)->where('predict_team_id', $winner_team_id)->with(['user', 'team', 'match', 'match.teamA', 'match.teamB'])->get();
         // dd($query);
         return response()->json($query);
+    }
+
+    public function userData($id)
+    {
+        $user = User::where('id', $id)->first();
+        return response()->json($user);
+    }
+
+    public function updateCp(Request $request)
+    {
+        $user = User::where('id', $request->user_id)->first();
+
+
+
+        if ($user) {
+            $user->update([
+                'Credit_Points' => $request->cp
+            ]);
+
+            //  dd($user);
+
+            return response()->json(['message' => 'Credit Points updated successfully.']);
+        } else {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+    }
+
+    public function updateRun(request $request)
+    {
+
+        $run = MatchRun::where('user_id', $request->user_id)->where('match_id', $request->match_id)->first();
+
+        // dd($run);
+
+
+        if ($run) {
+            $run->update([
+                'run' => $request->run
+            ]);
+
+            return response()->json(['message' => 'Run updated successfully.']);
+        } else {
+            return response()->json(['message' => 'run not found.'], 404);
+        }
+    }
+
+    public function getRun(request $request)
+    {
+        $run = MatchRun::where('user_id', $request->user_id)->where('match_id', $request->match_id)->first();
+
+        return response()->json($run);
+    }
+
+
+    public function userpredictionrun(Request $request)
+    {
+
+
+        $winner = SingleMatchResult::where('match_id', $request->match_id)->first();
+
+        $winner_team_id = $winner->team_id ?? null;
+
+
+        if ($winner_team_id != null) {
+            $query = singleMatchReport::where('match_report.match_id', $request->match_id)
+                ->where('match_report.predict_team_id', $winner_team_id)
+                ->join('match_run', function ($join) {
+                    $join->on('match_report.match_id', '=', 'match_run.match_id')
+                        ->on('match_report.user_id', '=', 'match_run.user_id');
+                })
+                ->with([
+                    'user',
+                    'result.team',
+                    'team',
+                    'match',
+                    'match.teamA',
+                    'match.teamB'
+                ])
+                ->select([
+                    'match_report.*',
+                    'match_run.run as run',
+                ]);
+        } else {
+            $query = singleMatchReport::where('match_report.match_id', $request->match_id)
+                ->join('match_run', function ($join) {
+                    $join->on('match_report.match_id', '=', 'match_run.match_id')
+                        ->on('match_report.user_id', '=', 'match_run.user_id');
+                })
+                ->with([
+                    'user',
+                    'result.team',
+                    'team',
+                    'match',
+                    'match.teamA',
+                    'match.teamB'
+                ])
+                ->select([
+                    'match_report.*',
+                    'match_run.run as run',
+                ]);
+        }
+
+        if ($request->has('searchInput')) {
+            $searchInput = $request->searchInput;
+
+            $query->where(function ($q) use ($searchInput) {
+                $q->whereHas('user', function ($teamQuery) use ($searchInput) {
+                    $teamQuery->where('username', 'like', "%{$searchInput}%");
+                });
+            });
+        }
+
+
+        // $data = $query->orderBy('run', 'desc')->paginate($request->items ?? 10);
+        $data = $query->orderByRaw('match_report.user_id = ? DESC', [$request->user_id])
+            ->orderBy('run', 'desc')
+            ->paginate($request->items ?? 10);
+
+
+        // dd($data);
+
+        return response()->json([
+            'data' => $data->items(),
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'next_page_url' => $data->nextPageUrl(),
+                'prev_page_url' => $data->previousPageUrl(),
+                'links' => $this->generatePaginationLinks($data),
+            ]
+        ]);
+    }
+    public function getResultStatus(request $request)
+    {
+        // dd($request->all());
+        $data = SingleMatchResult::where('match_id', $request->match_id)->first();
+        return response()->json($data);
+    }
+
+
+
+    public function singlematchWinners(request $request)
+    {
+        $winner = SingleMatchResult::where('match_id', $request->match_id)->first();
+
+        $winner_team_id = $winner->team_id;
+        $query = singleMatchReport::where('match_report.match_id', $request->id)
+            ->where('match_report.predict_team_id', $winner_team_id)
+            ->leftJoin('match_run', function ($join) {
+                $join->on('match_report.match_id', '=', 'match_run.match_id')
+                    ->on('match_report.user_id', '=', 'match_run.user_id');
+            })
+            ->with([
+                'user',
+                'result.team',
+                'team',
+                'match',
+                'match.teamA',
+                'match.teamB'
+            ])
+            ->select([
+                'match_report.*',
+                'match_run.run as run',
+            ]);
+
+        $data = $query->orderBy('run', 'desc')
+            ->paginate($request->items ?? 10);
+
+
+        // dd($data);
+
+        return response()->json([
+            'data' => $data->items(),
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'next_page_url' => $data->nextPageUrl(),
+                'prev_page_url' => $data->previousPageUrl(),
+                'links' => $this->generatePaginationLinks($data),
+            ]
+        ]);
+    }
+    public function maxpredictmathwinner(Request $request)
+    {
+        $results = BallerResult::where('match_id', $request->id)->get();
+
+        $matchedUsers = [];
+
+        foreach ($results as $result) {
+            $bollerQuery = Boller::with('user', 'TeamPlayers.player')
+                ->where('match_id', $result->match_id)
+                ->where('player_id', $result->player_id)
+                ->where('over', $result->over)
+                ->where('maden_over', $result->maden_over)
+                ->where('run', $result->run)
+                ->where('wicket', $result->wicket);
+
+            if ($request->has('searchInput')) {
+                $bollerQuery->whereHas('user', function ($query) use ($request) {
+                    $query->where('username', 'like', '%' . $request->searchInput . '%');
+                });
+            }
+
+            $boller = $bollerQuery->first();
+
+            if ($boller && $boller->user) {
+                $matchedUsers[] = [
+                    'user'         => $boller->user,
+                    'over'         => $boller->over,
+                    'maden_over'   => $boller->maden_over,
+                    'run'          => $boller->run,
+                    'wicket'       => $boller->wicket,
+                ];
+            }
+        }
+
+        // Manual pagination logic
+        $currentPage = (int) $request->input('page', 1);
+        $perPage = (int) $request->input('items', 10);
+        $total = count($matchedUsers);
+        $lastPage = (int) ceil($total / $perPage);
+        $offset = ($currentPage - 1) * $perPage;
+        $paginatedData = array_slice($matchedUsers, $offset, $perPage);
+
+        // Manual pagination links (array of page numbers with URLs)
+        $paginationLinks = [];
+        for ($page = 1; $page <= $lastPage; $page++) {
+            $paginationLinks[] = [
+                'url' => $page == $currentPage ? null : url()->current() . '?page=' . $page . '&items=' . $perPage,
+                'label' => $page,
+                'active' => $page == $currentPage,
+            ];
+        }
+
+        return response()->json([
+            'data' => $paginatedData,
+            'pagination' => [
+                'current_page' => $currentPage,
+                'last_page' => $lastPage,
+                'per_page' => $perPage,
+                'total' => $total,
+                'next_page_url' => $currentPage < $lastPage
+                    ? url()->current() . '?page=' . ($currentPage + 1) . '&items=' . $perPage
+                    : null,
+                'prev_page_url' => $currentPage > 1
+                    ? url()->current() . '?page=' . ($currentPage - 1) . '&items=' . $perPage
+                    : null,
+                'links' => $paginationLinks,
+            ]
+        ]);
+    }
+
+
+
+    public function maxpredictBatsmanmathwinner(Request $request)
+    {
+        $results = BatsmanResult::where('match_id', $request->id)->get();
+        $matchedUsers = [];
+
+        foreach ($results as $result) {
+            $bollerQuery = Batsman::with('user', 'TeamPlayers.player')
+                ->where('match_id', $result->match_id)
+                ->where('player_id', $result->player_id)
+                ->where('run', $result->run)
+                ->where('ball', $result->ball)
+                ->where('total_4', $result->total_4)
+                ->where('total_6', $result->total_6);
+
+            if ($request->has('searchInput')) {
+                $bollerQuery->whereHas('user', function ($query) use ($request) {
+                    $query->where('username', 'like', '%' . $request->searchInput . '%');
+                });
+            }
+
+            $boller = $bollerQuery->first();
+
+            if ($boller && $boller->user) {
+                $matchedUsers[] = [
+                    'user'         => $boller->user,
+                    'run'          => $boller->run,
+                    'ball'         => $boller->ball,
+                    'total_4'      => $boller->total_4,
+                    'total_6'      => $boller->total_6,
+                ];
+            }
+        }
+
+        return $this->paginateCustom($matchedUsers, $request);
+    }
+
+    public function TournamentWinnersUsers(Request $request)
+    {
+        $matchId = $request->match_id;
+
+        $semiResults = SemiFinalResult::where('match_id', $matchId)->get();
+        $finalResult = FinalistResult::where('match_id', $matchId)->first();
+        $championResult = ChampionResult::where('match_id', $matchId)->first();
+
+        if ($semiResults->isEmpty() || !$finalResult || !$championResult) {
+            return response()->json([
+                'message' => 'Result data is incomplete for match ID ' . $matchId
+            ], 404);
+        }
+
+        $users = User::whereHas('semiFinalPredictions', fn($q) => $q->where('match_id', $matchId))
+            ->whereHas('finalPredictions', fn($q) => $q->where('match_id', $matchId))
+            ->whereHas('championPredictions', fn($q) => $q->where('match_id', $matchId))
+            ->with([
+                'semiFinalPredictions' => fn($q) => $q->where('match_id', $matchId),
+                'finalPredictions' => fn($q) => $q->where('match_id', $matchId),
+                'championPredictions' => fn($q) => $q->where('match_id', $matchId),
+            ])
+            ->get();
+
+        $matchedUsers = [];
+
+        foreach ($users as $user) {
+            $userSemi = $user->semiFinalPredictions;
+            $semiMatched = true;
+
+            foreach ($semiResults as $actual) {
+                $predicted = $userSemi->firstWhere('team_id', $actual->team_id);
+
+                if (
+                    !$predicted ||
+                    $predicted->match != $actual->match ||
+                    $predicted->win != $actual->win ||
+                    $predicted->los != $actual->los ||
+                    $predicted->tie != $actual->tie ||
+                    $predicted->pts != $actual->pts
+                ) {
+                    $semiMatched = false;
+                    break;
+                }
+            }
+
+            $final = $user->finalPredictions->first();
+            $finalMatched = $final &&
+                $final->team_one == $finalResult->team_one &&
+                $final->team_two == $finalResult->team_two &&
+                $final->hwt == $finalResult->hwt &&
+                $final->hs == $finalResult->hs;
+
+            $champion = $user->championPredictions->first();
+            $championMatched = $champion &&
+                $champion->team_id == $championResult->team_id &&
+                $champion->mom == $championResult->mom &&
+                $champion->mot == $championResult->mot;
+
+            if ($semiMatched && $finalMatched && $championMatched) {
+                $matchedUsers[] = [
+                    'user_id' => $user->id,
+                    'username' => $user->username,
+                    'name' => $user->name ?? '',
+                    'email' => $user->email ?? '',
+                ];
+            }
+        }
+
+        return $this->paginateCustom($matchedUsers, $request, 'users');
+    }
+
+
+    private function paginateCustom(array $items, Request $request, $key = 'data')
+    {
+        $currentPage = (int) $request->input('page', 1);
+        $perPage = (int) $request->input('items', 10);
+        $total = count($items);
+        $lastPage = (int) ceil($total / $perPage);
+        $offset = ($currentPage - 1) * $perPage;
+        $paginatedItems = array_slice($items, $offset, $perPage);
+
+        $generatePaginationLinks = function ($currentPage, $lastPage, $perPage) {
+            $links = [];
+
+            for ($page = 1; $page <= $lastPage; $page++) {
+                $links[] = [
+                    'url' => url()->current() . '?page=' . $page . '&items=' . $perPage,
+                    'label' => (string) $page,
+                    'active' => $page == $currentPage,
+                ];
+            }
+
+            return $links;
+        };
+
+        return response()->json([
+            $key => $paginatedItems,
+            'pagination' => [
+                'current_page' => $currentPage,
+                'last_page' => $lastPage,
+                'per_page' => $perPage,
+                'total' => $total,
+                'next_page_url' => $currentPage < $lastPage
+                    ? url()->current() . '?page=' . ($currentPage + 1) . '&items=' . $perPage
+                    : null,
+                'prev_page_url' => $currentPage > 1
+                    ? url()->current() . '?page=' . ($currentPage - 1) . '&items=' . $perPage
+                    : null,
+                'links' => $generatePaginationLinks($currentPage, $lastPage, $perPage),
+            ]
+        ]);
+    }
+    public function showsetings()
+    {
+        $settings = SiteSetting::first();
+
+        if (!$settings) {
+            return response()->json([
+                'message' => 'No settings found.',
+                'data' => null
+            ], 404);
+        }
+
+        // Add full logo URL if logo exists
+        $settings->logo_url = $settings->logo_path ? url($settings->logo_path) : null;
+
+        return response()->json($settings);
+    }
+
+
+
+    public function updatesetings(Request $request)
+    {
+        $settings = SiteSetting::first() ?? new SiteSetting();
+
+        // ✅ Handle file upload
+        if ($request->hasFile('logo')) {
+            $logo = $request->file('logo');
+            $imageName = time() . '.' . $logo->getClientOriginalExtension();
+            $logo->move(public_path('uploads'), $imageName);
+            $settings->logo_path = 'uploads/' . $imageName;
+        }
+
+        // ✅ Handle individual fields
+        $settings->website_name        = $request->input('website_name');
+        $settings->spin_creadit        = $request->input('spin_creadit');
+        $settings->register_bonus      = $request->input('register_bonus');
+        $settings->single_match_bonus  = $request->input('single_match_bonus');
+        $settings->max_predict_bonus   = $request->input('max_predict_bonus');
+        $settings->tournament_bonus    = $request->input('tournament_bonus');
+        $settings->admin_email         = $request->input('admin_email');
+        $settings->support_email       = $request->input('support_email');
+        $settings->phone               = $request->input('phone');
+        $settings->facebook            = $request->input('facebook');
+        $settings->whatsapp            = $request->input('whatsapp');
+        $settings->telegram            = $request->input('telegram');
+        $settings->instagram           = $request->input('instagram');
+        $settings->twitter             = $request->input('twitter');
+        $settings->linkedin            = $request->input('linkedin');
+        $settings->youtube             = $request->input('youtube');
+        $settings->meta_title          = $request->input('meta_title');
+        $settings->meta_description    = $request->input('meta_description');
+        $settings->meta_keywords       = $request->input('meta_keywords');
+
+        // ✅ Save the record
+        $settings->save();
+
+        // ✅ Add logo URL
+        $settings->logo_url = $settings->logo_path ? asset($settings->logo_path) : null;
+
+        return response()->json([
+            'message' => 'Settings updated successfully',
+            'data' => $settings
+        ]);
+    }
+    public function storecreadit(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'price' => 'required|numeric|min:0.01',
+            'status' => 'required',
+        ]);
+
+        Credit::create([
+            'user_id' => auth()->id(), // optional
+            'name' => $validated['name'],
+            'price' => $validated['price'],
+            'status' => $validated['status'],
+        ]);
+
+        return response()->json(['message' => 'Credit added successfully']);
+    }
+
+
+    public function creditList(Request $request)
+    {
+        $query = Credit::query();
+
+
+        if ($request->has('searchInput')) {
+            $query->where('name', 'like', '%' . $request->searchInput . '%');
+        }
+
+        $data = $query->orderBy('id', 'desc')->paginate($request->items);
+
+        $data->getCollection()->transform(function ($item) {
+            $item->created = $item->created_at->format('d M Y h:i A');
+            return $item;
+        });
+        // dd($data);
+
+        return response()->json([
+            'data' => $data->items(),
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'next_page_url' => $data->nextPageUrl(),
+                'prev_page_url' => $data->previousPageUrl(),
+                'links' => $this->generatePaginationLinks($data),
+            ]
+        ]);
+    }
+    public function creditDetalis($id)
+    {
+        $data = Credit::where('id', $id)->first();
+        return response()->json($data);
+    }
+    public function updatecreditDetalis(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required|exists:credits,id',
+            'name' => 'required|string|max:100',
+            'price' => 'required|numeric|min:0.01',
+            'status' => 'required',
+        ]);
+
+        $credit = Credit::find($validated['id']);
+        $credit->update([
+            'name' => $validated['name'],
+            'price' => $validated['price'],
+            'status' => $validated['status'],
+        ]);
+
+        return response()->json(['message' => 'Credit updated successfully']);
+    }
+
+
+    public function update_user_address(Request $request)
+    {
+
+        $validated = $request->validate([
+            'id' => 'required',
+            'paypal' => 'nullable',
+        ]);
+
+        // Find user
+        $user = User::find($validated['id']);
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        if ($request->filled('crypto')) {
+            $user->update([
+                'crypto_address' => $validated['crypto'],
+            ]);
+        }
+
+        if ($request->filled('paypal')) {
+            $user->update([
+                'paypal_address' => $validated['paypal'],
+            ]);
+        }
+
+
+        return response()->json(['message' => 'Profile updated successfully']);
+    }
+
+    public function updateUser(request $request)
+    {
+
+
+        $validated = $request->validate([
+            'id' => 'required|exists:users,id',
+            'name' => 'sometimes|string|max:100',
+            'phone' => 'sometimes|string|max:20',
+        ]);
+
+        $user = User::find($validated['id']);
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $data = [];
+
+        if ($request->filled('name')) {
+            $data['name'] = $request->name;
+        }
+
+        if ($request->filled('phone')) {
+            $data['phone'] = $request->phone;
+        }
+
+
+        if (!empty($data)) {
+            $user->update($data);
+        }
+
+
+        return response()->json(['message' => 'Profile updated successfully']);
     }
 }

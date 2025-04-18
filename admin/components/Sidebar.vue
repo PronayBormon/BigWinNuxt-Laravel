@@ -60,6 +60,11 @@
                         <img src="/assets/icons/notification.svg" alt="" class="img-fluid"> Notification
                     </NuxtLink>
                 </li>
+                <li class="menu_group" :class="{ active: route.path === '/creadit' }">
+                    <NuxtLink class="menu_link" to="/creadit">
+                        <img src="/assets/icons/notification.svg" alt="" class="img-fluid"> Creadit List
+                    </NuxtLink>
+                </li>
                 <li class="menu_group" :class="{ active: route.path === '/deposit' }">
                     <NuxtLink class="menu_link" to="/deposit">
                         <img src="/assets/icons/deposit.svg" alt="" class="img-fluid"> Deposit
@@ -85,6 +90,11 @@
                         <img src="/assets/icons/list.svg" alt="" class="img-fluid"> Player List
                     </NuxtLink>
                 </li>
+                    <li class="menu_group" :class="{ active: route.path === '/pre-settings' }">
+                        <NuxtLink class="menu_link" to="/pre-settings">
+                            <img src="/assets/icons/gear-solid.svg" alt="" class="img-fluid"> Pre Settings
+                        </NuxtLink>
+                    </li>
                     <li class="menu_group active position-sticky bottom-0 mt-2" @click="handleLogout()">
                         <NuxtLink class="menu_link" to="/">
                             <img src="/assets/icons/logout.svg" alt="" class="img-fluid"> Logout

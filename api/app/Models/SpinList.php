@@ -16,7 +16,5 @@ class SpinList extends Model
         'prize',
     ];
 
-    protected $casts = [
-        'prize' => 'decimal:2', 
-    ];
+
 }

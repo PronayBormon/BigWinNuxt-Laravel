@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Models\MatchRun;
 use App\Models\User;
+use App\Models\SiteSetting;
 use App\Models\Boller;
 use App\Models\Batsman;
 use App\Models\Country;
@@ -98,6 +99,18 @@ class UnauthenticateController extends Controller
             'total_6' => $validated['six'],
         ]);
 
+        $bowler = Boller::where('user_id', $request->user_id)->where('match_id', $request->match_id)->first();
+
+        if ($bowler != null) {
+            $settings = SiteSetting::first();
+            $user = User::where('id', $request->user_id)->first();
+            $creadit = $user->Credit_Points;
+            $total = $settings->single_match_bonus + $creadit;
+            $user->update([
+                'Credit_Points' => $total,
+            ]);
+        }
+
         return response()->json(['message' => 'Player stats saved successfully!', 'data' => $batsman], 201);
     }
 
@@ -126,6 +139,19 @@ class UnauthenticateController extends Controller
             'run' => $validated['run'],
             'wicket' => $validated['wicket'],
         ]);
+
+        
+        $batsman = Batsman::where('user_id', $request->user_id)->where('match_id', $request->match_id)->first();
+
+        if ($batsman != null) {
+            $settings = SiteSetting::first();
+            $user = User::where('id', $request->user_id)->first();
+            $creadit = $user->Credit_Points;
+            $total = $settings->max_predict_bonus + $creadit;
+            $user->update([
+                'Credit_Points' => $total,
+            ]);
+        }
 
         // Return a response indicating success
         return response()->json([
@@ -328,93 +354,105 @@ class UnauthenticateController extends Controller
         return response()->json($data);
     }
     public function tournamentPlayers(Request $request)
-{
-    $query = TournamentTeamsPlayers::where('tournament_team_id', $request->teamId)
-    ->where('tournament_id', $request->tournamentId)
-                                   ->with(['player']);
+    {
+        $query = TournamentTeamsPlayers::where('tournament_team_id', $request->teamId)
+            ->where('tournament_id', $request->tournamentId)
+            ->with(['player']);
 
-    // Filter by status if provided
-    if ($request->filled('status')) {
-        $query->where('status', $request->status);
-    }
-
-    // Search by player name or tournament name
-    if ($request->filled('searchInput')) {
-        $searchInput = $request->searchInput;
-
-        $query->whereHas('player', function ($q) use ($searchInput) {
-            $q->where('player_name', 'like', "%{$searchInput}%");
-        })->orWhereHas('tournament', function ($q) use ($searchInput) {
-            $q->where('name', 'like', "%{$searchInput}%");
-        });
-    }
-
-    // Paginate with sorting
-    $data = $query->paginate($request->items ?? 10);
-    $data->getCollection()->sortBy('player.player_name');
-
-    return response()->json([
-        'data' => $data->items(),
-        'pagination' => [
-            'current_page' => $data->currentPage(),
-            'last_page' => $data->lastPage(),
-            'per_page' => $data->perPage(),
-            'total' => $data->total(),
-            'next_page_url' => $data->nextPageUrl(),
-            'prev_page_url' => $data->previousPageUrl(),
-            'links' => $this->generatePaginationLinks($data),
-        ]
-    ]);
-}
-
-
-
-public function makeSiglePredict(request $request)
-{
-    // Validate input
-    $validate = Validator::make($request->all(), [
-        'match_id' => 'required|numeric',
-        'user_id'  => 'required|numeric',
-        'team_id'  => 'required|numeric',
-    ]);
-
-    if ($validate->fails()) {
-        return response()->json(['error' => $validate->errors()]);
-    }
-
-    // Check if prediction already exists
-    $check = singleMatchReport::where('match_id', $request->match_id)
-        ->where('user_id', $request->user_id)
-        ->first();
-
-    if ($check == null) {
-        // Create prediction
-        $data = singleMatchReport::create([
-            'match_id' => $request->match_id,
-            'user_id'  => $request->user_id,
-            'predict_team_id' => $request->team_id,
-        ]);
-
-        if (!$data) {
-            return response()->json(['error' => 'Error creating prediction']);
+        // Filter by status if provided
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
-        // Create match run record
-        $makeRun = MatchRun::create([
-            'match_id' => $request->match_id,
-            'user_id'  => $request->user_id,
-            'run'      => "00",
-        ]);
+        // Search by player name or tournament name
+        if ($request->filled('searchInput')) {
+            $searchInput = $request->searchInput;
 
-        if (!$makeRun) {
-            return response()->json(['error' => 'Error creating match run']);
+            $query->whereHas('player', function ($q) use ($searchInput) {
+                $q->where('player_name', 'like', "%{$searchInput}%");
+            })->orWhereHas('tournament', function ($q) use ($searchInput) {
+                $q->where('name', 'like', "%{$searchInput}%");
+            });
         }
 
-        return response()->json(['message' => 'Prediction successfully added']);
-    } else {
-        return response()->json(['error' => 'Prediction already exists']);
+        // Paginate with sorting
+        $data = $query->paginate($request->items ?? 10);
+        $data->getCollection()->sortBy('player.player_name');
+
+        return response()->json([
+            'data' => $data->items(),
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'next_page_url' => $data->nextPageUrl(),
+                'prev_page_url' => $data->previousPageUrl(),
+                'links' => $this->generatePaginationLinks($data),
+            ]
+        ]);
     }
-}
+
+
+
+    public function makeSiglePredict(request $request)
+    {
+        // Validate input
+        $validate = Validator::make($request->all(), [
+            'match_id' => 'required|numeric',
+            'user_id'  => 'required|numeric',
+            'team_id'  => 'required|numeric',
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json(['error' => $validate->errors()]);
+        }
+
+        // Check if prediction already exists
+        $check = singleMatchReport::where('match_id', $request->match_id)
+            ->where('user_id', $request->user_id)
+            ->first();
+
+        if ($check == null) {
+            // Create prediction
+            $data = singleMatchReport::create([
+                'match_id' => $request->match_id,
+                'user_id'  => $request->user_id,
+                'predict_team_id' => $request->team_id,
+            ]);
+
+            if (!$data) {
+                return response()->json(['error' => 'Error creating prediction']);
+            }
+
+            if ($data) {
+
+                $settings = SiteSetting::first();
+                $user = User::where('id', $request->user_id)->first();
+                $creadit = $user->Credit_Points;
+                $total = $settings->single_match_bonus + $creadit;
+                $user->update([
+                    'Credit_Points' => $total,
+                ]);
+            }
+
+            // Create match run record
+            $makeRun = MatchRun::create([
+                'match_id' => $request->match_id,
+                'user_id'  => $request->user_id,
+                'run'      => "00",
+            ]);
+
+
+            if (!$makeRun) {
+                return response()->json(['error' => 'Error creating match run']);
+            }
+
+            return response()->json(['message' => 'Prediction successfully added']);
+        } else {
+            return response()->json(['error' => 'Prediction already exists']);
+        }
+    }
 
     public function maxPredictPlayers(request $request)
     {

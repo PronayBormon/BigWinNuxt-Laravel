@@ -42,9 +42,10 @@ return [
         ],
 
         'api' => [
-            'driver' => 'sanctum', // Use sanctum if using Laravel Sanctum
+            'driver' => 'sanctum',
             'provider' => 'users',
         ],
+
     ],
 
     /*

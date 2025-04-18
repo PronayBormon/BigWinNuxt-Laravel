@@ -5,14 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Notification extends Model
+class Credit extends Model
 {
     use HasFactory;
-    protected $table = 'notification';
+
     protected $fillable = [
-        'message',
+        'user_id',
+        'name',
+        'price',
         'status',
     ];
 
-
+    // Optional: Relationship to User
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

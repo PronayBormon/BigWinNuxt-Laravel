@@ -23,6 +23,11 @@ class Boller extends Model
         'status',
     ];
 
+    public function result()
+    {
+        return $this->belongsTo(BallerResult::class, 'player_id');
+    }
+
     public function match()
     {
         return $this->belongsTo(PredictMatch::class, 'match_id');

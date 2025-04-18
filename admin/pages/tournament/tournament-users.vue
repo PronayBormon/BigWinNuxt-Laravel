@@ -23,9 +23,9 @@
                         <button type="button" class="btn btn-primary m-2" data-bs-target="#result"
                             data-bs-toggle="modal">Add
                             result</button>
-                        <!-- <button type="button" class="btn btn-primary m-2" data-bs-target="#addManual"
+                        <button type="button" class="btn btn-primary m-2" data-bs-target="#addManual"
                             data-bs-toggle="modal">Add
-                            Manual</button> -->
+                            Manual</button>
                     </div>
                 </div>
                 <div class="card app_card ">
@@ -98,7 +98,7 @@
                                                         <option value="">Select User</option>
                                                         <option v-for="user in userdata" :value="user.id">{{
                                                             user.username
-                                                            }}
+                                                        }}
                                                         </option>
                                                     </select>
                                                 </div>
@@ -167,7 +167,7 @@
                                                         <option value="">Select User</option>
                                                         <option v-for="user in userdata" :value="user.id">{{
                                                             user.username
-                                                            }}
+                                                        }}
                                                         </option>
                                                     </select>
                                                 </div>
@@ -220,7 +220,7 @@
                                                         <option value="">Select User</option>
                                                         <option v-for="user in userdata" :value="user.id">{{
                                                             user.username
-                                                            }}
+                                                        }}
                                                         </option>
                                                     </select>
                                                 </div>
@@ -300,8 +300,8 @@
 
                                     <div class="tab-content mb-2" id="myTabContent">
                                         <!-- ======== Semi Final ========  -->
-                                        <div class="tab-pane fade show active" id="result_semiFianl-pane" role="tabpanel"
-                                            aria-labelledby="semiFianl" tabindex="0">
+                                        <div class="tab-pane fade show active" id="result_semiFianl-pane"
+                                            role="tabpanel" aria-labelledby="semiFianl" tabindex="0">
                                             <form @submit.prevent="addSemiFinalPredictionResult">
 
                                                 <div v-for="(team, index) in result_teams" :key="index">
@@ -528,20 +528,20 @@ const addChampionresult = () => {
             }
         }
     }).catch(error => {
-        // If the error response is validation errors, show them using Notyf
         if (error.response && error.response.data && error.response.data.errors) {
             const errorMessages = error.response.data.errors;
 
-            // Loop through the errors object and show each error message
             for (const field in errorMessages) {
                 if (errorMessages.hasOwnProperty(field)) {
                     errorMessages[field].forEach((msg) => {
-                        $notyf.error(msg); // Show each error message using Notyf
+                        $notyf.error(msg);
                     });
                 }
             }
+        } else if (error.response && error.response.data && error.response.data.error) {
+            // Handle custom errors like "Already Exists!"
+            $notyf.error(error.response.data.error);
         } else {
-            // If it's not validation errors, show a general error message
             $notyf.error("An error occurred. Please try again.");
         }
     });
@@ -568,20 +568,20 @@ const addChampion = () => {
         }
         predictList(1);
     }).catch(error => {
-        // If the error response is validation errors, show them using Notyf
         if (error.response && error.response.data && error.response.data.errors) {
             const errorMessages = error.response.data.errors;
 
-            // Loop through the errors object and show each error message
             for (const field in errorMessages) {
                 if (errorMessages.hasOwnProperty(field)) {
                     errorMessages[field].forEach((msg) => {
-                        $notyf.error(msg); // Show each error message using Notyf
+                        $notyf.error(msg);
                     });
                 }
             }
+        } else if (error.response && error.response.data && error.response.data.error) {
+            // Handle custom errors like "Already Exists!"
+            $notyf.error(error.response.data.error);
         } else {
-            // If it's not validation errors, show a general error message
             $notyf.error("An error occurred. Please try again.");
         }
     });
@@ -608,20 +608,20 @@ const addFinalPredictionResult = () => {
             }
         }
     }).catch(error => {
-        // If the error response is validation errors, show them using Notyf
         if (error.response && error.response.data && error.response.data.errors) {
             const errorMessages = error.response.data.errors;
 
-            // Loop through the errors object and show each error message
             for (const field in errorMessages) {
                 if (errorMessages.hasOwnProperty(field)) {
                     errorMessages[field].forEach((msg) => {
-                        $notyf.error(msg); // Show each error message using Notyf
+                        $notyf.error(msg);
                     });
                 }
             }
+        } else if (error.response && error.response.data && error.response.data.error) {
+            // Handle custom errors like "Already Exists!"
+            $notyf.error(error.response.data.error);
         } else {
-            // If it's not validation errors, show a general error message
             $notyf.error("An error occurred. Please try again.");
         }
     });
@@ -648,20 +648,20 @@ const addFinalPrediction = () => {
         }
         predictList(1);
     }).catch(error => {
-        // If the error response is validation errors, show them using Notyf
         if (error.response && error.response.data && error.response.data.errors) {
             const errorMessages = error.response.data.errors;
 
-            // Loop through the errors object and show each error message
             for (const field in errorMessages) {
                 if (errorMessages.hasOwnProperty(field)) {
                     errorMessages[field].forEach((msg) => {
-                        $notyf.error(msg); // Show each error message using Notyf
+                        $notyf.error(msg);
                     });
                 }
             }
+        } else if (error.response && error.response.data && error.response.data.error) {
+            // Handle custom errors like "Already Exists!"
+            $notyf.error(error.response.data.error);
         } else {
-            // If it's not validation errors, show a general error message
             $notyf.error("An error occurred. Please try again.");
         }
     });
@@ -685,23 +685,24 @@ const addSemiFinalPrediction = () => {
         }
         predictList(1);
     }).catch(error => {
-        // If the error response is validation errors, show them using Notyf
         if (error.response && error.response.data && error.response.data.errors) {
             const errorMessages = error.response.data.errors;
 
-            // Loop through the errors object and show each error message
             for (const field in errorMessages) {
                 if (errorMessages.hasOwnProperty(field)) {
                     errorMessages[field].forEach((msg) => {
-                        $notyf.error(msg); // Show each error message using Notyf
+                        $notyf.error(msg);
                     });
                 }
             }
+        } else if (error.response && error.response.data && error.response.data.error) {
+            // Handle custom errors like "Already Exists!"
+            $notyf.error(error.response.data.error);
         } else {
-            // If it's not validation errors, show a general error message
             $notyf.error("An error occurred. Please try again.");
         }
     });
+
 }
 const addSemiFinalPredictionResult = () => {
     const formData = new FormData();
@@ -719,20 +720,20 @@ const addSemiFinalPredictionResult = () => {
             }
         }
     }).catch(error => {
-        // If the error response is validation errors, show them using Notyf
         if (error.response && error.response.data && error.response.data.errors) {
             const errorMessages = error.response.data.errors;
 
-            // Loop through the errors object and show each error message
             for (const field in errorMessages) {
                 if (errorMessages.hasOwnProperty(field)) {
                     errorMessages[field].forEach((msg) => {
-                        $notyf.error(msg); // Show each error message using Notyf
+                        $notyf.error(msg);
                     });
                 }
             }
+        } else if (error.response && error.response.data && error.response.data.error) {
+            // Handle custom errors like "Already Exists!"
+            $notyf.error(error.response.data.error);
         } else {
-            // If it's not validation errors, show a general error message
             $notyf.error("An error occurred. Please try again.");
         }
     });
@@ -774,9 +775,20 @@ const predictList = () => {
 
 }
 
+const tournamentWinner = () => {
+    axios.get('/api/tournament-winners', {
+        params: { match_id: tid }
+    }).then(response => {
+        console.log(response.data);
+        // PredictUsers.value = response.data;
+    });
+
+}
+
 onMounted(() => {
     details();
     userList();
     predictList();
+    tournamentWinner();
 });
 </script>

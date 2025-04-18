@@ -23,9 +23,9 @@
                         <!-- <button type="button" class="btn btn-primary" data-bs-target="#result"
                             data-bs-toggle="modal">Add
                             result</button> -->
-                        <!-- <button type="button" class="btn btn-primary" data-bs-target="#addManual"
+                        <button type="button" class="btn btn-primary" data-bs-target="#addManual"
                             data-bs-toggle="modal">Add
-                            Manual</button> -->
+                            Manual</button>
                     </div>
                 </div>
                 <div class="card app_card ">
@@ -616,7 +616,7 @@ const addbatsman = () => {
     formData.append('player_id', bat_player_id.value);
     formData.append('run', bat_run.value);
     formData.append('ball', bat_ball.value);
-    formData.append('four', bat_four.value);
+    formData.append('four', bat_four.value); 
     formData.append('six', bat_six.value);
 
     // console.log(formData);

@@ -16,11 +16,15 @@ class User extends Authenticatable
         'username',
         'email',
         'phone',
+        'Credit_Points',
         'password',
         'role',
         'login_ip',
         'register_ip',
         'status',
+        'balance',
+        'crypto_address',
+        'paypal_address',
     ];
 
     protected $hidden = [

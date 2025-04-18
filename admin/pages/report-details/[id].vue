@@ -1,4 +1,5 @@
 <template>
+    
 
     <div class="main_container">
 
@@ -78,7 +79,7 @@
                                             <p class="mb-0">{{ item.user.email }}</p>
                                         </td>
                                         <td class="text-center">
-                                            {{ item.run }} Run
+                                            <span>{{ item.run }} Run</span>
                                         </td>
                                         <td class="text-center">{{ item.match.team_a.name }} Vs
                                             {{ item.match.team_b.name }}</td>
@@ -368,6 +369,50 @@ const userList = () => {
     })
 }
 
+const BowlerWinner = async () => {
+    try {
+        const id = matchId; // Ensure matchId is defined
+        if (!id) {
+            console.error("matchId is undefined or null");
+            return;
+        }
+        const response = await axios.get(`api/bowler-winner-users`, 
+            {
+                params:{
+                    id: matchId,
+                }
+            }
+        );
+        console.log(response.data); // Check the structure of this response
+        // teamlist.value = response.data;  
+    } catch (error) {
+        console.error("Error fetching team data:", error);
+    }
+};
+
+const BatsmanWinner = async () => {
+    try {
+        const id = matchId; // Ensure matchId is defined
+        if (!id) {
+            console.error("matchId is undefined or null");
+            return;
+        }
+        const response = await axios.get(`api/batsman-winner-users`, 
+            {
+                params:{
+                    id: matchId,
+                }
+            }
+        );
+        console.log(response.data); // Check the structure of this response
+        // teamlist.value = response.data;  
+    } catch (error) {
+        console.error("Error fetching team data:", error);
+    }
+};
+
+
+
 const teamdata = async () => {
     try {
         const id = matchId; // Ensure matchId is defined
@@ -420,7 +465,8 @@ onMounted(() => {
     userList();
     predictUsers(1);
     teamdata();
-    // getwinner();
+    BowlerWinner();
+    BatsmanWinner();
 })
 
 
