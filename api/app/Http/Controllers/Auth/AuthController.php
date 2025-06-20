@@ -50,7 +50,7 @@ class AuthController extends Controller
             'username'      => $username,
             'register_ip'   => $request->ip_address,
             'login_ip'      => $request->ip_address,
-            'status'      => "1",
+            'status'        => "1",
             'email'         => $validatedData['email'],
             'password'      => Hash::make($validatedData['password']),
         ]);

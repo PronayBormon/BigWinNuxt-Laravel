@@ -7,16 +7,19 @@ use App\Models\SiteSetting;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Mail\SendVerificationCode;
 use App\Models\NotificationUser;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class authController extends Controller
 {
     public function register(request $request)
     {
-        
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -29,7 +32,7 @@ class authController extends Controller
             ],
         ]);
 
-        $baseUsername = Str::slug($validatedData['name']); 
+        $baseUsername = Str::slug($validatedData['name']);
         $username = $baseUsername;
 
         $count = 1;
@@ -49,6 +52,7 @@ class authController extends Controller
             'email'         => $validatedData['email'],
             'password'      => Hash::make($validatedData['password']),
             'Credit_Points' => $settings->register_bonus,
+            'status'         => "1",
         ]);
 
         $notify = NotificationUser::create([
@@ -70,10 +74,7 @@ class authController extends Controller
 
     public function user_login(Request $request)
     {
-        // dd($request->login_ip);
-
         $user = User::where('email', $request->email)->first();
-        // dd($user);
         if ($user->status != 1) {
             return response()->json([
                 'status' => 402,
@@ -92,12 +93,67 @@ class authController extends Controller
                 'user' => $user,
                 'message' => "Login successfully",
             ]);
-            // dd($token);
         } else {
             return response()->json([
                 'status' => 402,
                 'error' => "Creadentials dosen't match",
             ]);
         }
+    }
+    public function SendCode(request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => "User Not found"]);
+        }
+
+        $code = rand(100000, 999999);
+
+        // Save to cache for 10 minutes
+        Cache::put('reset_code_' . $user->email, $code, now()->addMinutes(10));
+
+        Mail::to($request->email)->send(new SendVerificationCode($code));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Verification code sent to your email.',
+        ]);
+    }
+    public function VerifyCodeAndReset(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|digits:6',
+            'password' => 'required|min:6|confirmed' // requires password_confirmation
+        ]);
+
+        $cachedCode = Cache::get('reset_code_' . $request->email);
+
+        if (!$cachedCode || $cachedCode != $request->code) {
+            return response()->json(['success' => false, 'message' => 'Invalid or expired code.'], 400);
+        }
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found.'], 404);
+        }
+
+        // Update password
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Optionally delete the code from cache
+        Cache::forget('reset_code_' . $request->email);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset successful.'
+        ]);
     }
 }

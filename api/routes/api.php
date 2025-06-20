@@ -1,13 +1,19 @@
 <?php
 
+use App\Models\Tournament;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CMSController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\API\PollController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Mobile\authController;
+use App\Http\Controllers\API\QuestionController;
+use App\Http\Controllers\API\LinksAdsApiController;
 use App\Http\Controllers\User\UnauthenticateController;
-use App\Models\Tournament;
+use App\Http\Controllers\API\AdminController\BigshortController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,15 +32,13 @@ use App\Models\Tournament;
 
 Route::post('/add-account', [authController::class, 'register']);
 Route::post('/login', [authController::class, 'user_login']);
+Route::post('/send-code', [authController::class, 'SendCode']);
+Route::post('/verifyreset', [authController::class, 'VerifyCodeAndReset']);
 // Route::post('/register', [authController::class, 'register']);
 
-
-
-
-Route::prefix('api')->middleware('isAdmin')->group(function () {
-    Route::get('/settings', [AdminController::class, 'showsetings']);
+Route::prefix('api')->group(function () {
     Route::post('/settings/update', [AdminController::class, 'updatesetings']);
-    
+
     Route::post('/user-list', [UserController::class, 'userList'])->name('user.list');
     Route::post('/user-data/{id}', [UserController::class, 'user_data']);
     Route::post('/update', [UserController::class, 'updateUser']);
@@ -65,6 +69,7 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     Route::post('/update-player', [AdminController::class, 'updateplayer']);
 
     Route::post('/make-tournament', [AdminController::class, 'saveTournament']);
+    Route::get('/update-tournament-status', [AdminController::class, 'updateTournamentStatus']);
 
     Route::get('/tournament-details/{id}', [AdminController::class, 'tournamentDetails']);
     Route::post('/add-tournament-teams', [AdminController::class, 'addTournamentTeam']);
@@ -77,6 +82,7 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
 
     // Max predict     
     Route::post('/add-max-predict', [AdminController::class, 'maxpredict']);
+    Route::get('/update-max-predict', [AdminController::class, 'updateMaxpredict']);
 
 
 
@@ -99,12 +105,16 @@ Route::prefix('api')->middleware('isAdmin')->group(function () {
     Route::post('/add-boller-result', [AdminController::class, 'BollerResult']);
     Route::post('/add-credits', [AdminController::class, 'storecreadit']);
     Route::post('/update-credit', [AdminController::class, 'updatecreditDetalis']);
+
+    Route::post('/save-ads', [AdminController::class, 'storeads']);
+    Route::get('/delete-ads/{id}', [AdminController::class, 'delAds']);
 });
 
-Route::prefix('tournament')->middleware('isAdmin')->group(function () {
+Route::prefix('tournament')->group(function () {
     Route::post('/update-tournament', [AdminController::class, 'UpdateTournament']);
 });
 Route::prefix('api')->group(function () {
+    Route::get('/settings', [AdminController::class, 'showsetings']);
     // ========== User list for select ==========
     Route::get('/user-data', [UnauthenticateController::class, 'user_list']);
 
@@ -151,14 +161,14 @@ Route::prefix('api')->group(function () {
     Route::get('/tournament-details/{id}', [AdminController::class, 'TournamentDetails']);
     Route::get('/tournamet/team-players', [AdminController::class, 'tournamentPlayers']);
     Route::post('/save-tournament', [AdminController::class, 'SaveTournamentReport']);
-    
+
     Route::get('/predict-last-match', [AdminController::class, 'predictMatchget']);
     Route::get('/predict-match-players/{id}', [AdminController::class, 'predictMatchget']);
     Route::get('/prize-banner', [AdminController::class, 'PrizeBanner']);
     Route::get('/user-boller-report/{id}', [AdminController::class, 'userbollerReport']);
     Route::get('/user-predict-report', [AdminController::class, 'UserBollBat']);
     Route::get('/count-prediction', [AdminController::class, 'predictCount']);
-    
+
     // view result 
     Route::get('/single-match-result/{id}', [AdminController::class, 'viewSingleMatchResult']);
     Route::get('/predict-match-result/{id}', [AdminController::class, 'viewPredictMatchResult']);
@@ -166,8 +176,9 @@ Route::prefix('api')->group(function () {
 
     // Winner 
     Route::get('/single-match-winner/{id}', [AdminController::class, 'singleWinner']);
-    // spin list 
     
+    // spin list 
+
     // Route::post('/getspinList', [AdminController::class, 'SpinList']);
     Route::get('/spin-list', [AdminController::class, 'getSpinList']);
     Route::get('/user-details/{id}', [AdminController::class, 'userData']);
@@ -176,7 +187,7 @@ Route::prefix('api')->group(function () {
     Route::post('/update-run', [AdminController::class, 'updateRun']);
     Route::get('/get-user-run', [AdminController::class, 'getRun']);
 
-    
+
     // Route::get('/match-report-users', [AdminController::class, 'singleMatchpredictUsers']);
     Route::get('/matchdetailsusers', [AdminController::class, 'userpredictionrun']);
     Route::get('/get-result', [AdminController::class, 'getResultStatus']);
@@ -187,11 +198,7 @@ Route::prefix('api')->group(function () {
     Route::get('/maxpredict-playerList', [AdminController::class, 'maxpredictPlayerList']);
     Route::get('/match-report-users', [AdminController::class, 'singleMatchpredictUsers']);
 
-    
-    // Route::get('/batsman/{id}', [UnauthenticateController::class, 'batsmanMatch']);
-    // Route::get('/baller/{id}', [UnauthenticateController::class, 'ballerMatch']);
 
-    
     Route::get('/bowler-winner-users', [AdminController::class, 'maxpredictmathwinner']);
     Route::get('/batsman-winner-users', [AdminController::class, 'maxpredictBatsmanmathwinner']);
     Route::get('/tournament-winners', [AdminController::class, 'TournamentWinnersUsers']);
@@ -200,5 +207,63 @@ Route::prefix('api')->group(function () {
     Route::get('/credit-details/{id}', [AdminController::class, 'creditDetalis']);
     Route::post('/update-user', [AdminController::class, 'update_user_address']);
     Route::post('/update-user_profile', [AdminController::class, 'updateUser']);
+    Route::post('/buy-credit', [AdminController::class, 'buycredit']);
 
+
+    Route::get('/get-ads', [AdminController::class, 'getAds']);
+    Route::get('/show-ads', [AdminController::class, 'showAds']);
+    Route::post('/add-ads-prize', [AdminController::class, 'addCreditAds']);
 });
+Route::prefix('cms')->controller(CMSController::class)->group(function () {
+    Route::post('/match-page', 'matchPage');
+    Route::post('/maxpredict-page', 'MaxPredictPage');
+    Route::post('/Wallet-page', 'WalletPagetPage');
+    Route::post('/Winner-page', 'WinnerPage');
+    Route::post('/Profile-page', 'ProfilePage');
+
+    Route::get('/match-image', 'matchPageimage');
+    Route::get('/maxpredict-image', 'MaxPredictPageimage');
+    Route::get('/Wallet-image', 'WalletPagetPageimage');
+    Route::get('/Winner-image', 'WinnerPageimage');
+    Route::get('/Profile-image', 'ProfilePageimage');
+});
+
+Route::prefix("bigshort")->controller(BigshortController::class)->group(function () {
+    Route::post("/save-bigshort", 'save');
+    Route::get("/bigshort-matchlist", 'bigshortList');
+    Route::get("/bigshort-details/{id}", 'bigDetails');
+    Route::post("/update-match", 'update_match');
+});
+
+Route::prefix("link-ads")->controller(LinksAdsApiController::class)->group(function () {
+    Route::post("/save-link-ads", 'saveLinkAds');
+    Route::get("/link-ads-list", 'linkAdsList');
+    Route::get("/link-ads-details/{id}", 'linkAdsDetails');
+    Route::post("/update-link-ads", 'updateLinkAds');
+    Route::get("/delete-link-ads/{id}", 'deleteLinkAds');
+    
+    Route::get("/link-ads", 'activelinkAdsList');
+    Route::get("/verify-follow", 'verifyFollow');
+});
+
+// Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/questions', [QuestionController::class, 'questionStore']); // admin
+    Route::get('/question-list', [QuestionController::class, 'question']); // admin
+    Route::get('/question/active', [QuestionController::class, 'getQuestion']); 
+    Route::post('/update-question', [QuestionController::class, 'updateQuestion']);
+    Route::post('/submit-answer', [QuestionController::class, 'submitAnsware']);
+    Route::get('/questions/{id}/results', [QuestionController::class, 'getResults']); // admin
+// });
+
+Route::get('/questions/{id}', [QuestionController::class, 'show']);
+
+// Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/polls', [PollController::class, 'pollStore']); // admin
+    Route::get('/poll-list', [PollController::class, 'pollList']); // admin
+    Route::get('/poll/active', [PollController::class, 'getPollActive']); 
+    Route::post('/update-poll', [PollController::class, 'updatePoll']);
+    Route::post('/polls/submit', [PollController::class, 'submitAnswer']);
+    Route::get('/polls/{id}/results', [PollController::class, 'getResults']); // admin
+// });
+
+Route::get('/polls/{id}', [PollController::class, 'show']);

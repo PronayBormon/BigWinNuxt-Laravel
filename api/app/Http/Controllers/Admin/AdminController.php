@@ -2,44 +2,70 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Ad;
 use Carbon\Carbon;
+use App\Enums\Page;
+use App\Models\CMS;
 use App\Models\User;
+use App\Models\Boller;
+use App\Models\Credit;
 use App\Models\Slider;
+use App\Models\Batsman;
 use App\Models\Players;
+use App\Models\Champion;
+use App\Models\Finalist;
+use App\Models\MatchRun;
 use App\Models\SpinList;
 use App\Models\MatchList;
+use App\Models\SemiFinal;
 use App\Models\Tournament;
 use App\Models\PredictTeam;
 use App\Models\PrizeBanner;
+use App\Models\SiteSetting;
 use App\Models\TeamPlayers;
+use App\Models\BallerResult;
 use App\Models\Notification;
-use App\Models\NotificationUser;
 use App\Models\PredictMatch;
 use Illuminate\Http\Request;
-use App\Models\PredictPlayer;
-use App\Models\MatchRun;
-use App\Models\TournamentTeam;
-use App\Models\singleMatchReport;
-use App\Http\Controllers\Controller;
-use App\Models\BallerResult;
-use App\Models\Batsman;
-use App\Models\Credit;
 use App\Models\BatsmanResult;
-use App\Models\Boller;
-use App\Models\Champion;
+use App\Models\PredictPlayer;
 use App\Models\ChampionResult;
-use App\Models\Finalist;
 use App\Models\FinalistResult;
-use App\Models\SemiFinal;
+use App\Models\TournamentTeam;
 use App\Models\SemiFinalResult;
+use App\Models\NotificationUser;
+use App\Models\singleMatchReport;
 use App\Models\SingleMatchResult;
-use App\Models\SiteSetting;
-use App\Models\TournamentTeamsPlayers;
+use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Validated;
+use App\Models\TournamentTeamsPlayers;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class AdminController extends Controller
 {
+    public function match_Page(Request $request)
+    {
+
+        $data = CMS::where('page', Page::SingleMatchPage)->first();
+
+        if ($request->has('image')) {
+
+            $image = $request->image;
+            $imageName = time() . "." . $image->getClientOriginalExtension();
+            $image->move(public_path('cms'), $imageName);
+            $path = "cms/" . $imageName;
+        }
+
+        $data->updateOrCreate([
+            'page' => Page::SingleMatchPage,
+        ], [
+            'image' => $path,
+        ]);
+        if ($data) {
+            return response()->json(['success' => "Cms Updated Successfully"]);
+        }
+    }
     // ðŸ”¹ **Generate Pagination Links with Ellipsis**
     private function generatePaginationLinks($data)
     {
@@ -109,21 +135,26 @@ class AdminController extends Controller
     }
     public function PrizeBanner()
     {
-        $BattingprizeBanner = PrizeBanner::where('type', '1')->orderby('id', "desc")->first();
-        $BowlingprizeBanner = PrizeBanner::where('type', '2')->orderby('id', "desc")->first();
+        $winup = PrizeBanner::where('type', '1')->orderby('id', "desc")->first();
+        $maxPlayer = PrizeBanner::where('type', '2')->orderby('id', "desc")->first();
         $TournamentprizeBanner = PrizeBanner::where('type', '3')->orderby('id', "desc")->first();
+        $bigshort = PrizeBanner::where('type', '4')->orderby('id', "desc")->first();
 
         return response()->json([
-            'batting' => $BattingprizeBanner ? array_merge($BattingprizeBanner->toArray(), [
-                'image' => url('uploads/' . $BattingprizeBanner->banner)
+            'batting' => $winup ? array_merge($winup->toArray(), [
+                'image' => url('uploads/' . $winup->banner)
             ]) : null,
 
-            'bowling' => $BowlingprizeBanner ? array_merge($BowlingprizeBanner->toArray(), [
-                'image' => url('uploads/' . $BowlingprizeBanner->banner)
+            'bowling' => $maxPlayer ? array_merge($maxPlayer->toArray(), [
+                'image' => url('uploads/' . $maxPlayer->banner)
             ]) : null,
 
             'tournament' => $TournamentprizeBanner ? array_merge($TournamentprizeBanner->toArray(), [
                 'image' => url('uploads/' . $TournamentprizeBanner->banner)
+            ]) : null,
+
+            'bigshort' => $bigshort ? array_merge($bigshort->toArray(), [
+                'image' => url('uploads/' . $bigshort->banner)
             ]) : null,
         ]);
     }
@@ -427,7 +458,13 @@ class AdminController extends Controller
 
 
             // $data->time = \Carbon\Carbon::parse($data->time)->format('d M Y h:i A');
-            // $data->end_date = \Carbon\Carbon::parse($data->end_date)->format('d M Y h:i A');
+
+            $dateTime = \Carbon\Carbon::parse($data->end_date);
+
+            $data->start_time = $dateTime->format("h:i A");
+            $data->start_date = $dateTime->format("M d, Y");
+
+            // $data->date = $data->created_at->format("M d Y");
         }
 
 
@@ -439,9 +476,6 @@ class AdminController extends Controller
             "id" => "required",
             "teamA" => "required|integer",
             "teamB" => "required|integer",
-            // "dateTime" => "required",
-            // "enddateTime" => "required",
-            "image" => "image|mimes:png,webp|dimensions:height=350,width=700",
         ]);
 
         if ($validate->fails()) {
@@ -450,57 +484,127 @@ class AdminController extends Controller
 
         $data = MatchList::where('id', $request->id)->first();
 
-        if ($request->hasFile('image')) {
+        if ($request->status == 1) {
+            // dd("1");
+            $checkActive = MatchList::where('status', 1)->first();
 
-            $image = $request->image;
-            $imageName = time() . "." . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads'), $imageName);
-
-            // Set the image path to save in the database
-            $imagePath = 'uploads/' . $imageName;
+            if ($checkActive == null) {
 
 
-            if ($request->startDate && $request->endDate) {
-                $data->update([
-                    'team_a' => $request->teamA,
-                    'team_b' => $request->teamB,
-                    'time' => $request->startDate,
-                    'end_date' => $request->endDate,
-                    'status' => $request->status,
-                    'image' => $imagePath,
-                ]);
+                if ($request->hasFile('image')) {
 
-                return response()->json(['message' => "successfully Update"]);
+                    $image = $request->image;
+                    $imageName = time() . "." . $image->getClientOriginalExtension();
+                    $image->move(public_path('uploads'), $imageName);
+
+                    // Set the image path to save in the database
+                    $imagePath = 'uploads/' . $imageName;
+
+
+                    if ($request->startDate && $request->endDate) {
+
+                        $data->update([
+                            'team_a'    => $request->teamA,
+                            'team_b'    => $request->teamB,
+                            'time'      => $request->startDate,
+                            'end_date'  => $request->endDate,
+                            'status'    => $request->status,
+                            'image'     => $imagePath,
+                        ]);
+
+                        return response()->json(['message' => "successfully Update"]);
+                    } else {
+                        $data->update([
+                            'team_a' => $request->teamA,
+                            'team_b' => $request->teamB,
+                            'status' => $request->status,
+                            'image' => $imagePath,
+                        ]);
+
+                        return response()->json(['message' => "successfully Update"]);
+                    }
+                } else {
+
+                    if ($request->startDate && $request->endDate) {
+                        $data->update([
+                            'team_a' => $request->teamA,
+                            'team_b' => $request->teamB,
+                            'time' => $request->startDate,
+                            'end_date' => $request->endDate,
+                            'status' => $request->status,
+                        ]);
+
+                        return response()->json(['message' => "successfully Update"]);
+                    } else {
+                        $data->update([
+                            'team_a' => $request->teamA,
+                            'team_b' => $request->teamB,
+                            'status' => $request->status,
+                        ]);
+
+                        return response()->json(['message' => "successfully Update"]);
+                    }
+                }
             } else {
-                $data->update([
-                    'team_a' => $request->teamA,
-                    'team_b' => $request->teamB,
-                    'status' => $request->status,
-                    'image' => $imagePath,
-                ]);
 
-                return response()->json(['message' => "successfully Update"]);
+                return response()->json([
+                    'errors' => ['match' => ['You have one active match']]
+                ], 422);
             }
         } else {
+            if ($request->hasFile('image')) {
 
-            if ($request->startDate && $request->endDate) {
-                $data->update([
-                    'team_a' => $request->teamA,
-                    'team_b' => $request->teamB,
-                    'time' => $request->startDate,
-                    'end_date' => $request->endDate,
-                    'status' => $request->status,
-                ]);
+                $image = $request->image;
+                $imageName = time() . "." . $image->getClientOriginalExtension();
+                $image->move(public_path('uploads'), $imageName);
 
-                return response()->json(['message' => "successfully Update"]);
+                // Set the image path to save in the database
+                $imagePath = 'uploads/' . $imageName;
+
+
+                if ($request->startDate && $request->endDate) {
+
+                    $data->update([
+                        'team_a'    => $request->teamA,
+                        'team_b'    => $request->teamB,
+                        'time'      => $request->startDate,
+                        'end_date'  => $request->endDate,
+                        'status'    => $request->status,
+                        'image'     => $imagePath,
+                    ]);
+
+                    return response()->json(['message' => "successfully Update"]);
+                } else {
+                    $data->update([
+                        'team_a' => $request->teamA,
+                        'team_b' => $request->teamB,
+                        'status' => $request->status,
+                        'image' => $imagePath,
+                    ]);
+
+                    return response()->json(['message' => "successfully Update"]);
+                }
             } else {
-                $data->update([
-                    'team_a' => $request->teamA,
-                    'team_b' => $request->teamB,
-                    'status' => $request->status,
-                ]);
 
-                return response()->json(['message' => "successfully Update"]);
+                if ($request->startDate && $request->endDate) {
+                    $data->update([
+                        'team_a' => $request->teamA,
+                        'team_b' => $request->teamB,
+                        'time' => $request->startDate,
+                        'end_date' => $request->endDate,
+                        'status' => $request->status,
+                    ]);
+
+                    return response()->json(['message' => "successfully Update"]);
+                } else {
+                    $data->update([
+                        'team_a' => $request->teamA,
+                        'team_b' => $request->teamB,
+                        'status' => $request->status,
+                    ]);
+
+                    return response()->json(['message' => "successfully Update"]);
+                }
             }
         }
     }
@@ -533,6 +637,7 @@ class AdminController extends Controller
             'tname' => 'required|string',
             'tdate' => 'required|date',
             'tenddate' => 'required|date',
+            "t_image" => "required|image|mimes:png,webp|dimensions:height=350,width=700",
             'teams' => 'required|array|min:1',
             'teams.*.team_id' => 'required|integer|exists:countries,id', // Ensure team exists
             'teams.*.players' => 'required|array|min:1',
@@ -540,13 +645,26 @@ class AdminController extends Controller
         ], $messages);
 
 
-        // Create the tournament
-        $tournament = Tournament::create([
-            'name' => $request->tname,
-            'start_date' => $request->tdate,
-            'end_date' => $request->tenddate,
-            'status' => '1',
-        ]);
+        if ($request->hasFile('t_image')) {
+
+            $image = $request->t_image;
+            $imageName = time() . "." . $image->getClientOriginalExtension();
+            $image->move(public_path('uploads'), $imageName);
+
+            // Set the image path to save in the database
+            $imagePath = 'uploads/' . $imageName;
+            // Create the tournament
+            $tournament = Tournament::create([
+                'name' => $request->tname,
+                'start_date' => $request->tdate,
+                'end_date' => $request->tenddate,
+                'image' => $imagePath,
+                'status' => '0',
+            ]);
+        } else {
+            return response()->json(['message' => 'image not found']);
+        }
+
 
         // Save teams and players
         foreach ($request->teams as $teamData) {
@@ -572,11 +690,54 @@ class AdminController extends Controller
         ]);
     }
 
+    public function updateTournamentStatus(Request $request)
+    {
+        $tournament = Tournament::where('id', $request->id)->first();
+
+        if ($tournament->status == '1') {
+            $tournament->update([
+                'status' => '0',
+            ]);
+        } else {
+            $exists = Tournament::where('status', '1')->first();
+
+            if ($exists) {
+                return response()->json([
+                    'errors' => [
+                        'status' => ['Already have an active match']
+                    ]
+                ], 422);
+            } else {
+                $tournament->update([
+                    'status' => '1',
+                ]);
+            }
+        }
+        return response()->json([
+            'message' =>  'Status change successfully',
+        ]);
+    }
+
     public function tournamentDetails($id)
     {
+
         $data = Tournament::where('id', $id)
             ->with(['teams', 'teams.team', 'players', 'players.player'])
             ->first();
+
+        $data->image = url($data->image);
+
+
+        $data->time = $data->created_at->format("h:i A");
+        $data->date = $data->created_at->format("M d Y");
+
+        foreach ($data->teams as $teamEntry) {
+            if ($teamEntry->team && $teamEntry->team->image) {
+                $teamEntry->team->image = url("uploads/" . $teamEntry->team->image);
+            }
+        }
+
+
         return response()->json($data);
     }
     public function UpdateTournament(Request $request)
@@ -752,6 +913,34 @@ class AdminController extends Controller
         return response()->json(['message' => 'Predict Match created successfully!'], 201);
     }
 
+    public function updateMaxpredict(Request $request)
+    {
+        $match = PredictMatch::where('id', $request->id)->first();
+
+        if ($match->status == 'active') {
+            $match->update([
+                'status' => 'inactive',
+            ]);
+        } else {
+            $exists = PredictMatch::where('status', 'active')->first();
+            if ($exists) {
+                return response()->json([
+                    'errors' => [
+                        'status' => ['Already have an active match']
+                    ]
+                ], 422);
+            }
+            $match->update([
+                'status' => 'active',
+            ]);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => "Status update successfully"
+        ]);
+    }
+
     public function maxpredictList(request $request)
     {
         // $data = PredictMatch::with(['teams', 'teams.country'])
@@ -827,7 +1016,7 @@ class AdminController extends Controller
     {
         if ($request->filled('status')) {
 
-            // dd($request->status);
+            // dd($request->all());
             if ($request->status == 'win') {
 
                 $winner = SingleMatchResult::where('match_id', $request->match_id)->first();
@@ -1238,7 +1427,7 @@ class AdminController extends Controller
      */
     public function getUsersWithPredictions(Request $request)
     {
-        $matchId = $request->match_id; // Get match_id from request
+        $matchId = $request->match_id;
 
         $users = User::whereHas('semiFinalPredictions', function ($query) use ($matchId) {
             $query->where('match_id', $matchId);
@@ -1249,7 +1438,9 @@ class AdminController extends Controller
             ->whereHas('championPredictions', function ($query) use ($matchId) {
                 $query->where('match_id', $matchId);
             })
-            ->get(); // Add more fields if needed
+            ->get();
+
+
 
         return response()->json([
             'message' => 'Users who made predictions in all categories for match ID ' . $matchId,
@@ -1295,7 +1486,7 @@ class AdminController extends Controller
     }
     public function singleMatch()
     {
-        $data = MatchList::orderby('id', "desc")->with(["teamA", "teamB"])->first();
+        $data = MatchList::where('status', 1)->orderby('id', "desc")->with(["teamA", "teamB"])->first();
 
         if ($data) {
             $baseUrl = url('uploads/'); // Adjust the path if necessary
@@ -1324,10 +1515,13 @@ class AdminController extends Controller
             $baseUrl = url('uploads/');
 
             foreach ($data->teams as $teamData) {
+
                 if ($teamData->team) {
                     $teamData->team->image = $baseUrl . '/' . $teamData->team->image;
                 }
             }
+
+            $data->image = url($data->image);
         }
 
         return response()->json($data);
@@ -1335,25 +1529,34 @@ class AdminController extends Controller
 
     public function SaveTournamentReport(Request $request)
     {
-        // Validate incoming request
-        $validatedData = $request->validate([
+        $validatedData = Validator::make($request->all(), [
             'user_id' => 'required|integer',
             'match_id' => 'required|integer',
             'win_team_id' => 'required|integer',
-            'win_play_1' => 'required|integer',
-            'win_play_2' => 'required|integer',
+            // 'win_play_1' => 'required|integer',
+            // 'win_play_2' => 'required|integer',
+
             'final_team_1' => 'required|integer',
             'final_team_2' => 'required|integer',
+
             'final_HWT' => 'required|integer',
             'final_HS' => 'required|integer',
+
             'SemiFinal' => 'required|array',
             'SemiFinal.*.team' => 'required|integer',
-            'SemiFinal.*.matches' => 'required|integer',
+            // 'SemiFinal.*.matches' => 'required|integer',
             'SemiFinal.*.wins' => 'required|integer',
-            'SemiFinal.*.losses' => 'required|integer',
-            'SemiFinal.*.ties' => 'required|integer',
+            // 'SemiFinal.*.losses' => 'required|integer',
+            // 'SemiFinal.*.ties' => 'required|integer',
             'SemiFinal.*.points' => 'required|integer',
         ]);
+
+        if ($validatedData->fails()) {
+            return response()->json([
+                "success" => false,
+                "errors" => $validatedData->errors(),
+            ], 422);
+        }
 
         try {
             // Store SemiFinal data
@@ -1362,10 +1565,10 @@ class AdminController extends Controller
                     'user_id' => $request->user_id,
                     'match_id' => $request->match_id,
                     'team_id' => $team['team'],
-                    'match' => $team['matches'],
+                    // 'match' => $team['matches'],
                     'win' => $team['wins'],
-                    'los' => $team['losses'],
-                    'tie' => $team['ties'],
+                    // 'los' => $team['losses'],
+                    // 'tie' => $team['ties'],
                     'pts' => $team['points'],
                     'status' => '1',
                 ]);
@@ -1387,7 +1590,7 @@ class AdminController extends Controller
                 'user_id' => $request->user_id,
                 'match_id' => $request->match_id,
                 'team_id' => $request->win_team_id,
-                'mom' => $request->win_play_1,
+                // 'mom' => $request->win_play_1,
                 'mot' => $request->win_play_2,
                 'status' => '1',
             ]);
@@ -1510,7 +1713,7 @@ class AdminController extends Controller
     {
         // dd($request->all());
         $validate = Validator::make($request->all(), [
-            'match_id' => "required|unique:singlematchresult,match_id",
+            'match_id' => "required",
             'team_id' => "required",
         ]);
         if ($validate->fails()) {
@@ -1767,11 +1970,9 @@ class AdminController extends Controller
     {
         $user = User::where('id', $request->user_id)->first();
 
-
-
         if ($user) {
             $user->update([
-                'Credit_Points' => $request->cp
+                'credit_points' => $request->cp
             ]);
 
             //  dd($user);
@@ -1900,9 +2101,12 @@ class AdminController extends Controller
 
     public function singlematchWinners(request $request)
     {
-        $winner = SingleMatchResult::where('match_id', $request->match_id)->first();
+
+        $winner = SingleMatchResult::where('match_id', $request->id)->first();
+        // dd($winner);
 
         $winner_team_id = $winner->team_id;
+
         $query = singleMatchReport::where('match_report.match_id', $request->id)
             ->where('match_report.predict_team_id', $winner_team_id)
             ->leftJoin('match_run', function ($join) {
@@ -1951,8 +2155,8 @@ class AdminController extends Controller
             $bollerQuery = Boller::with('user', 'TeamPlayers.player')
                 ->where('match_id', $result->match_id)
                 ->where('player_id', $result->player_id)
-                ->where('over', $result->over)
-                ->where('maden_over', $result->maden_over)
+                // ->where('over', $result->over)
+                // ->where('maden_over', $result->maden_over)
                 ->where('run', $result->run)
                 ->where('wicket', $result->wicket);
 
@@ -1966,47 +2170,37 @@ class AdminController extends Controller
 
             if ($boller && $boller->user) {
                 $matchedUsers[] = [
-                    'user'         => $boller->user,
-                    'over'         => $boller->over,
-                    'maden_over'   => $boller->maden_over,
-                    'run'          => $boller->run,
-                    'wicket'       => $boller->wicket,
+                    'user' => $boller->user,
+                    'over' => $boller->over,
+                    'maden_over' => $boller->maden_over,
+                    'run' => $boller->run,
+                    'wicket' => $boller->wicket,
                 ];
             }
         }
-
-        // Manual pagination logic
-        $currentPage = (int) $request->input('page', 1);
-        $perPage = (int) $request->input('items', 10);
-        $total = count($matchedUsers);
-        $lastPage = (int) ceil($total / $perPage);
-        $offset = ($currentPage - 1) * $perPage;
-        $paginatedData = array_slice($matchedUsers, $offset, $perPage);
-
-        // Manual pagination links (array of page numbers with URLs)
-        $paginationLinks = [];
-        for ($page = 1; $page <= $lastPage; $page++) {
-            $paginationLinks[] = [
-                'url' => $page == $currentPage ? null : url()->current() . '?page=' . $page . '&items=' . $perPage,
-                'label' => $page,
-                'active' => $page == $currentPage,
-            ];
-        }
+        // Manual pagination from array
+        $page = $request->get('page', 1);
+        $perPage = 10;
+        $collection = collect($matchedUsers);
+        $data = new LengthAwarePaginator(
+            $collection->forPage($page, $perPage),
+            $collection->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return response()->json([
-            'data' => $paginatedData,
+            'status' => true,
+            'data' => $data->items(),
             'pagination' => [
-                'current_page' => $currentPage,
-                'last_page' => $lastPage,
-                'per_page' => $perPage,
-                'total' => $total,
-                'next_page_url' => $currentPage < $lastPage
-                    ? url()->current() . '?page=' . ($currentPage + 1) . '&items=' . $perPage
-                    : null,
-                'prev_page_url' => $currentPage > 1
-                    ? url()->current() . '?page=' . ($currentPage - 1) . '&items=' . $perPage
-                    : null,
-                'links' => $paginationLinks,
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'next_page_url' => $data->nextPageUrl(),
+                'prev_page_url' => $data->previousPageUrl(),
+                'links' => $this->generatePaginationLinks($data),
             ]
         ]);
     }
@@ -2023,8 +2217,8 @@ class AdminController extends Controller
                 ->where('match_id', $result->match_id)
                 ->where('player_id', $result->player_id)
                 ->where('run', $result->run)
-                ->where('ball', $result->ball)
-                ->where('total_4', $result->total_4)
+                // ->where('ball', $result->ball)
+                // ->where('total_4', $result->total_4)
                 ->where('total_6', $result->total_6);
 
             if ($request->has('searchInput')) {
@@ -2037,11 +2231,11 @@ class AdminController extends Controller
 
             if ($boller && $boller->user) {
                 $matchedUsers[] = [
-                    'user'         => $boller->user,
-                    'run'          => $boller->run,
-                    'ball'         => $boller->ball,
-                    'total_4'      => $boller->total_4,
-                    'total_6'      => $boller->total_6,
+                    'user' => $boller->user,
+                    'run' => $boller->run,
+                    'ball' => $boller->ball,
+                    'total_4' => $boller->total_4,
+                    'total_6' => $boller->total_6,
                 ];
             }
         }
@@ -2049,20 +2243,24 @@ class AdminController extends Controller
         return $this->paginateCustom($matchedUsers, $request);
     }
 
+    // public function TournamentWinnersUsers(Request $request)
     public function TournamentWinnersUsers(Request $request)
     {
         $matchId = $request->match_id;
 
+        // Step 1: Load actual results
         $semiResults = SemiFinalResult::where('match_id', $matchId)->get();
         $finalResult = FinalistResult::where('match_id', $matchId)->first();
         $championResult = ChampionResult::where('match_id', $matchId)->first();
 
         if ($semiResults->isEmpty() || !$finalResult || !$championResult) {
             return response()->json([
+                'status' => false,
                 'message' => 'Result data is incomplete for match ID ' . $matchId
             ], 404);
         }
 
+        // Step 2: Load users with predictions for this match
         $users = User::whereHas('semiFinalPredictions', fn($q) => $q->where('match_id', $matchId))
             ->whereHas('finalPredictions', fn($q) => $q->where('match_id', $matchId))
             ->whereHas('championPredictions', fn($q) => $q->where('match_id', $matchId))
@@ -2075,22 +2273,29 @@ class AdminController extends Controller
 
         $matchedUsers = [];
 
+        // Step 3: Compare predictions to results
         foreach ($users as $user) {
-            $userSemi = $user->semiFinalPredictions;
             $semiMatched = true;
+            $userSemi = $user->semiFinalPredictions;
 
             foreach ($semiResults as $actual) {
                 $predicted = $userSemi->firstWhere('team_id', $actual->team_id);
 
-                if (
-                    !$predicted ||
-                    $predicted->match != $actual->match ||
-                    $predicted->win != $actual->win ||
-                    $predicted->los != $actual->los ||
-                    $predicted->tie != $actual->tie ||
-                    $predicted->pts != $actual->pts
-                ) {
+                if (!$predicted) {
                     $semiMatched = false;
+                    // \Log::info("User {$user->id} missed semi team {$actual->team_id}");
+                    break;
+                }
+
+                if ((int)$predicted->win !== (int)$actual->win || (int)$predicted->pts !== (int)$actual->pts) {
+                    $semiMatched = false;
+                    // \Log::info("User {$user->id} incorrect semi prediction", [
+                    //     'team_id' => $actual->team_id,
+                    //     'expected_win' => $actual->win,
+                    //     'user_win' => $predicted->win,
+                    //     'expected_pts' => $actual->pts,
+                    //     'user_pts' => $predicted->pts,
+                    // ]);
                     break;
                 }
             }
@@ -2102,13 +2307,26 @@ class AdminController extends Controller
                 $final->hwt == $finalResult->hwt &&
                 $final->hs == $finalResult->hs;
 
+            // if (!$finalMatched) {
+            //     \Log::info("User {$user->id} failed final match prediction", [
+            //         'expected' => $finalResult,
+            //         'user' => $final
+            //     ]);
+            // }
+
             $champion = $user->championPredictions->first();
             $championMatched = $champion &&
                 $champion->team_id == $championResult->team_id &&
-                $champion->mom == $championResult->mom &&
                 $champion->mot == $championResult->mot;
 
-            if ($semiMatched && $finalMatched && $championMatched) {
+            // if (!$championMatched) {
+            //     \Log::info("User {$user->id} failed champion prediction", [
+            //         'expected' => $championResult,
+            //         'user' => $champion
+            //     ]);
+            // }
+
+            if ($finalMatched && $championMatched) {
                 $matchedUsers[] = [
                     'user_id' => $user->id,
                     'username' => $user->username,
@@ -2120,6 +2338,7 @@ class AdminController extends Controller
 
         return $this->paginateCustom($matchedUsers, $request, 'users');
     }
+
 
 
     private function paginateCustom(array $items, Request $request, $key = 'data')
@@ -2179,8 +2398,6 @@ class AdminController extends Controller
         return response()->json($settings);
     }
 
-
-
     public function updatesetings(Request $request)
     {
         $settings = SiteSetting::first() ?? new SiteSetting();
@@ -2193,26 +2410,31 @@ class AdminController extends Controller
             $settings->logo_path = 'uploads/' . $imageName;
         }
 
+
         // ✅ Handle individual fields
-        $settings->website_name        = $request->input('website_name');
-        $settings->spin_creadit        = $request->input('spin_creadit');
-        $settings->register_bonus      = $request->input('register_bonus');
-        $settings->single_match_bonus  = $request->input('single_match_bonus');
-        $settings->max_predict_bonus   = $request->input('max_predict_bonus');
-        $settings->tournament_bonus    = $request->input('tournament_bonus');
-        $settings->admin_email         = $request->input('admin_email');
-        $settings->support_email       = $request->input('support_email');
-        $settings->phone               = $request->input('phone');
-        $settings->facebook            = $request->input('facebook');
-        $settings->whatsapp            = $request->input('whatsapp');
-        $settings->telegram            = $request->input('telegram');
-        $settings->instagram           = $request->input('instagram');
-        $settings->twitter             = $request->input('twitter');
-        $settings->linkedin            = $request->input('linkedin');
-        $settings->youtube             = $request->input('youtube');
-        $settings->meta_title          = $request->input('meta_title');
-        $settings->meta_description    = $request->input('meta_description');
-        $settings->meta_keywords       = $request->input('meta_keywords');
+        $settings->website_name = $request->input('website_name');
+        $settings->spin_creadit = $request->input('spin_creadit');
+        $settings->pull_credit = $request->input('pull_credit');
+        $settings->question_credit = $request->input('question_credit');
+
+        $settings->register_bonus = $request->input('register_bonus');
+        $settings->single_match_bonus = $request->input('single_match_bonus');
+        $settings->max_predict_bonus = $request->input('max_predict_bonus');
+        $settings->tournament_bonus = $request->input('tournament_bonus');
+        $settings->admin_email = $request->input('admin_email');
+        $settings->support_email = $request->input('support_email');
+        $settings->phone = $request->input('phone');
+        $settings->facebook = $request->input('facebook');
+        $settings->whatsapp = $request->input('whatsapp');
+        $settings->telegram = $request->input('telegram');
+        $settings->instagram = $request->input('instagram');
+        $settings->twitter = $request->input('twitter');
+        $settings->linkedin = $request->input('linkedin');
+        $settings->youtube = $request->input('youtube');
+        $settings->meta_title = $request->input('meta_title');
+        $settings->meta_description = $request->input('meta_description');
+        $settings->meta_keywords = $request->input('meta_keywords');
+        $settings->ads_prize = $request->input('ads_prize');
 
         // ✅ Save the record
         $settings->save();
@@ -2242,8 +2464,6 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'Credit added successfully']);
     }
-
-
     public function creditList(Request $request)
     {
         $query = Credit::query();
@@ -2251,6 +2471,10 @@ class AdminController extends Controller
 
         if ($request->has('searchInput')) {
             $query->where('name', 'like', '%' . $request->searchInput . '%');
+        }
+
+        if ($request->status) {
+            $query->where('status', $request->status);
         }
 
         $data = $query->orderBy('id', 'desc')->paginate($request->items);
@@ -2364,4 +2588,126 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'Profile updated successfully']);
     }
+    public function buycredit(request $request)
+    {
+
+        $user = User::where('id', $request->user_id)->first();
+
+        $balance = $user->balance;
+        $Credit_Points = $user->Credit_Points;
+
+        if ($balance >= $request->price) {
+            $total_balance = $balance - $request->price;
+            $total_credit = $Credit_Points + $request->credit;
+
+            $upd = $user->update([
+                'Credit_Points' => $total_credit,
+                'balance' => $total_balance,
+            ]);
+
+            return response()->json(['message' => "buy successfully!"]);
+
+            // dd($total_credit);
+        } else {
+            return response()->json(['error' => "Do not have enough Balance!"]);
+        }
+    }
+    public function storeads(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string',
+            'type' => 'required|string',
+            'file_path' => 'required|file|mimes:jpg,jpeg,png,webp,mp4|max:2048',
+        ]);
+
+        if ($request->hasFile('file_path')) {
+            $image = $request->file('file_path');
+            $fileName = time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('ads'), $fileName);
+
+            // If saving to DB
+            $ad = new Ad();
+            $ad->title = $request->title;
+            $ad->type = $request->type;
+            $ad->file_path = 'ads/' . $fileName; // optional: save the file path
+            $ad->save();
+
+            return response()->json(['message' => 'Ad created successfully.']);
+        }
+
+        return response()->json(['error' => 'File not uploaded.']);
+    }
+    public function getAds(Request $request)
+    {
+        $query = Ad::query();
+
+        // Apply search filter if provided
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // Items per page (default to 10 if not set)
+        $perPage = $request->get('items', 10);
+
+        // Get paginated results
+        $data = $query->orderBy('id', 'desc')->paginate($perPage);
+
+        $data->getCollection()->transform(function ($data) {
+            $data->file_path = $data->file_path ? url($data->file_path) : null;
+            return $data;
+        });
+
+        return response()->json([
+            'data' => $data->items(),
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'next_page_url' => $data->nextPageUrl(),
+                'prev_page_url' => $data->previousPageUrl(),
+                'links' => $this->generatePaginationLinks($data),
+            ]
+        ]);
+    }
+    public function delAds($id)
+    {
+        $query = Ad::query()->findOrFail($id);
+
+        $query->delete();
+
+        return response()->json(['message' => 'Successfuly delete']);
+    }
+    public function showAds()
+    {
+        $ad = Ad::inRandomOrder()->first();
+
+        if ($ad) {
+            $ad->file_path = $ad->file_path ? url($ad->file_path) : null;
+        }
+
+        return response()->json($ad);
+    }
+    public function addCreditAds(Request  $request)
+    {
+
+        $user = User::find($request->id);
+        $setting = SiteSetting::first();
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $totalCredit = $user->Credit_Points + $setting->ads_prize;
+
+        // dd($user->Credit_Points);
+
+        $user->update([
+            'Credit_Points' => $totalCredit,
+        ]);
+
+        return response()->json(['message' => 'success', 'data' => $user]);
+    }
+
+    public function cmsMatchPage() {}
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class PredictMatch extends Model {
     use HasFactory;
 
-    protected $fillable = ['id','start_date', 'end_date'];
+    protected $fillable = ['id','start_date', 'end_date', 'status'];
 
     public function teams() {
         return $this->hasMany(PredictTeam::class, "predict_match_id", 'id');

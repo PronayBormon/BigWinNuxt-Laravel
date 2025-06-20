@@ -29,8 +29,8 @@
                                         <thead>
                                             <tr>
                                                 <th>Player Name</th>
-                                                <th class="text-center">O</th>
-                                                <th class="text-center">M</th>
+                                                <!-- <th class="text-center">O</th>
+                                                <th class="text-center">M</th> -->
                                                 <th class="text-center">R</th>
                                                 <th class="text-center">W</th>
                                             </tr>
@@ -38,8 +38,8 @@
                                         <tbody>
                                             <tr v-for="item in bowlersList">
                                                 <td>{{item.team_players.player.player_name}}</td>
-                                                <td class="text-center">{{item.over}}</td>
-                                                <td class="text-center">{{item.maden_over}}</td>
+                                                <!-- <td class="text-center">{{item.over}}</td>
+                                                <td class="text-center">{{item.maden_over}}</td> -->
                                                 <td class="text-center">{{item.run}}</td>
                                                 <td class="text-center">{{item.wicket}}</td>
                                             </tr>

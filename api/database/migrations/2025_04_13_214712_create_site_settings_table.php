@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('admin_email')->nullable();
             $table->string('support_email')->nullable();
             $table->string('phone')->nullable();
+            $table->integer('ads_prize')->nullable();
             $table->string('facebook')->nullable();
             $table->string('whatsapp')->nullable();
             $table->string('telegram')->nullable();

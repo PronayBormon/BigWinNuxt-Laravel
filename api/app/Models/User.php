@@ -16,7 +16,7 @@ class User extends Authenticatable
         'username',
         'email',
         'phone',
-        'Credit_Points',
+        'credit_points',
         'password',
         'role',
         'login_ip',

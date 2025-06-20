@@ -82,8 +82,8 @@ class UnauthenticateController extends Controller
             'user_id' => 'required',  // Assuming `teams` is the name of the teams table
             'player_id' => 'required',
             'run' => 'required|integer',
-            'ball' => 'required|integer',
-            'four' => 'required|integer',
+            // 'ball' => 'required|integer',
+            // 'four' => 'required|integer',
             'six' => 'required|integer',
         ]);
 
@@ -94,8 +94,8 @@ class UnauthenticateController extends Controller
             'team_id' => $validated['team_id'],
             'player_id' => $validated['player_id'],
             'run' => $validated['run'],
-            'ball' => $validated['ball'],
-            'total_4' => $validated['four'],
+            // 'ball' => $validated['ball'],
+            // 'total_4' => $validated['four'],
             'total_6' => $validated['six'],
         ]);
 
@@ -122,8 +122,8 @@ class UnauthenticateController extends Controller
             'user_id' => 'required',  // Ensure user exists in users table
             'team_id' => 'required',  // Ensure team exists in teams table
             'player_id' => 'required',
-            'over' => 'required|numeric',
-            'maden_over' => 'required|numeric',
+            // 'over' => 'required|numeric',
+            // 'maden_over' => 'required|numeric',
             'run' => 'required|numeric',
             'wicket' => 'required|numeric',
         ]);
@@ -134,8 +134,8 @@ class UnauthenticateController extends Controller
             'user_id' => $validated['user_id'],
             'team_id' => $validated['team_id'],
             'player_id' => $validated['player_id'],
-            'over' => $validated['over'],
-            'maden_over' => $validated['maden_over'],
+            // 'over' => $validated['over'],
+            // 'maden_over' => $validated['maden_over'],
             'run' => $validated['run'],
             'wicket' => $validated['wicket'],
         ]);
@@ -397,6 +397,8 @@ class UnauthenticateController extends Controller
 
     public function makeSiglePredict(request $request)
     {
+
+        // dd($request->all());
         // Validate input
         $validate = Validator::make($request->all(), [
             'match_id' => 'required|numeric',

@@ -240,7 +240,7 @@ class UserController extends Controller
                 'image'         => $imagePath,
                 'match_type'    => '1',
                 'game_type'     => '1',
-                'status'        => '1',
+                'status'        => '2',
             ]);
     
             if ($query) {
@@ -256,8 +256,6 @@ class UserController extends Controller
     }
     public function matchList(request $request)
     {
-
-        // dd($request->all());
         $query = MatchList::query()
             ->join('countries as ta', 'match_list.team_a', '=', 'ta.id')
             ->join('countries as tb', 'match_list.team_b', '=', 'tb.id')

@@ -170,19 +170,19 @@
                                                 </div>
                                                 <!-- match_id	team_id	user_id	player_id	run	ball	total_4	total_6	status -->
                                                 <div class="form-group mb-3">
-                                                    <input type="text" class="form-control" id="" v-model="bat_run"
+                                                    <input type="number" class="form-control" id="" v-model="bat_run"
                                                         placeholder="run">
                                                 </div>
-                                                <div class="form-group mb-3">
+                                                <!-- <div class="form-group mb-3">
                                                     <input type="text" class="form-control" id="" v-model="bat_ball"
                                                         placeholder="ball">
                                                 </div>
                                                 <div class="form-group mb-3">
                                                     <input type="text" class="form-control" id="" v-model="bat_four"
                                                         placeholder="Total Four">
-                                                </div>
+                                                </div> -->
                                                 <div class="form-group mb-3">
-                                                    <input type="text" class="form-control" id="" v-model="bat_six"
+                                                    <input type="number" class="form-control" id="" v-model="bat_six"
                                                         placeholder="Total six">
                                                 </div>
                                                 <button type="submit" class="btn_primary w-100">Submit</button>
@@ -216,24 +216,24 @@
                                                             {{ item.player.player_name }}</option>
                                                     </select>
                                                 </div>
-                                                <div class="form-group mb-3">
+                                                <!-- <div class="form-group mb-3">
                                                     <input type="text" class="form-control" id="name"
                                                         v-model="ball_palyer_name" placeholder="Player Name">
-                                                </div>
-                                                <div class="form-group mb-3">
+                                                </div> -->
+                                                <!-- <div class="form-group mb-3">
                                                     <input type="text" class="form-control" v-model="ball_over"
                                                         id="name" placeholder="Over">
                                                 </div>
                                                 <div class="form-group mb-3">
                                                     <input type="text" class="form-control" id="name"
                                                         v-model="ball_maden_over" placeholder="Maden Over">
-                                                </div>
+                                                </div> -->
                                                 <div class="form-group mb-3">
-                                                    <input type="text" class="form-control" v-model="ball_run" id="name"
+                                                    <input type="number" class="form-control" v-model="ball_run" id="name"
                                                         placeholder="Run">
                                                 </div>
                                                 <div class="form-group mb-3">
-                                                    <input type="text" class="form-control" v-model="ball_wicket"
+                                                    <input type="number" class="form-control" v-model="ball_wicket"
                                                         id="name" placeholder="Wicket">
                                                 </div>
                                                 <button type="submit" class="btn_primary w-100">Submit</button>
@@ -242,8 +242,6 @@
                                         <!-- <div class="tab-pane fade" id="nav-contact" role="tabpanel"
                                         aria-labelledby="nav-contact-tab" tabindex="0">...</div> -->
                                     </div>
-                                    <!-- ============ -->
-
                                 </div>
                             </div>
                         </div>
@@ -295,12 +293,12 @@
                                                         placeholder="run">
                                                 </div>
                                                 <div class="form-group mb-3">
-                                                    <input type="text" class="form-control" id="" v-model="result_bat_ball"
+                                                    <!-- <input type="text" class="form-control" id="" v-model="result_bat_ball"
                                                         placeholder="ball">
                                                 </div>
                                                 <div class="form-group mb-3">
                                                     <input type="text" class="form-control" id="" v-model="result_bat_four"
-                                                        placeholder="Total Four">
+                                                        placeholder="Total Four"> -->
                                                 </div>
                                                 <div class="form-group mb-3">
                                                     <input type="text" class="form-control" id="" v-model="result_bat_six"
@@ -329,20 +327,20 @@
                                                             {{ item.player.player_name }}</option>
                                                     </select>
                                                 </div>
-                                                <div class="form-group mb-3">
-                                                    <input type="text" class="form-control" v-model="result_ball_over"
+                                                <!-- <div class="form-group mb-3">
+                                                    <input type="number" class="form-control" v-model="result_ball_over"
                                                         id="name" placeholder="Over">
                                                 </div>
                                                 <div class="form-group mb-3">
-                                                    <input type="text" class="form-control" id="name"
+                                                    <input type="number" class="form-control" id="name"
                                                         v-model="result_ball_maden_over" placeholder="Maden Over">
-                                                </div>
+                                                </div> -->
                                                 <div class="form-group mb-3">
-                                                    <input type="text" class="form-control" v-model="result_ball_run" id="name"
+                                                    <input type="number" class="form-control" v-model="result_ball_run" id="name"
                                                         placeholder="Run">
                                                 </div>
                                                 <div class="form-group mb-3">
-                                                    <input type="text" class="form-control" v-model="result_ball_wicket"
+                                                    <input type="number" class="form-control" v-model="result_ball_wicket"
                                                         id="name" placeholder="Wicket">
                                                 </div>
                                                 <button type="submit" class="btn_primary w-100">Submit</button>

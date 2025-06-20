@@ -23,9 +23,9 @@
                         <button type="button" class="btn btn-primary m-2" data-bs-target="#result"
                             data-bs-toggle="modal">Add
                             result</button>
-                        <button type="button" class="btn btn-primary m-2" data-bs-target="#addManual"
+                        <!-- <button type="button" class="btn btn-primary m-2" data-bs-target="#addManual"
                             data-bs-toggle="modal">Add
-                            Manual</button>
+                            Manual</button> -->
                     </div>
                 </div>
                 <div class="card app_card ">
@@ -117,38 +117,38 @@
                                                                 </select>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6">
+                                                        <!-- <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>Match</label>
-                                                                <input type="text" v-model="team.match"
+                                                                <input type="number" v-model="team.match"
                                                                     class="form-control" placeholder="Match">
                                                             </div>
-                                                        </div>
+                                                        </div> -->
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>Win</label>
-                                                                <input type="text" v-model="team.win"
+                                                                <input type="number" v-model="team.win"
                                                                     class="form-control" placeholder="Win">
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6">
+                                                        <!-- <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>Lose</label>
-                                                                <input type="text" v-model="team.los"
+                                                                <input type="number" v-model="team.los"
                                                                     class="form-control" placeholder="Lose">
                                                             </div>
-                                                        </div>
-                                                        <div class="col-md-6">
+                                                        </div> -->
+                                                        <!-- <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>Tie</label>
-                                                                <input type="text" v-model="team.tie"
+                                                                <input type="number" v-model="team.tie"
                                                                     class="form-control" placeholder="Tie">
                                                             </div>
-                                                        </div>
+                                                        </div> -->
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>PTS</label>
-                                                                <input type="text" v-model="team.pts"
+                                                                <input type="number" v-model="team.pts"
                                                                     class="form-control" placeholder="PTS">
                                                             </div>
                                                         </div>
@@ -321,35 +321,35 @@
                                                         <div class="col-md-6 mb-2">
                                                             <div class="form-group">
                                                                 <label>Match</label>
-                                                                <input type="text" v-model="team.match"
+                                                                <input type="number" v-model="team.match"
                                                                     class="form-control" placeholder="Match">
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6 mb-2">
                                                             <div class="form-group">
                                                                 <label>Win</label>
-                                                                <input type="text" v-model="team.win"
+                                                                <input type="number" v-model="team.win"
                                                                     class="form-control" placeholder="Win">
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6 mb-2">
                                                             <div class="form-group">
                                                                 <label>Lose</label>
-                                                                <input type="text" v-model="team.los"
+                                                                <input type="number" v-model="team.los"
                                                                     class="form-control" placeholder="Lose">
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6 mb-2">
                                                             <div class="form-group">
                                                                 <label>Tie</label>
-                                                                <input type="text" v-model="team.tie"
+                                                                <input type="number" v-model="team.tie"
                                                                     class="form-control" placeholder="Tie">
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6 mb-2">
                                                             <div class="form-group">
                                                                 <label>PTS</label>
-                                                                <input type="text" v-model="team.pts"
+                                                                <input type="number" v-model="team.pts"
                                                                     class="form-control" placeholder="PTS">
                                                             </div>
                                                         </div>
@@ -779,7 +779,7 @@ const tournamentWinner = () => {
     axios.get('/api/tournament-winners', {
         params: { match_id: tid }
     }).then(response => {
-        console.log(response.data);
+        // console.log(response.data);
         // PredictUsers.value = response.data;
     });
 

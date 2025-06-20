@@ -29,6 +29,14 @@
                                     <option value="1">100</option>
                                 </select>
                             </div>
+                            <div class="show_">
+                                <p>Status</p>
+                                <select name="" id="" @change="getCreditList(1)" v-model="status">
+                                    <option value="">ALl</option>
+                                    <option value="1">Active</option>
+                                    <option value="2">Inactive</option>
+                                </select>
+                            </div>
 
                             <div class="form-group d-none d-md-block">
                                 <div class="seach_box">
@@ -53,8 +61,9 @@
                             <table class="table">
                                 <thead class="thead">
                                     <tr>
-                                        <th>Name</th>
+                                        <th>Credit</th>
                                         <th>Price</th>
+                                        <th>Status</th>
                                         <th>Created at </th>
                                         <th class="text-center">Action</th>
                                     </tr>
@@ -63,6 +72,10 @@
                                     <tr v-if="creditList && creditList.length" v-for="(item, index) in creditList">
                                         <td class="">{{ item.name }}</td>
                                         <td>$ {{ Number(item.price).toFixed(2) }}</td>
+                                        <td>
+                                            <span class="badge bg-success" v-if="item.status ==1">Active</span>
+                                            <span class="badge bg-danger" v-else >Inactive</span>
+                                        </td>
                                         <td>{{ item.created }}</td>
                                         <td class="text-center">
                                             <button class="btn btn_default" data-bs-toggle="modal"
@@ -107,7 +120,7 @@
                             <form @submit.prevent="UpdateCredit">
                                 <!-- Credit Name -->
                                 <div class="form-group mb-3">
-                                    <input type="text" v-model="editCredit.name" placeholder="Credit Name"
+                                    <input type="number" v-model="editCredit.name" placeholder="Credit"
                                         class="form-control" required />
                                 </div>
 
@@ -144,7 +157,7 @@
                             <form @submit.prevent="addCredit">
                                 <!-- Credit Name -->
                                 <div class="form-group mb-3">
-                                    <input type="text" v-model="credit.name" required placeholder="Credit Name"
+                                    <input type="text" v-model="credit.name" required placeholder="Credit"
                                         class="form-control" />
                                 </div>
 
@@ -186,6 +199,7 @@ const globalScript = useGlobalScript();
 
 const items = ref('10');
 const searchInput = ref();
+const status = ref('');
 const message = ref();
 const editId = ref();
 const editmessage = ref();
@@ -261,6 +275,7 @@ const getCreditList = (pages) => {
     axios.get('api/credit-list', {
         params: {
             item: items.value,
+            status: status.value,
             searchInput: searchInput.value,
             page: pages,
         }

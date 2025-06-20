@@ -78,7 +78,6 @@
                                         <td>
                                             <span v-if="items.status == 1" class="badge bg-success">Active</span>
                                             <span v-else class="badge bg-danger">Inactive</span>
-                                            <!-- {{items.status}} -->
                                         </td>
                                         <td>
                                             <p>{{ items.register_ip }}</p>

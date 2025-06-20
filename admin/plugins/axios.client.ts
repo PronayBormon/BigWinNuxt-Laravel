@@ -3,9 +3,10 @@ import { defineNuxtPlugin } from "#app";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const baseURL = process.env.NODE_ENV === 'production'
-    ? "https://api.bigwin.futuregenit.com/api"
-    // : "https://api.bigwin.futuregenit.com/api";
-    : "http://127.0.0.1:8000/api"; 
+    ? "http://192.168.0.110:8000/api"
+    : "http://192.168.0.110:8000/api";
+    // ? "http://127.0.0.1:8000/api"
+    // : "http://127.0.0.1:8000/api"; 
 
   axios.defaults.baseURL = baseURL;
   axios.defaults.withCredentials = false;  // Set to false if you're not using credentials (cookies, sessions)

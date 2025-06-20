@@ -88,7 +88,7 @@
                     </div>
                 </div>
 
-                <h1 class="page_title">Tournament List </h1>
+                <h1 class="page_title">Max Predict List </h1>
                 <div class="card app_card">
                     <div class="card-header">
                         <div class="header_filter">
@@ -119,7 +119,7 @@
                                         <th class="text-center">Teams</th>
                                         <th>Start Date </th>
                                         <th>End Date </th>
-                                        <!-- <th>Status </th> -->
+                                        <th>Status </th>
                                         <th class="text-center">Action</th>
                                     </tr>
                                 </thead>
@@ -136,15 +136,15 @@
 
                                         <td>{{ item.start_date }}</td>
                                         <td>{{ item.end_date }}</td>
-                                        <!-- <td>
-                                            <span :class="item.status == 1 ? 'badge bg-success' : 'badge bg-danger'">{{
-                                                item.status == 1 ? "Active" : "inactive" }}</span>
-                                        </td> -->
+                                        <!-- <td>{{ item.status }}</td> -->
+                                        <td>
+                                            <span
+                                                :class="item.status == 'active' ? 'badge bg-success' : 'badge bg-danger'">{{
+                                                    item.status == 'active' ? "Active" : "inactive" }}</span>
+                                        </td>
                                         <td class="text-center">
-                                            <!-- <button type="button" class="btn btn-default p-2"
-                                                @click="getdetails(item.id)" data-bs-toggle="modal"
-                                                data-bs-target="#editMatch"><i class="fa-regular fa-pencil-square"
-                                                    style="font-size: 16px;"></i></button> -->
+                                            <button type="button" class="btn btn-default p-2"
+                                                @click="chageStatus(item.id)">Change Status</button>
 
                                             <NuxtLink :to="`/max-predict/players?predict_id=${item.id}`"
                                                 class="btn btn_default py-2 ms-2">Players</NuxtLink>
@@ -182,6 +182,8 @@ const status = ref('');
 const searchInput = ref('');
 const itemsperpage = ref('10');
 
+
+
 // Fixed 2 Teams with Minimum 15 Players Each
 const teams = ref([
     { team_id: '', players: Array(15).fill('') },
@@ -207,6 +209,31 @@ const playersdata = () => {
         playerOptions.value = response.data;
     })
 }
+const chageStatus = (id) => {
+    axios.get('api/update-max-predict', {
+        params: {
+            id: id,
+        }
+    }).then(response => {
+        // console.log(response.data.errors.status);
+        $notyf.success(response.data.message);
+        getMaxPredict();
+    }).catch(error => {
+        console.log("Error:", error.response);
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+            for (const field in errorMessages) {
+                errorMessages[field].forEach((msg) => {
+                    $notyf.error(msg); // make sure $notyf is defined
+                });
+            }
+        } else {
+            $notyf.error("An error occurred. Please try again.");
+        }
+    });
+
+}
+
 const getMaxPredict = (page) => {
     axios.get('api/get-maxpredictList', {
         params: {

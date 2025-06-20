@@ -37,6 +37,7 @@
                                                         v-model="tenddate" />
                                                 </div>
                                             </div>
+
                                             <div class="col-md-3 col-sm-6 col-12">
                                                 <div class="form-group mb-3">
                                                     <div class="d-flex align-items-center">
@@ -46,6 +47,18 @@
                                                             class="btn_default">+</button>
                                                     </div>
                                                 </div>
+                                            </div>
+
+                                            <div class="form-group mb-3">
+                                                <img :src="preview_image1"
+                                                    style="height: 50px; width: 80px; border: 1px solid #ededed;"
+                                                    class="img-fluid mb-2">
+                                                <br>
+                                                <p class="text-small text-danger" style="font-size: 10px;">Image
+                                                    Dimension Muxt be Height <strong>350px</strong> and weight
+                                                    <strong>700px</strong>. <span class="text-danger">*</span>
+                                                </p>
+                                                <input type="file" class="form-control" @change="previewImageupdate">
                                             </div>
                                         </div>
 
@@ -153,10 +166,8 @@
                                                 item.status == 1 ? "Active" : "inactive" }}</span>
                                         </td>
                                         <td class="text-center">
-                                            <!-- <button type="button" class="btn btn-default p-2"
-                                                @click="getdetails(item.id)" data-bs-toggle="modal"
-                                                data-bs-target="#editMatch"><i class="fa-regular fa-pencil-square"
-                                                    style="font-size: 16px;"></i></button> -->
+                                            <button type="button" class="btn btn-default p-2"
+                                                @click="changeStatus(item.id)"> Change status</button>
 
                                             <button type="button" @click="teamlistId(item.id, item.name)"
                                                 class="btn btn-default py-2 ms-2">Team List</button>
@@ -199,6 +210,8 @@ const availablePlayers = ref([]);
 const tname = ref("");
 const tdate = ref("");
 const tenddate = ref("");
+const t_image = ref("");
+const preview_image1 = ref("");
 const numTeams = ref(1); // Default to 1 team
 const teams = ref([]);
 const tournamentList = ref([]);
@@ -206,8 +219,41 @@ const pagination = ref([]);
 const items = ref('10');
 const searchInput = ref();
 
+const previewImageupdate = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        t_image.value = file;
+        preview_image1.value = URL.createObjectURL(file); // Generate preview URL
+    }
+};
+
 const teamlistId = (id, name) => {
     router.push(`/tournament/team-list?id=${id}`);
+}
+
+const changeStatus = (id) => {
+    axios.get('api/update-tournament-status', {
+        params: {
+            id: id,
+        }
+    }).then(response => {
+        // console.log(response.data.errors.status);
+        $notyf.success(response.data.message);
+        getTournamentList();
+    }).catch(error => {
+        console.log("Error:", error.response);
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+            for (const field in errorMessages) {
+                errorMessages[field].forEach((msg) => {
+                    $notyf.error(msg); // make sure $notyf is defined
+                });
+            }
+        } else {
+            $notyf.error("An error occurred. Please try again.");
+        }
+    });
+
 }
 
 const teamsdata = () => {
@@ -241,6 +287,7 @@ const addTournament = async () => {
     formData.append("tname", tname.value);
     formData.append("tdate", tdate.value);
     formData.append("tenddate", tenddate.value);
+    formData.append("t_image", t_image.value);
 
     // Append teams and players
     teams.value.forEach((team, teamIndex) => {
@@ -252,7 +299,7 @@ const addTournament = async () => {
     // console.log(formData);
     axios.post('api/make-tournament', formData).then(response => {
         // console.log(response.data);
-
+        getTournamentList();
         $notyf.success(response.data.message);
     }).catch(error => {
         // If the error response is validation errors, show them using Notyf

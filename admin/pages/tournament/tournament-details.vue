@@ -29,7 +29,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Team</th>
-                                                <th class="text-center">Man of the Match</th>
+                                                <!-- <th class="text-center">Man of the Match</th> -->
                                                 <th class="text-center">Man of the Tournament</th>
                                             </tr>
                                         </thead>
@@ -37,7 +37,7 @@
                                             <tr v-if="champion">
                                                 
                                                 <td>{{ champion.team.team.name }}</td>
-                                                <td class="text-center">{{champion.mom.player.player_name}}</td>
+                                                <!-- <td class="text-center">{{champion.mom.player.player_name}}</td> -->
                                                 <td class="text-center">{{champion.mot.player.player_name}}</td>
                                             </tr>
                                         </tbody>
@@ -82,20 +82,20 @@
                                         <thead>
                                             <tr>
                                                 <th>Team</th>
-                                                <th class="text-center">Match</th>
                                                 <th class="text-center">Win</th>
-                                                <th class="text-center">Lose</th>
-                                                <th class="text-center">Tie</th>
+                                                <th class="text-center">PTS</th>
+                                                <!-- <th class="text-center">Lose</th>
+                                                <th class="text-center">Tie</th> -->
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr v-for="item in semiFinal">
                                                 <!-- {{ item }} -->
                                                 <td>{{item.team.team.name}}</td>
-                                                <td class="text-center">{{item.match}}</td>
                                                 <td class="text-center">{{item.win}}</td>
-                                                <td class="text-center">{{item.los}}</td>
-                                                <td class="text-center">{{item.tie}}</td>
+                                                <td class="text-center">{{item.pts}}</td>
+                                                <!-- <td class="text-center">{{item.los}}</td>
+                                                <td class="text-center">{{item.tie}}</td> -->
                                             </tr>
                                         </tbody>
                                     </table>

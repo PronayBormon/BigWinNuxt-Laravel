@@ -37,12 +37,4 @@ class MatchList extends Model
     }
     
   
-    // public function batsman()
-    // {
-    //     return $this->hasMany(Batsman::class, 'match_id');
-    // }
-
-    // public function boller(){
-    //     return $this->hasMany(Boller::class, 'match_id');
-    // }
 }

@@ -15,4 +15,12 @@ class PrizeBanner extends Model
         'type',
         'status',
     ];
+
+    public function getBannerUrlAttribute()
+    {
+        if ($this->banner) {
+            return url('storage/' . $this->banner); // assuming it's stored in storage/app/public
+        }
+        return null;
+    }
 }

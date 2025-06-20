@@ -266,9 +266,8 @@
         formData.append('endDate', editenddateTime.value);
         formData.append('status', editstatus.value);
         formData.append('image', editmatch_image.value);
-        // console.log(formData);
+        console.log(formData);
         axios.post('api/update-match', formData).then(response => {
-
             editteamA.value = "";
             editteamB.value = "";
             editdateTime.value = "";
@@ -285,7 +284,23 @@
             }
             getMatchList();
             $notyf.success(response.data.message);
-        });
+        }).catch(error => {
+        // If the error response is validation errors, show them using Notyf
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+
+            // Loop through the errors object and show each error message
+            for (const field in errorMessages) {
+                if (errorMessages.hasOwnProperty(field)) {
+                    errorMessages[field].forEach((msg) => {
+                        $notyf.error(msg); // Show each error message using Notyf
+                    });
+                }
+            }
+        } else {
+            $notyf.error("An error occurred. Please try again.");
+        }
+    });
     }
 
     const getdetails = (id) => {
@@ -297,7 +312,7 @@
             editenddateTime.value = response.data.end_date;
             editstatus.value = response.data.status;
             editId.value = response.data.id;
-            console.log(response.data.image);
+            // console.log(response.data.image);
             preview_image1.value = response.data.image;
         })
     }

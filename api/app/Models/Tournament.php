@@ -15,6 +15,7 @@ class Tournament extends Model
         'name',
         'start_date',
         'end_date',
+        'image',
         'status',
     ];
 

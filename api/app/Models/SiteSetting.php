@@ -10,6 +10,7 @@ class SiteSetting extends Model
     use HasFactory;
     protected $fillable = [
         'website_name',
+        'ads_prize',
         'logo_path',
         'register_bonus',
         'single_match_bonus',

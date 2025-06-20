@@ -39,12 +39,29 @@
                                         <input type="text" class="form-control" v-model="form.spin_creadit"
                                             placeholder="0.00 Credit">
                                     </div>
+                                    <!-- ads Settings -->
+                                    <h5 class="text-white mt-4 mb-3">Ads Settings</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label text-white">Ads Prize</label>
+                                        <input type="text" class="form-control" v-model="form.ads_prize"
+                                            placeholder="0.00 Credit">
+                                    </div>
 
                                     <!-- Bonus Settings -->
                                     <h5 class="text-white mt-4 mb-3">Bonus Settings</h5>
                                     <div class="mb-3">
                                         <label class="form-label text-white">Register Bonus</label>
                                         <input type="text" class="form-control" v-model="form.registerBonus"
+                                            placeholder="Register Bonus">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-white">Question Prediction Bonus</label>
+                                        <input type="text" class="form-control" v-model="form.question_credit"
+                                            placeholder="Register Bonus">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-white">Pull Prediction Bonus</label>
+                                        <input type="text" class="form-control" v-model="form.pull_credit"
                                             placeholder="Register Bonus">
                                     </div>
                                     <div class="mb-3">
@@ -170,6 +187,9 @@ const tournamename = route.query.tournament;
 
 const form = ref({
     spin_creadit: '',
+    question_credit: '',
+    pull_credit: '',
+    ads_prize: '',
     websiteName: '',
     registerBonus: '',
     singleMatchBonus: '',
@@ -211,6 +231,9 @@ const updateSettings = async () => {
     const formData = new FormData();
     formData.append('website_name', form.value.websiteName);
     formData.append('spin_creadit', form.value.spin_creadit);
+    formData.append('question_credit', form.value.question_credit);
+    formData.append('pull_credit', form.value.pull_credit);
+    formData.append('ads_prize', form.value.ads_prize);
     formData.append('register_bonus', form.value.registerBonus);
     formData.append('single_match_bonus', form.value.singleMatchBonus);
     formData.append('max_predict_bonus', form.value.maxPredictBonus);
@@ -256,6 +279,8 @@ const fetchSettings = async () => {
         const response = await axios.get('/api/settings');
         const data = response.data;
 
+        console.log(data);
+
         logoPreview.value = data.logo_url
 
         // console.log(data.logo_url);
@@ -263,6 +288,8 @@ const fetchSettings = async () => {
         form.value = {
             websiteName: data.website_name || '',
             spin_creadit: data.spin_creadit || '',
+            question_credit: data.question_credit || '',
+            pull_credit: data.pull_credit || '',
             websiteName: data.website_name || '',
             registerBonus: data.register_bonus || '',
             singleMatchBonus: data.single_match_bonus || '',
@@ -281,6 +308,7 @@ const fetchSettings = async () => {
             metaTitle: data.meta_title || '',
             metaDescription: data.meta_description || '',
             metaKeywords: data.meta_keywords || '',
+            ads_prize: data.ads_prize || '',
         };
     } catch (error) {
         $notyf.error('Failed to load settings');

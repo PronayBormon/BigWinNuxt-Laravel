@@ -30,8 +30,8 @@
                                             <tr>
                                                 <th>Player Name</th>
                                                 <th class="text-center">R</th>
-                                                <th class="text-center">B</th>
-                                                <th class="text-center">4s</th>
+                                                <!-- <th class="text-center">B</th> -->
+                                                <!-- <th class="text-center">4s</th> -->
                                                 <th class="text-center">6s</th>
                                             </tr>
                                         </thead>
@@ -40,8 +40,8 @@
                                                 <!-- {{ item }} -->
                                                 <td>{{item.team_players.player.player_name}}</td>
                                                 <td class="text-center">{{item.run}}</td>
-                                                <td class="text-center">{{item.ball}}</td>
-                                                <td class="text-center">{{item.total_4}}</td>
+                                                <!-- <td class="text-center">{{item.ball}}</td> -->
+                                                <!-- <td class="text-center">{{item.total_4}}</td> -->
                                                 <td class="text-center">{{item.total_6}}</td>
                                             </tr>
                                         </tbody>

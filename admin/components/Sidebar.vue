@@ -15,6 +15,11 @@
                         <img src="/assets/icons/allUser.svg" alt="" class="img-fluid"> All Users
                     </NuxtLink>
                 </li>
+                <li class="menu_group" :class="{ active: route.path === '/cms' }">
+                    <NuxtLink class="menu_link" to="/cms">
+                        <img src="/assets/icons/images.svg" alt="" class="img-fluid"> CMS
+                    </NuxtLink>
+                </li>
                 <li class="menu_group" :class="{ active: route.path === '/add-single-match' }">
                     <NuxtLink class="menu_link" to="/add-single-match">
                         <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Add Single Match
@@ -25,6 +30,11 @@
                         <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Add Max Predict
                     </NuxtLink>
                 </li>
+                <!-- <li class="menu_group" :class="{ active: route.path === '/big-short' }">
+                    <NuxtLink class="menu_link" to="/big-short">
+                        <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Add Big Short
+                    </NuxtLink>
+                </li> -->
                 <li class="menu_group" :class="{ active: route.path === '/add-tournament' }">
                     <NuxtLink class="menu_link" to="/add-tournament">
                         <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Add Tournament
@@ -65,6 +75,16 @@
                         <img src="/assets/icons/notification.svg" alt="" class="img-fluid"> Creadit List
                     </NuxtLink>
                 </li>
+                <li class="menu_group" :class="{ active: route.path === '/social-links' }">
+                    <NuxtLink class="menu_link" to="/social-links">
+                        <img src="/assets/icons/notification.svg" alt="" class="img-fluid"> Social link List
+                    </NuxtLink>
+                </li>
+                <li class="menu_group" :class="{ active: route.path === '/ads' }">
+                    <NuxtLink class="menu_link" to="/ads">
+                        <img src="/assets/icons/notification.svg" alt="" class="img-fluid"> Ads List
+                    </NuxtLink>
+                </li>
                 <li class="menu_group" :class="{ active: route.path === '/deposit' }">
                     <NuxtLink class="menu_link" to="/deposit">
                         <img src="/assets/icons/deposit.svg" alt="" class="img-fluid"> Deposit
@@ -90,16 +110,36 @@
                         <img src="/assets/icons/list.svg" alt="" class="img-fluid"> Player List
                     </NuxtLink>
                 </li>
-                    <li class="menu_group" :class="{ active: route.path === '/pre-settings' }">
-                        <NuxtLink class="menu_link" to="/pre-settings">
-                            <img src="/assets/icons/gear-solid.svg" alt="" class="img-fluid"> Pre Settings
-                        </NuxtLink>
-                    </li>
-                    <li class="menu_group active position-sticky bottom-0 mt-2" @click="handleLogout()">
-                        <NuxtLink class="menu_link" to="/">
-                            <img src="/assets/icons/logout.svg" alt="" class="img-fluid"> Logout
-                        </NuxtLink>
-                    </li>
+
+                <!-- =================
+                =================
+                ================= -->
+                
+                <li class="menu_group" :class="{ active: route.path === '/question-list' }">
+                    <NuxtLink class="menu_link" to="/question-list">
+                        <img src="/assets/icons/list.svg" alt="" class="img-fluid"> Question List
+                    </NuxtLink>
+                </li>
+                <li class="menu_group" :class="{ active: route.path === '/poll-list' }">
+                    <NuxtLink class="menu_link" to="/poll-list">
+                        <img src="/assets/icons/list.svg" alt="" class="img-fluid"> Poll List
+                    </NuxtLink>
+                </li>
+
+
+
+                <li class="menu_group" :class="{ active: route.path === '/pre-settings' }">
+                    <NuxtLink class="menu_link" to="/pre-settings">
+                        <img src="/assets/icons/gear-solid.svg" alt="" class="img-fluid"> Pre Settings
+                    </NuxtLink>
+                </li>
+
+
+                <li class="menu_group active position-sticky bottom-0 mt-2" @click="handleLogout()">
+                    <NuxtLink class="menu_link" to="/">
+                        <img src="/assets/icons/logout.svg" alt="" class="img-fluid"> Logout
+                    </NuxtLink>
+                </li>
             </ul>
             <!-- <div class="sidebar_footer">
                 <ul class="sidebar_menu">
@@ -129,11 +169,11 @@ const handleLogout = () => {
 
 
     // axios.post('/api/logout').then(response => {
-        // router.push('/');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        console.log("success Logout");
-        router.push('/auth/login');
+    // router.push('/');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    console.log("success Logout");
+    router.push('/auth/login');
     // });
 
     // // Redirect to login page
