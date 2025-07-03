@@ -141,7 +141,6 @@ const getSingleMatchWinner = () => {
 
         matchList.value = response.data.users;
         pagination.value = response.data.pagination.links;
-        // console.log(response.data);
     })
 };
 

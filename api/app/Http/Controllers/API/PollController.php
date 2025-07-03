@@ -176,18 +176,12 @@ class PollController extends Controller
 
     public function updatePoll(Request $request)
     {
-        // dd($request->all());
-        $validate = Validator::make($request->all())->validate([
-            'user_id' => 'required|exists:users,id',
+         $request->validate([
             'poll_id' => 'required|exists:polls,id',
             'question' => 'required|string',
             'status' => 'required|in:active,inactive',
             'options' => 'required|string', // coming as JSON string
         ]);
-
-        if (!$validate) {
-            return response()->json(['message' => 'Invalid option for this question'], 422);
-        }
 
         // Decode the JSON string into an array
         $options = json_decode($request->options, true);
@@ -199,15 +193,10 @@ class PollController extends Controller
         // Update the question
         $question = poll::findOrFail($request->poll_id);
 
-
-        if (!$question) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
-        }
-
         if ($request->status == 'active') {
             $existing = poll::where('status', 'active')->first();
             if ($existing) {
-                return response()->json(['errors' => ['status' => ['Already have an active question.']]], 422);
+                return response()->json(['errors' => ['status' => ['Already have an active Poll.']]], 422);
             }
         }
 
@@ -245,7 +234,7 @@ class PollController extends Controller
             ->whereNotIn('id', $keepIds)
             ->delete();
 
-        return response()->json(['message' => 'question updated successfully.']);
+        return response()->json(['message' => 'Poll updated successfully.']);
     }
 
 

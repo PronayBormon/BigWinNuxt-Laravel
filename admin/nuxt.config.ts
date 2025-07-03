@@ -16,10 +16,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       baseURL: process.env.NODE_ENV === "production"
-        ? "http://192.168.0.110:8000/api"
-        : "http://192.168.010:8000/api",
-        // ? "http://127.0.0.1:8000/api"
-        // : "http://127.0.0.1:8000/api",
+        ? "https://api.bigwin.cfd/api"
+        : "https://api.bigwin.cfd/api",
     }
   },
   // router: {

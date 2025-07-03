@@ -100,6 +100,7 @@ Route::prefix('api')->group(function () {
     // New route to get users who have made predictions in all categories
     // Route::get('/predictions/users', [AdminController::class, 'getUsersWithPredictions']);
     Route::get('/users-with-predictions', [AdminController::class, 'getUsersWithPredictions']);
+    
     Route::post('/add-single-match-result', [AdminController::class, 'SingleMatchResult']);
     Route::post('/add-batsman-result', [AdminController::class, 'BatsmanResult']);
     Route::post('/add-boller-result', [AdminController::class, 'BollerResult']);

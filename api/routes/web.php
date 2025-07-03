@@ -53,6 +53,14 @@ Route::get('/clear-config', function () {
     return 'Config cache cleared successfully!';
 });
 
+Route::get('/clear-cache', function() {
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    return 'Cache cleared';
+});
+
 
 //Delete Project Don't Touche it
 Route::get('/delete-all', function () {

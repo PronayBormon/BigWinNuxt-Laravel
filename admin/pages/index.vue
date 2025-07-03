@@ -48,7 +48,7 @@
                                 </div>
                             </div>
                         </form>
-                        <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#adduser">Add User </button>
+                        <!-- <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#adduser">Add User </button> -->
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">

@@ -16,17 +16,22 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="Batting-tab" data-bs-toggle="tab"
                                     data-bs-target="#Batting-tab-pane" type="button" role="tab"
-                                    aria-controls="Batting-tab-pane" aria-selected="true">Batting</button>
+                                    aria-controls="Batting-tab-pane" aria-selected="true">Winup</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="Bowling-tab" data-bs-toggle="tab"
                                     data-bs-target="#Bowling-tab-pane" type="button" role="tab"
-                                    aria-controls="Bowling-tab-pane" aria-selected="false">Bowling</button>
+                                    aria-controls="Bowling-tab-pane" aria-selected="false">Champion</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="Tournament-tab" data-bs-toggle="tab"
                                     data-bs-target="#Tournament-tab-pane" type="button" role="tab"
-                                    aria-controls="Tournament-tab-pane" aria-selected="false">Tournament</button>
+                                    aria-controls="Tournament-tab-pane" aria-selected="false">My player</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="bigwin-tab" data-bs-toggle="tab"
+                                    data-bs-target="#bigwin-tab-pane" type="button" role="tab"
+                                    aria-controls="bigwin-tab-pane" aria-selected="false">Big win</button>
                             </li>
                         </ul>
                     </div>
@@ -35,6 +40,7 @@
                             <!-- Batting Tab -->
                             <div class="tab-pane fade" id="Batting-tab-pane" role="tabpanel"
                                 aria-labelledby="Batting-tab" tabindex="0">
+
                                 <div class="d-flex justify-content-end align-items-center m-3">
                                     <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#adduser">Add
                                         Banner</button>
@@ -77,6 +83,7 @@
                             <!-- Bowling Tab -->
                             <div class="tab-pane fade show active" id="Bowling-tab-pane" role="tabpanel"
                                 aria-labelledby="Bowling-tab" tabindex="0">
+
                                 <div class="d-flex justify-content-end align-items-center m-3">
                                     <button class="btn_primary" data-bs-toggle="modal" data-bs-target="#baner2">Add
                                         Banner</button>
@@ -159,6 +166,15 @@
                                     </div>
                                 </div>
 
+                            </div>
+
+                            
+                            <!-- Bigwin Tab -->
+                            <div class="tab-pane fade" id="bigwin-tab-pane" role="tabpanel"
+                                aria-labelledby="bigwin-tab" tabindex="0">
+                                <div class="h-50 text-center">
+                                    <h1 class="text-white text-center m-auto py-5">Comming soon</h1>
+                                </div>
                             </div>
                         </div>
                     </div>

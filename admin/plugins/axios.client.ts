@@ -3,8 +3,8 @@ import { defineNuxtPlugin } from "#app";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const baseURL = process.env.NODE_ENV === 'production'
-    ? "http://192.168.0.110:8000/api"
-    : "http://192.168.0.110:8000/api";
+    ? "https://api.bigwin.cfd/api"
+    : "https://api.bigwin.cfd/api";
     // ? "http://127.0.0.1:8000/api"
     // : "http://127.0.0.1:8000/api"; 
 

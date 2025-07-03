@@ -27,7 +27,7 @@
                 </li>
                 <li class="menu_group" :class="{ active: route.path === '/add-maxpredict' }">
                     <NuxtLink class="menu_link" to="/add-maxpredict">
-                        <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Add Max Predict
+                        <img src="/assets/icons/singleMatch.svg" alt="" class="img-fluid"> Add My player
                     </NuxtLink>
                 </li>
                 <!-- <li class="menu_group" :class="{ active: route.path === '/big-short' }">
@@ -47,7 +47,7 @@
                 </li>
                 <li class="menu_group" :class="{ active: route.path === '/max-predict/report' }">
                     <NuxtLink class="menu_link" to="/max-predict/report">
-                        <img src="/assets/icons/report.svg" alt="" class="img-fluid">Max Predict Reports
+                        <img src="/assets/icons/report.svg" alt="" class="img-fluid"> My player Reports
                     </NuxtLink>
                 </li>
                 <li class="menu_group" :class="{ active: route.path === '/tournament' }">
@@ -70,11 +70,11 @@
                         <img src="/assets/icons/notification.svg" alt="" class="img-fluid"> Notification
                     </NuxtLink>
                 </li>
-                <li class="menu_group" :class="{ active: route.path === '/creadit' }">
+                <!-- <li class="menu_group" :class="{ active: route.path === '/creadit' }">
                     <NuxtLink class="menu_link" to="/creadit">
                         <img src="/assets/icons/notification.svg" alt="" class="img-fluid"> Creadit List
                     </NuxtLink>
-                </li>
+                </li> -->
                 <li class="menu_group" :class="{ active: route.path === '/social-links' }">
                     <NuxtLink class="menu_link" to="/social-links">
                         <img src="/assets/icons/notification.svg" alt="" class="img-fluid"> Social link List
@@ -85,11 +85,11 @@
                         <img src="/assets/icons/notification.svg" alt="" class="img-fluid"> Ads List
                     </NuxtLink>
                 </li>
-                <li class="menu_group" :class="{ active: route.path === '/deposit' }">
+                <!-- <li class="menu_group" :class="{ active: route.path === '/deposit' }">
                     <NuxtLink class="menu_link" to="/deposit">
                         <img src="/assets/icons/deposit.svg" alt="" class="img-fluid"> Deposit
                     </NuxtLink>
-                </li>
+                </li> -->
                 <li class="menu_group" :class="{ active: route.path === '/prize' }">
                     <NuxtLink class="menu_link" to="/prize">
                         <img src="/assets/icons/images.svg" alt="" class="img-fluid"> Prize

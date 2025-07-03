@@ -51,7 +51,7 @@ class authController extends Controller
             'phone'         => $request->phone,
             'email'         => $validatedData['email'],
             'password'      => Hash::make($validatedData['password']),
-            'Credit_Points' => $settings->register_bonus,
+            'credit_points' => $settings->register_bonus,
             'status'         => "1",
         ]);
 

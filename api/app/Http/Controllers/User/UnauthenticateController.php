@@ -104,10 +104,10 @@ class UnauthenticateController extends Controller
         if ($bowler != null) {
             $settings = SiteSetting::first();
             $user = User::where('id', $request->user_id)->first();
-            $creadit = $user->Credit_Points;
+            $creadit = $user->credit_points;
             $total = $settings->single_match_bonus + $creadit;
             $user->update([
-                'Credit_Points' => $total,
+                'credit_points' => $total,
             ]);
         }
 
@@ -146,10 +146,10 @@ class UnauthenticateController extends Controller
         if ($batsman != null) {
             $settings = SiteSetting::first();
             $user = User::where('id', $request->user_id)->first();
-            $creadit = $user->Credit_Points;
+            $creadit = $user->credit_points;
             $total = $settings->max_predict_bonus + $creadit;
             $user->update([
-                'Credit_Points' => $total,
+                'credit_points' => $total,
             ]);
         }
 
@@ -214,39 +214,39 @@ class UnauthenticateController extends Controller
             ->first();
         return response()->json($data);
     }
-    public function player_list(Request $request, $id)
-    {
-        $query = Players::where('match_id', $id)->with('team');
+    // public function player_list(Request $request, $id)
+    // {
+    //     $query = Players::where('match_id', $id)->with('team');
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+    //     // Filter by status
+    //     if ($request->filled('status')) {
+    //         $query->where('status', $request->status);
+    //     }
 
-        // Filter by team name
-        if ($request->filled('searchInput')) {
-            $query->whereHas('team', function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->searchInput}%");
-            })
-                ->orWhere('palyer_name', 'like', "%{$request->searchInput}%");
-        }
+    //     // Filter by team name
+    //     if ($request->filled('searchInput')) {
+    //         $query->whereHas('team', function ($q) use ($request) {
+    //             $q->where('name', 'like', "%{$request->searchInput}%");
+    //         })
+    //             ->orWhere('palyer_name', 'like', "%{$request->searchInput}%");
+    //     }
 
-        // Paginate data
-        $data = $query->orderby('id', 'desc')->paginate($request->items ?? 10);
+    //     // Paginate data
+    //     $data = $query->orderby('id', 'desc')->paginate($request->items ?? 10);
 
-        return response()->json([
-            'data' => $data->items(),
-            'pagination' => [
-                'current_page' => $data->currentPage(),
-                'last_page' => $data->lastPage(),
-                'per_page' => $data->perPage(),
-                'total' => $data->total(),
-                'next_page_url' => $data->nextPageUrl(),
-                'prev_page_url' => $data->previousPageUrl(),
-                'links' => $this->generatePaginationLinks($data),
-            ]
-        ]);
-    }
+    //     return response()->json([
+    //         'data' => $data->items(),
+    //         'pagination' => [
+    //             'current_page' => $data->currentPage(),
+    //             'last_page' => $data->lastPage(),
+    //             'per_page' => $data->perPage(),
+    //             'total' => $data->total(),
+    //             'next_page_url' => $data->nextPageUrl(),
+    //             'prev_page_url' => $data->previousPageUrl(),
+    //             'links' => $this->generatePaginationLinks($data),
+    //         ]
+    //     ]);
+    // }
     // ========== Team list for select ==========
     public function countryList()
     {
@@ -431,10 +431,10 @@ class UnauthenticateController extends Controller
 
                 $settings = SiteSetting::first();
                 $user = User::where('id', $request->user_id)->first();
-                $creadit = $user->Credit_Points;
+                $creadit = $user->credit_points;
                 $total = $settings->single_match_bonus + $creadit;
                 $user->update([
-                    'Credit_Points' => $total,
+                    'credit_points' => $total,
                 ]);
             }
 

@@ -318,13 +318,13 @@
                                                                 </select>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6 mb-2">
+                                                        <!-- <div class="col-md-6 mb-2">
                                                             <div class="form-group">
                                                                 <label>Match</label>
                                                                 <input type="number" v-model="team.match"
                                                                     class="form-control" placeholder="Match">
                                                             </div>
-                                                        </div>
+                                                        </div> -->
                                                         <div class="col-md-6 mb-2">
                                                             <div class="form-group">
                                                                 <label>Win</label>
@@ -332,7 +332,7 @@
                                                                     class="form-control" placeholder="Win">
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6 mb-2">
+                                                        <!-- <div class="col-md-6 mb-2">
                                                             <div class="form-group">
                                                                 <label>Lose</label>
                                                                 <input type="number" v-model="team.los"
@@ -345,7 +345,7 @@
                                                                 <input type="number" v-model="team.tie"
                                                                     class="form-control" placeholder="Tie">
                                                             </div>
-                                                        </div>
+                                                        </div> -->
                                                         <div class="col-md-6 mb-2">
                                                             <div class="form-group">
                                                                 <label>PTS</label>
@@ -382,15 +382,14 @@
                                                             item.team.name }}</option>
                                                     </select>
                                                 </div>
-                                                <div class="form-group mb-3">
+                                                <!-- <div class="form-group mb-3">
                                                     <label>Highest Wicket Taker</label>
-                                                    <!-- {{ teamPlayerList }} -->
                                                     <select v-model="result_hwt" class="form-control">
                                                         <option value="" disabled>Select Team</option>
                                                         <option v-for="item in teamPlayerList" :value="item.id">{{
                                                             item.player.player_name }}</option>
                                                     </select>
-                                                </div>
+                                                </div> -->
                                                 <div class="form-group mb-3">
                                                     <label>High Scorer</label>
                                                     <select v-model="result_hs" class="form-control">
@@ -417,15 +416,14 @@
                                                             item.team.name }}</option>
                                                     </select>
                                                 </div>
-                                                <div class="form-group mb-3">
+                                                <!-- <div class="form-group mb-3">
                                                     <label>Man Of The Match</label>
-                                                    <!-- {{ teamPlayerList }} -->
                                                     <select v-model="result_mom" class="form-control">
                                                         <option value="" disabled>Select Team</option>
                                                         <option v-for="item in teamPlayerList" :value="item.id">{{
                                                             item.player.player_name }}</option>
                                                     </select>
-                                                </div>
+                                                </div> -->
                                                 <div class="form-group mb-3">
                                                     <label>Man of The Tournament</label>
                                                     <select v-model="result_mot" class="form-control">

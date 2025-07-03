@@ -1218,10 +1218,10 @@ class AdminController extends Controller
                 SemiFinalResult::create([
                     'match_id' => $request->match_id,
                     'team_id' => $team['team_id'],
-                    'match' => $team['match'],
+                    // 'match' => $team['match'],
                     'win' => $team['win'],
-                    'los' => $team['los'],
-                    'tie' => $team['tie'],
+                    // 'los' => $team['los'],
+                    // 'tie' => $team['tie'],
                     'pts' => $team['pts'],
                     'status' => '1',
                 ]);
@@ -1251,7 +1251,7 @@ class AdminController extends Controller
             'match_id' => 'required|integer',
             'team_one' => 'required|integer',
             'team_two' => 'required|integer|different:team_one',
-            'hwt' => 'required|integer|min:0',
+            // 'hwt' => 'required|integer|min:0',
             'hs' => 'required|integer|min:0',
         ]);
 
@@ -1272,7 +1272,7 @@ class AdminController extends Controller
             'user_id' => $request->user_id,
             'team_one' => $request->team_one,
             'team_two' => $request->team_two,
-            'hwt' => $request->hwt,
+            // 'hwt' => $request->hwt,
             'hs' => $request->hs,
             'status' => 1,
         ]);
@@ -1292,7 +1292,7 @@ class AdminController extends Controller
             'match_id' => 'required|integer',
             'team_one' => 'required|integer',
             'team_two' => 'required|integer|different:team_one',
-            'hwt' => 'required|integer|min:0',
+            // 'hwt' => 'required|integer|min:0',
             'hs' => 'required|integer|min:0',
         ]);
 
@@ -1309,7 +1309,7 @@ class AdminController extends Controller
             'match_id' => $request->match_id,
             'team_one' => $request->team_one,
             'team_two' => $request->team_two,
-            'hwt' => $request->hwt,
+            // 'hwt' => $request->hwt,
             'hs' => $request->hs,
             'status' => 1,
         ]);
@@ -1366,7 +1366,7 @@ class AdminController extends Controller
         $validatedData = $request->validate([
             'match_id' => 'required|integer',
             'team_id' => 'required|integer',
-            'mom' => 'required|integer',
+            // 'mom' => 'required|integer',
             'mot' => 'required|integer|min:0',
         ]);
 
@@ -1381,7 +1381,7 @@ class AdminController extends Controller
         $prediction = ChampionResult::create([
             'match_id' => $request->match_id,
             'team_id' => $request->team_id,
-            'mom' => $request->mom,
+            // 'mom' => $request->mom,
             'mot' => $request->mot,
         ]);
 
@@ -1465,10 +1465,10 @@ class AdminController extends Controller
             ->with(['team.team'])
             ->get();
         $finalPredictions = Finalist::where('user_id', $userId)
-            ->with(['teamOne.team', 'teamTwo.team', 'hwt.player', 'hs.player'])
+            ->with(['teamOne.team', 'teamTwo.team', 'hs.player'])
             ->first();
         $championPredictions = Champion::where('user_id', $userId)
-            ->with(['team.team', 'mom.player', 'mot.player'])
+            ->with(['team.team', 'mot.player'])
             ->first();
 
         if ($semiFinalPredictions->isEmpty() && $finalPredictions->isEmpty() && $championPredictions->isEmpty()) {
@@ -1539,7 +1539,7 @@ class AdminController extends Controller
             'final_team_1' => 'required|integer',
             'final_team_2' => 'required|integer',
 
-            'final_HWT' => 'required|integer',
+            // 'final_HWT' => 'required|integer',
             'final_HS' => 'required|integer',
 
             'SemiFinal' => 'required|array',
@@ -1580,7 +1580,7 @@ class AdminController extends Controller
                 'match_id' => $request->match_id,
                 'team_one' => $request->final_team_1,
                 'team_two' => $request->final_team_2,
-                'hwt' => $request->final_HWT,
+                // 'hwt' => $request->final_HWT,
                 'hs' => $request->final_HS,
                 'status' => '1',
             ]);
@@ -1598,10 +1598,10 @@ class AdminController extends Controller
             // if ($batsman != null) {
             $settings = SiteSetting::first();
             $user = User::where('id', $request->user_id)->first();
-            $creadit = $user->Credit_Points;
+            $creadit = $user->credit_points;
             $total = $settings->tournament_bonus + $creadit;
             $user->update([
-                'Credit_Points' => $total,
+                'credit_points' => $total,
             ]);
             // }
 
@@ -2070,7 +2070,8 @@ class AdminController extends Controller
 
 
         // $data = $query->orderBy('run', 'desc')->paginate($request->items ?? 10);
-        $data = $query->orderByRaw('match_report.user_id = ? DESC', [$request->user_id])
+        $data = $query
+        // ->orderByRaw('match_report.user_id = ? DESC', [$request->user_id])
             ->orderBy('run', 'desc')
             ->paginate($request->items ?? 10);
 
@@ -2304,7 +2305,7 @@ class AdminController extends Controller
             $finalMatched = $final &&
                 $final->team_one == $finalResult->team_one &&
                 $final->team_two == $finalResult->team_two &&
-                $final->hwt == $finalResult->hwt &&
+                // $final->hwt == $finalResult->hwt &&
                 $final->hs == $finalResult->hs;
 
             // if (!$finalMatched) {
@@ -2594,14 +2595,14 @@ class AdminController extends Controller
         $user = User::where('id', $request->user_id)->first();
 
         $balance = $user->balance;
-        $Credit_Points = $user->Credit_Points;
+        $credit_points = $user->credit_points;
 
         if ($balance >= $request->price) {
             $total_balance = $balance - $request->price;
-            $total_credit = $Credit_Points + $request->credit;
+            $total_credit = $credit_points + $request->credit;
 
             $upd = $user->update([
-                'Credit_Points' => $total_credit,
+                'credit_points' => $total_credit,
                 'balance' => $total_balance,
             ]);
 
@@ -2698,12 +2699,12 @@ class AdminController extends Controller
             return response()->json(['error' => 'User not found'], 404);
         }
 
-        $totalCredit = $user->Credit_Points + $setting->ads_prize;
+        $totalCredit = $user->credit_points + $setting->ads_prize;
 
-        // dd($user->Credit_Points);
+        // dd($user->credit_points);
 
         $user->update([
-            'Credit_Points' => $totalCredit,
+            'credit_points' => $totalCredit,
         ]);
 
         return response()->json(['message' => 'success', 'data' => $user]);
