@@ -1742,8 +1742,8 @@ class AdminController extends Controller
             "team_id" => "required|integer",
             "player_id" => "required|integer",
             "run" => "required|integer",
-            "ball" => "required|integer",
-            "four" => "required|integer",
+            // "ball" => "required|integer",
+            // "four" => "required|integer",
             "six" => "required|integer"
         ]);
 
@@ -1772,8 +1772,8 @@ class AdminController extends Controller
                 'team_id' => $request->team_id,
                 'player_id' => $request->player_id,
                 'run' => $request->run,
-                'ball' => $request->ball,
-                'total_4' => $request->four,
+                // 'ball' => $request->ball,
+                // 'total_4' => $request->four,
                 'total_6' => $request->six,
             ]);
 
@@ -1822,8 +1822,8 @@ class AdminController extends Controller
             "match_id" => "required|integer",
             "team_id" => "required|integer",
             "player_id" => "required|integer",
-            "over" => "required|integer",
-            "maden_over" => "required|integer",
+            // "over" => "required|integer",
+            // "maden_over" => "required|integer",
             "run" => "required|integer",
             "wicket" => "required|integer"
         ]);
@@ -1855,8 +1855,8 @@ class AdminController extends Controller
                 'match_id' => $request->match_id,
                 'team_id' => $request->team_id,
                 'player_id' => $request->player_id,
-                'over' => $request->over,
-                'maden_over' => $request->maden_over,
+                // 'over' => $request->over,
+                // 'maden_over' => $request->maden_over,
                 'run' => $request->run,
                 'wicket' => $request->wicket,
             ]);

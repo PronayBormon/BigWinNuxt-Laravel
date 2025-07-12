@@ -42,7 +42,7 @@ class LinksAdsApiController extends Controller
 
     public function linkAdsList()
     {
-        $data = linkads::where('status', 'active')->orderby('id', 'desc')->paginate(10);
+        $data = linkads::orderby('id', 'desc')->paginate(10);
         return response()->json([
             'status' => 200,
             'data' => $data
@@ -70,7 +70,6 @@ class LinksAdsApiController extends Controller
 
     public function updateLinkAds(Request $request)
     {
-
         $validate = Validator::make($request->all(), [
             "id"        => "required|integer",
             "creadit"   => "required",

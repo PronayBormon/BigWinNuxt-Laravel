@@ -18,6 +18,9 @@ export default defineNuxtConfig({
       baseURL: process.env.NODE_ENV === "production"
         ? "https://api.bigwin.cfd/api"
         : "https://api.bigwin.cfd/api",
+
+        // ? "http://127.0.0.1:8000/api"
+        // : "http://127.0.0.1:8000/api",
     }
   },
   // router: {
@@ -38,10 +41,16 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css' }, //  Swiper CSS 
 
         { rel: 'stylesheet', href: '/css/styles.css' }, // Fontawsome 
+        { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css' }, // Fontawsome 
+
+        // <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        // <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
       ],
       script: [
+        { src: "https://code.jquery.com/jquery-3.6.0.min.js" },
         { src: '/assets/bootstrap-5.3.2/js/bootstrap.bundle.min.js', defer: true },
-        { src: 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js', defer: true }
+        { src: 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js', defer: true },
+        { src: 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', defer: true }
       ]
     }
   }

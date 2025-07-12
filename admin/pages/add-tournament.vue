@@ -78,8 +78,8 @@
                                                                     <label class="select_title">Select Team {{ teamIndex
                                                                         + 1 }}</label>
                                                                     <select v-model="team.team_id"
-                                                                        class="form-control mb-3">
-                                                                        <option value="">Select Team</option>
+                                                                        class="form-control mb-3 js-example-basic-single">
+                                                                        <option selected disabled>Select Team</option>
                                                                         <option v-for="teamOption in availableTeams"
                                                                             :key="teamOption.id" :value="teamOption.id">
                                                                             {{ teamOption.name }}
@@ -94,8 +94,8 @@
                                                                 <label class="select_title">Select Player {{ playerIndex
                                                                     + 1 }}</label>
                                                                 <select v-model="team.players[playerIndex]"
-                                                                    class="form-control mb-3">
-                                                                    <option value="" selected disabled>Select Player {{
+                                                                    class="form-control mb-3 js-example-basic-single">
+                                                                    <option selected disabled>Select Player {{
                                                                         playerIndex + 1 }}</option>
                                                                     <option v-for="playerOption in availablePlayers"
                                                                         :key="playerOption.id" :value="playerOption.id">
@@ -194,19 +194,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick, watch } from 'vue';
+
 import axios from "axios";
 import { useRouter } from 'vue-router';
-
 import { useNuxtApp } from '#app';
 const { $notyf } = useNuxtApp();
 // $notyf.success(response.data.message);
+
+
+
 const router = useRouter();
-
 const availableTeams = ref([]);
-
 const availablePlayers = ref([]);
-
 const tname = ref("");
 const tdate = ref("");
 const tenddate = ref("");
@@ -269,15 +269,41 @@ const playersdata = () => {
     })
 }
 // Generate the required number of teams
-const generateTeams = () => {
-    teams.value = [];
-    for (let i = 0; i < numTeams.value; i++) {
-        teams.value.push({
-            team_id: null,
-            players: Array(15).fill(null), // Initialize with 15 empty player slots
-        });
-    }
+// const generateTeams = () => {
+//     teams.value = [];
+//     for (let i = 0; i < numTeams.value; i++) {
+//         teams.value.push({
+//             team_id: null,
+//             players: Array(15).fill(null), // Initialize with 15 empty player slots
+//         });
+//     }
+// };
+const generateTeams = async () => {
+  teams.value = [];
+  for (let i = 0; i < numTeams.value; i++) {
+    teams.value.push({
+      team_id: null,
+      players: Array(15).fill(null),
+    });
+  }
+
+  await nextTick();
+
+  // Re-initialize Select2 safely
+  if (window.$ && typeof window.$.fn.select2 === 'function') {
+    const $selects = window.$('.js-example-basic-single');
+
+    $selects.each(function () {
+      const $el = window.$(this);
+      if ($el.hasClass('select2-hidden-accessible')) {
+        $el.select2('destroy'); // Only destroy if already initialized
+      }
+      $el.select2(); // Re-initialize
+    });
+  }
 };
+
+
 
 // Function to handle form submission
 const addTournament = async () => {
@@ -333,6 +359,12 @@ const getTournamentList = (pages) => {
     });
 }
 onMounted(() => {
+    // if (window.$ && typeof window.$.fn.select2 === 'function') {
+    //     window.$('.js-example-basic-single').select2()
+    // } else {
+    //     console.warn('Select2 or jQuery not loaded.')
+    // }
+
     teamsdata();
     playersdata();
     getTournamentList();

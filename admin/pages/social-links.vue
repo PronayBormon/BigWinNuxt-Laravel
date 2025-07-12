@@ -308,7 +308,7 @@ const getCreditList = (pages) => {
     })
 }
 const UpdateCredit = () => {
-    axios.post('/api/update-credit', editCredit.value)
+    axios.post('/link-ads/update-link-ads', editCredit.value)
         .then(response => {
             $notyf.success(response.data.message);
             editCredit.value = { id: '', name: '', price: '', status: '' };

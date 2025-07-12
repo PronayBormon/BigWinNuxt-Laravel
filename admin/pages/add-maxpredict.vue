@@ -46,7 +46,7 @@
                                                                 <div class="form-group">
                                                                     <label class="select_title">Select Team</label>
                                                                     <select v-model="team.team_id"
-                                                                        class="form-control mb-3">
+                                                                        class="form-control mb-3 js-example-basic-single">
                                                                         <option value="">Select Team</option>
                                                                         <option v-for="teamOption in teamOptions"
                                                                             :key="teamOption.id" :value="teamOption.id">
@@ -62,7 +62,7 @@
                                                                 <label class="select_title">Select Player {{ playerIndex
                                                                     + 1 }}</label>
                                                                 <select v-model="team.players[playerIndex]"
-                                                                    class="form-control mb-3">
+                                                                    class="form-control mb-3 js-example-basic-single">
                                                                     <option value="" selected disabled>Select Player
                                                                     </option>
                                                                     <option v-for="playerOption in playerOptions"
@@ -303,8 +303,23 @@ const addmaxpredict = () => {
         });
 };
 onMounted(() => {
+    if (window.$ && typeof window.$.fn.select2 === 'function') {
+        window.$('.js-example-basic-single').select2()
+    } else {
+        console.warn('Select2 or jQuery not loaded.')
+    }
     teamsdata();
     playersdata();
     getMaxPredict();
 })
 </script>
+
+<style>
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #444;
+    line-height: 35px;
+}
+.select2-container .select2-selection--single {
+  height: 35px;
+}
+</style>

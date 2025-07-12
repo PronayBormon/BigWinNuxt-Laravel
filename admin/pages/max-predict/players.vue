@@ -65,14 +65,14 @@
                                                     <input type="text" class="form-control" id=""
                                                         v-model="result_bat_run" placeholder="run">
                                                 </div>
-                                                <div class="form-group mb-3">
+                                                <!-- <div class="form-group mb-3">
                                                     <input type="text" class="form-control" id=""
                                                         v-model="result_bat_ball" placeholder="ball">
-                                                </div>
-                                                <div class="form-group mb-3">
+                                                </div> -->
+                                                <!-- <div class="form-group mb-3">
                                                     <input type="text" class="form-control" id=""
                                                         v-model="result_bat_four" placeholder="Total Four">
-                                                </div>
+                                                </div> -->
                                                 <div class="form-group mb-3">
                                                     <input type="text" class="form-control" id=""
                                                         v-model="result_bat_six" placeholder="Total six">
@@ -100,14 +100,14 @@
                                                             {{ item.player.player_name }}</option>
                                                     </select>
                                                 </div>
-                                                <div class="form-group mb-3">
+                                                <!-- <div class="form-group mb-3">
                                                     <input type="text" class="form-control" v-model="result_ball_over"
                                                         id="name" placeholder="Over">
                                                 </div>
                                                 <div class="form-group mb-3">
                                                     <input type="text" class="form-control" id="name"
                                                         v-model="result_ball_maden_over" placeholder="Maden Over">
-                                                </div>
+                                                </div> -->
                                                 <div class="form-group mb-3">
                                                     <input type="text" class="form-control" v-model="result_ball_run"
                                                         id="name" placeholder="Run">
@@ -188,9 +188,9 @@
                                                     <p class=" pt-1" v-if="items.boll_result != null"
                                                         style="color: #000;">
                                                         <Strong>Boller Result: </Strong>
-                                                        <span>Over: {{ items.boll_result.over }}</span>
+                                                        <!-- <span>Over: {{ items.boll_result.over }}</span>
                                                         <span class="mx-2">Maden Over: {{ items.boll_result.maden_over
-                                                        }}</span>
+                                                        }}</span> -->
                                                         <span class="mx-2">Run: {{ items.boll_result.run }}</span>
                                                         <span class="mx-2">Wicket: {{ items.boll_result.wicket }}</span>
                                                     </p>
@@ -198,9 +198,9 @@
                                                         style="color: #000;">
                                                         <Strong>Bat Result: </Strong>
                                                         <span class="mx-2">Run: {{ items.bat_result.run }}</span>
-                                                        <span>Boll: {{ items.bat_result.ball }}</span>
+                                                        <!-- <span>Boll: {{ items.bat_result.ball }}</span>
                                                         <span class="mx-2">4s: {{ items.bat_result.total_4
-                                                        }}</span>
+                                                        }}</span> -->
                                                         <span class="mx-2">6s: {{ items.bat_result.total_6 }}</span>
                                                     </p>
 
