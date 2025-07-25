@@ -33,7 +33,7 @@
         </div>
     </nav>
 </template>
-<script setup>
+<!-- <script setup>
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
 import { useAuthStore } from '@/stores/auth'; // ✅ Import Pinia store
@@ -75,4 +75,4 @@ const toggleTheme = () => {
     document.body.classList.remove(oldTheme);
     document.body.classList.add(theme.value);
 };
-</script>
+</script> -->

@@ -247,13 +247,13 @@
 
     </div>
 </template>
-
+<!-- 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
 const globalScript = useGlobalScript();
 const authStore = useAuthStore();
-import axios from "axios";
+// import axios from "axios";
 import $ from "jquery";
 
 import { useNuxtApp } from '#app';
@@ -427,4 +427,4 @@ onMounted(() => {
 
 
 
-</script>
+</script> -->

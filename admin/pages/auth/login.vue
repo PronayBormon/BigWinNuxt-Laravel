@@ -40,11 +40,15 @@
     </div>
 </template>
 
-<script setup>
+<!-- <script setup>
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
 const globalScript = useGlobalScript();
-import axios from "axios";
+// import axios from "axios";
+
+
+// const { $axios } = useNuxtApp();
+// const axios = $axios;
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';  // Import useAuthStore
 
@@ -126,4 +130,4 @@ const getIp = () => {
 onMounted(() => {
     getIp();
 });
-</script>
+</script> -->

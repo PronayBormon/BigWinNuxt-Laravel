@@ -330,7 +330,9 @@
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+// import axios from 'axios';
+const { $axios } = useNuxtApp();
+const axios = $axios;
 import { useNuxtApp } from '#app';
 
 const globalScript = useGlobalScript();

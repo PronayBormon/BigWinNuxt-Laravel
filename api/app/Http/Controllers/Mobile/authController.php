@@ -22,15 +22,21 @@ class authController extends Controller
 
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email',
             'password' => [
                 'required',
                 'string',
                 'min:6',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).+$/',
+                // 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).+$/',
                 'confirmed',
             ],
         ]);
+
+        $exists = User::where('email', $request->email)->first();
+
+        if($exists){
+            return response()->json(['message'=> "Email already used"], 422);
+        }
 
         $baseUsername = Str::slug($validatedData['name']);
         $username = $baseUsername;

@@ -70,7 +70,10 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 import { useRoute } from 'vue-router';
-import axios from 'axios';
+// import axios from "axios";
+
+const { $axios } = useNuxtApp();
+const axios = $axios;
 
 const route = useRoute();
 const matchId = route.query.id;

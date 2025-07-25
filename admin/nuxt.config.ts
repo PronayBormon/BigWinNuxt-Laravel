@@ -7,7 +7,7 @@ export default defineNuxtConfig({
 
   pages: true,
   plugins: [
-    { src: '~/plugins/jquery.client.ts', mode: 'client' } // Ensure plugin runs only in the client-side
+    // { src: '~/plugins/jquery.client.ts', mode: 'client' } // Ensure plugin runs only in the client-side
   ],
   // css: [
   //   '@/assets/css/styles.css', // Custom global CSS

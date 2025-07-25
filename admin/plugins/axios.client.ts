@@ -1,4 +1,4 @@
-import axios from "axios";
+// import axios from "axios";
 import { defineNuxtPlugin } from "#app";
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -10,7 +10,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   axios.defaults.baseURL = baseURL;
   axios.defaults.withCredentials = false;  // Set to false if you're not using credentials (cookies, sessions)
-  axios.defaults.proxyHeaders = false; // Disable proxy headers
+  // axios.defaults.proxyHeaders = false; // Disable proxy headers
 
   if (process.client) {
     const token = localStorage.getItem("token");

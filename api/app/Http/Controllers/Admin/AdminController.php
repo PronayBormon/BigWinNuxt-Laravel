@@ -2618,7 +2618,7 @@ class AdminController extends Controller
         $request->validate([
             'title' => 'required|string',
             'type' => 'required|string',
-            'file_path' => 'required|file|mimes:jpg,jpeg,png,webp,mp4|max:2048',
+            'file_path' => 'required',
         ]);
 
         if ($request->hasFile('file_path')) {
@@ -2643,7 +2643,7 @@ class AdminController extends Controller
         $query = Ad::query();
 
         // Apply search filter if provided
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->filled('search') && !empty($request->search)) {
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 

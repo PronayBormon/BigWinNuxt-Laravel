@@ -176,7 +176,7 @@ class PollController extends Controller
 
     public function updatePoll(Request $request)
     {
-         $request->validate([
+        $request->validate([
             'poll_id' => 'required|exists:polls,id',
             'question' => 'required|string',
             'status' => 'required|in:active,inactive',
@@ -269,5 +269,21 @@ class PollController extends Controller
                 })
             ]
         ]);
+    }
+
+    public function userPredict(Request $request)
+    {
+        $validate = Validator::make($request->all(), [
+            'user_id' => "required",
+            'id' => "required",
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json(['errors' => $validate->errors()], 422);
+        }
+
+        $data = PollAnswer::where('user_id', $request->user_id)->where('poll_id', $request->id)->first();
+
+        return response()->json($data);
     }
 }

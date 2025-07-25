@@ -41,7 +41,7 @@
     </div>
 </template>
 
-<script setup>
+<!-- <script setup>
     import { ref, onMounted } from 'vue';
     import { useGlobalScript } from '@/stores/globalScript';
     const globalScript = useGlobalScript();
@@ -73,4 +73,4 @@
     onMounted(() => {
         checkTheme();
     });
-</script>
+</script> -->

@@ -9,7 +9,7 @@ class SingleMatchResult extends Model
 {
     use HasFactory;
 
-    protected $table = "singlematchresult";
+    protected $table = "single_match_result";
 
     protected $fillable = [
         'match_id',

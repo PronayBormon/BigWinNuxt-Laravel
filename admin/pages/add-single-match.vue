@@ -21,10 +21,9 @@
                                 <div class="col-md-6 m-auto">
 
                                     <div class="adduser_form">
-                                        <form action="" @submit.prevent="addMatch()">
+                                        <form action="" @submit.prevent="addMatch">
                                             <div class="form-group mb-3">
-                                                <!-- <input type="text" class="form-control" id="name" placeholder="Team A Name"> -->
-                                                <select class="form-control js-example-basic-single" v-model="teamA">
+                                                <select id="teamA" class="form-control js-example-basic-single" >
                                                     <option value="">Select Team A</option>
                                                     <option v-for="(item, index) in teamList" :value="item.id">{{
                                                         item.name }}
@@ -32,14 +31,12 @@
                                                 </select>
                                             </div>
                                             <div class="form-group mb-3">
-                                                <!-- <input type="text" class="form-control" id="name" placeholder="Team B Name"> -->
                                                 <!-- {{ teamList }} -->
-                                                <select class="form-control js-example-basic-single" v-model="teamB">
+                                                <select id="teamB" class="form-control js-example-basic-single">
                                                     <option value="">Select Team B</option>
                                                     <option v-for="(item, index) in teamList" :value="item.id">{{
                                                         item.name }}
                                                     </option>
-                                                    <!-- <option value="2">Pakistan</option> -->
                                                 </select>
                                             </div>
                                             <div class="form-group mb-3">
@@ -210,7 +207,8 @@
 
 <script setup>
 import { onMounted } from "vue";
-import axios from "axios";
+const { $axios } = useNuxtApp();
+const axios = $axios;
 import { useRouter } from 'vue-router';
 import { useNuxtApp } from '#app';
 const { $notyf } = useNuxtApp();
@@ -332,8 +330,7 @@ const addMatch = () => {
     formData.append('dateTime', dateTime.value);
     formData.append('enddateTime', enddateTime.value);
 
-    // console.log(formData);
-
+    //console.log(formData);
     axios.post('api/add-match', formData).then(response => {
         // console.log(response.data);
         getMatchList();
@@ -360,6 +357,8 @@ const addMatch = () => {
             $notyf.error("An error occurred. Please try again.");
         }
     });
+
+    
 }
 const getTeamList = () => {
 
@@ -399,15 +398,30 @@ const today = () => {
 }
 onMounted(() => {
     if (window.$ && typeof window.$.fn.select2 === 'function') {
-        window.$('.js-example-basic-single').select2()
+        const $teamA = window.$('#teamA');
+        const $teamB = window.$('#teamB');
+
+        $teamA.select2();
+        $teamB.select2();
+
+        // Update Vue refs when Select2 value changes
+        $teamA.on('change', (e) => {
+            teamA.value = e.target.value;
+        });
+
+        $teamB.on('change', (e) => {
+            teamB.value = e.target.value;
+        });
     } else {
-        console.warn('Select2 or jQuery not loaded.')
+        console.warn('Select2 or jQuery not loaded.');
     }
+
     bannerslider();
     today();
     getTeamList();
     getMatchList(1);
 });
+
 </script>
 <style>
 .select2-container--default .select2-selection--single .select2-selection__rendered {

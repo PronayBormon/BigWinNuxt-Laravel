@@ -73,11 +73,11 @@
     </div>
 </template>
 
-<script setup>
+<!-- <script setup>
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
 
-import axios from 'axios';
+// import axios from 'axios';
 import { useNuxtApp } from '#app';
 const { $notyf } = useNuxtApp();
 
@@ -153,4 +153,4 @@ onMounted(() => {
     checkTheme();
     getIp();
 });
-</script>
+</script> -->

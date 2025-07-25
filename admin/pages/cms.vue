@@ -150,7 +150,9 @@
 
 <script setup>
 import { onMounted } from "vue";
-import axios from "axios";
+// import axios from "axios";
+const { $axios } = useNuxtApp();
+const axios = $axios;
 import { useRouter } from 'vue-router';
 import { useNuxtApp } from '#app';
 const { $notyf } = useNuxtApp();

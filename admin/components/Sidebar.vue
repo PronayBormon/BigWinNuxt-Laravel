@@ -149,7 +149,7 @@
     </aside>
 </template>
 
-<script setup>
+<!-- <script setup>
 import { useRoute } from 'vue-router';
 import { useGlobalScript } from '@/stores/globalScript';
 import { useAuthStore } from '@/stores/auth';
@@ -178,4 +178,4 @@ const handleLogout = () => {
 
     // // Redirect to login page
 };
-</script>
+</script> -->

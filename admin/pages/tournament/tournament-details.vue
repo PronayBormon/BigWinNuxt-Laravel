@@ -117,7 +117,9 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+// import axios from 'axios';
+const { $axios } = useNuxtApp();
+const axios = $axios;
 import { useNuxtApp } from '#app';
 import PlayerList from '../player-list.vue';
 const { $notyf } = useNuxtApp();

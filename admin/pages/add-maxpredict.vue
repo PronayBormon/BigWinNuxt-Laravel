@@ -1,93 +1,52 @@
 <template>
     <div class="main_container">
-        <!-- Sidebar -->
         <Sidebar />
-
-        <!-- Main Content -->
         <div class="main_content">
-            <!-- Navbar -->
             <Navbar />
-
             <div class="content_section">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h1 class="page_title">Add Max Predict</h1>
-                </div>
-
+                <h1 class="page_title">Add Max Predict</h1>
                 <div class="card banner_card">
                     <div class="card-body">
                         <form @submit.prevent="addmaxpredict">
                             <div class="row">
-                                <div class="col-md-12 m-auto">
-                                    <div class="adduser_form">
-                                        <div class="row">
-                                            <div class="col-md-3 col-sm-6 col-12">
-                                                <div class="form-group mb-3">
-                                                    <input type="datetime-local" class="form-control" v-model="tdate" />
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3 col-sm-6 col-12">
-                                                <div class="form-group mb-3">
-                                                    <input type="datetime-local" class="form-control"
-                                                        v-model="tenddate" />
-                                                </div>
-                                            </div>
+                                <div class="col-md-3">
+                                    <input type="datetime-local" v-model="tdate" class="form-control mb-3" />
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="datetime-local" v-model="tenddate" class="form-control mb-3" />
+                                </div>
+                            </div>
+                            <div class="form-group mb-3">
+                                <div v-for="(team, teamIndex) in teams" :key="teamIndex" class="mb-4 border p-3">
+                                    <h6>Team {{ teamIndex + 1 }}</h6>
+                                    <select :data-index="teamIndex" class="form-control team-select"
+                                        v-model="team.team_id">
+                                        <option value="">Select Team</option>
+                                        <option v-for="t in teamOptions" :key="t.id" :value="t.id">{{ t.name }}</option>
+                                    </select>
+
+                                    <div class="row mt-3">
+                                        <div class="col-md-4" v-for="(player, playerIndex) in team.players"
+                                            :key="playerIndex">
+                                            <select :data-team="teamIndex" :data-player="playerIndex"
+                                                class="form-control player-select mt-2"
+                                                v-model="team.players[playerIndex]">
+                                                <option value="">Select Player {{ playerIndex + 1 }}</option>
+                                                <option v-for="p in playerOptions" :key="p.id" :value="p.id">
+                                                    {{ p.player_name }}
+                                                </option>
+                                            </select>
                                         </div>
-
-                                        <!-- Fixed 2 Teams -->
-                                        <div class="form-group mb-3">
-                                            <div class="team_list">
-                                                <div class="row">
-                                                    <div class="col-md-12" v-for="(team, teamIndex) in teams"
-                                                        :key="teamIndex">
-                                                        <h6 class="select_title">Team {{ teamIndex + 1 }}</h6>
-                                                        <div class="row">
-                                                            <!-- Team Selection -->
-                                                            <div class="col-md-3 col-sm-6">
-                                                                <div class="form-group">
-                                                                    <label class="select_title">Select Team</label>
-                                                                    <select v-model="team.team_id"
-                                                                        class="form-control mb-3 js-example-basic-single">
-                                                                        <option value="">Select Team</option>
-                                                                        <option v-for="teamOption in teamOptions"
-                                                                            :key="teamOption.id" :value="teamOption.id">
-                                                                            {{ teamOption.name }}
-                                                                        </option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Player Selection (Minimum 15 Players) -->
-                                                            <div class="col-md-3 col-sm-6"
-                                                                v-for="(player, playerIndex) in 15" :key="playerIndex">
-                                                                <label class="select_title">Select Player {{ playerIndex
-                                                                    + 1 }}</label>
-                                                                <select v-model="team.players[playerIndex]"
-                                                                    class="form-control mb-3 js-example-basic-single">
-                                                                    <option value="" selected disabled>Select Player
-                                                                    </option>
-                                                                    <option v-for="playerOption in playerOptions"
-                                                                        :key="playerOption.id" :value="playerOption.id">
-                                                                        {{ playerOption.player_name }}
-                                                                    </option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <hr>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <button type="submit" class="btn_primary w-100">Submit</button>
                                     </div>
                                 </div>
                             </div>
+                            <button type="submit" class="btn btn-primary w-100">Submit</button>
                         </form>
-
-
                     </div>
                 </div>
 
+
+                
                 <h1 class="page_title">Max Predict List </h1>
                 <div class="card app_card">
                     <div class="card-header">
@@ -171,31 +130,64 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import axios from 'axios';
-import { useNuxtApp } from '#app';
-const { $notyf } = useNuxtApp();
+import { ref, onMounted, nextTick, watch } from 'vue'
+// import axios from 'axios'
+const { $axios } = useNuxtApp();
+const axios = $axios;
+import { useNuxtApp } from '#app'
+const { $notyf } = useNuxtApp()
 
-const tdate = ref('');
-const tenddate = ref('');
+const tdate = ref('')
+const tenddate = ref('')
+const teams = ref([
+    { team_id: '', players: Array(15).fill('') },
+    { team_id: '', players: Array(15).fill('') }
+])
+const teamOptions = ref([])
+const playerOptions = ref([])
+
 const status = ref('');
 const searchInput = ref('');
 const itemsperpage = ref('10');
 
-
-
-// Fixed 2 Teams with Minimum 15 Players Each
-const teams = ref([
-    { team_id: '', players: Array(15).fill('') },
-    { team_id: '', players: Array(15).fill('') }
-]);
-
-// Sample Team & Player Options (Fetch from API if needed)
-const teamOptions = ref([]);
-//
-const playerOptions = ref([]);
 const maxPredictList = ref([]);
 const pagination = ref([]);
+
+const initSelect2 = () => {
+    nextTick(() => {
+        $('.team-select').each(function () {
+            const index = $(this).data('index')
+            $(this).select2().on('change', function () {
+                teams.value[index].team_id = $(this).val()
+            })
+            $(this).val(teams.value[index].team_id).trigger('change')
+        })
+
+        $('.player-select').each(function () {
+            const teamIndex = $(this).data('team')
+            const playerIndex = $(this).data('player')
+            $(this).select2().on('change', function () {
+                teams.value[teamIndex].players[playerIndex] = $(this).val()
+            })
+            $(this)
+                .val(teams.value[teamIndex].players[playerIndex])
+                .trigger('change')
+        })
+    })
+}
+
+onMounted(() => {
+    teamsdata();
+    playersdata();
+    teamsdata();
+    playersdata();
+    getMaxPredict();
+})
+
+watch([teams, teamOptions, playerOptions], () => initSelect2(), {
+    deep: true
+})
+
 
 const teamsdata = () => {
     axios.get('api/team-list').then(response => {
@@ -248,37 +240,28 @@ const getMaxPredict = (page) => {
         pagination.value = response.data.pagination.links;
     })
 }
-// Form Submission with Validation
 const addmaxpredict = () => {
-    // console.log("Submitting Form...");
-
-    // Validation: Ensure each team is selected and has at least 15 players
     for (let i = 0; i < teams.value.length; i++) {
         if (!teams.value[i].team_id) {
-            alert(`Please select a team for Team ${i + 1}.`);
-            return;
+            alert(`Please select a team for Team ${i + 1}`)
+            return
         }
         if (teams.value[i].players.includes('')) {
-            alert(`Please select at least 15 players for Team ${i + 1}.`);
-            return;
+            alert(`Please select all 15 players for Team ${i + 1}`)
+            return
         }
     }
 
-    const formData = new FormData();
-    formData.append("start_date", tdate.value);
-    formData.append("end_date", tenddate.value);
+    const formData = new FormData()
+    formData.append('start_date', tdate.value)
+    formData.append('end_date', tenddate.value)
 
-    teams.value.forEach((team, teamIndex) => {
-        formData.append(`teams[${teamIndex}][team_id]`, team.team_id);
-        team.players.forEach((player, playerIndex) => {
-            formData.append(`teams[${teamIndex}][players][${playerIndex}]`, player);
-        });
-    });
-
-    // console.log("FormData Entries:");
-    for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-    }
+    teams.value.forEach((team, i) => {
+        formData.append(`teams[${i}][team_id]`, team.team_id)
+        team.players.forEach((player, j) => {
+            formData.append(`teams[${i}][players][${j}]`, player)
+        })
+    })
 
     axios.post("api/add-max-predict", formData)
         .then(response => {
@@ -300,26 +283,17 @@ const addmaxpredict = () => {
             } else {
                 $notyf.error("An error occurred. Please try again.");
             }
-        });
-};
-onMounted(() => {
-    if (window.$ && typeof window.$.fn.select2 === 'function') {
-        window.$('.js-example-basic-single').select2()
-    } else {
-        console.warn('Select2 or jQuery not loaded.')
-    }
-    teamsdata();
-    playersdata();
-    getMaxPredict();
-})
+        }); F
+}
 </script>
 
-<style>
+<style scoped>
 .select2-container--default .select2-selection--single .select2-selection__rendered {
     color: #444;
     line-height: 35px;
 }
+
 .select2-container .select2-selection--single {
-  height: 35px;
+    height: 35px;
 }
 </style>

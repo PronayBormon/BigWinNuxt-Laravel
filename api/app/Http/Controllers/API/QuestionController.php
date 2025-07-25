@@ -9,6 +9,7 @@ use App\Models\Question;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
+use Illuminate\Support\Facades\Validator;
 
 class QuestionController extends Controller
 {
@@ -258,5 +259,20 @@ class QuestionController extends Controller
             'code' => 200,
             'data' => $query,
         ]);
+    }
+
+    public function userPredict(Request $request){
+        $validate = Validator::make($request->all(),[
+            'user_id' => "required",
+            'id' => "required",
+        ]);
+
+        if($validate->fails()){
+            return response()->json(['errors' => $validate->errors()],422);
+        }
+
+        $data = Answer::where('user_id', $request->user_id)->where('question_id', $request->id)->first();
+
+        return response()->json($data);
     }
 }

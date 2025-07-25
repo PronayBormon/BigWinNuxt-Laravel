@@ -120,26 +120,36 @@
                                         class="form-control" />
                                 </div>
 
+                                <!-- Ads Type -->
+                                <div class="form-group mb-3">
+                                    <select v-model="type" required class="form-control">
+                                        <option disabled value="">Select Type</option>
+                                        <option value="1">Image</option>
+                                        <option value="2">Video</option>
+                                    </select>
+                                </div>
+
                                 <!-- Image Preview -->
                                 <img :src="imageUrl || defaultImage" alt="Image Preview" class="img-fluid mb-3"
                                     style="height: 40px; border: 1px solid #fff; object-fit: cover;" />
 
                                 <!-- File Input -->
+                                <p class="text-danger mb-0 mt-2" style="font-size: 12px;">Please select type first</p>
                                 <div class="form-group mb-3">
-                                    <input type="file" @change="onImageChange" accept="image/*" required
+                                    <input type="file" @change="onImageChange" :disabled="!type"
+                                        :accept="type === '1' ? 'image/*' : type === '2' ? 'video/*' : ''" required
                                         class="form-control" />
                                 </div>
 
-                                <!-- Ads Type -->
-                                <div class="form-group mb-3">
-                                    <select v-model="type" required class="form-control">
-                                        <option disabled value="">Select Type</option>
-                                        <option value="1">image</option>
-                                        <option value="2">video</option>
-                                    </select>
-                                </div>
 
-                                <button type="submit" class="btn_primary w-100">Submit</button>
+
+                                <!-- <button type="submit" class="btn_primary w-100">Submit</button> -->
+                                <button type="submit" class="btn_primary w-100" :disabled="loading">
+                                    <span v-if="loading && type === '2'" class="spinner-border spinner-border-sm me-2"
+                                        role="status" aria-hidden="true"></span>
+                                    Submit
+                                </button>
+
 
                             </form>
                         </div>
@@ -147,6 +157,14 @@
                 </div>
             </div>
         </div>
+        <div v-if="type === '2' && loading" class="text-center mb-3"
+            style="position: fixed;left: 50%;top: 50%;background: #00000087;color: #fff;width: 100vw;height: 100vh;transform: translate(-50%,-50%);z-index: 999999;display: flex;justify-content: center;align-items: center;flex-direction: column;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Uploading...</span>
+            </div>
+            <p style="font-size: 12px; margin-top: 5px;">Uploading video, please wait...</p>
+        </div>
+
 
 
     </div>
@@ -155,7 +173,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
-import axios from 'axios';
+// import axios from 'axios';
+const { $axios } = useNuxtApp();
+const axios = $axios;
 import { useNuxtApp } from '#app';
 const { $notyf } = useNuxtApp();
 
@@ -167,6 +187,8 @@ const searchInput = ref();
 const title = ref();
 const type = ref('');
 const image = ref('');
+const loading = ref(false);
+
 
 const imageUrl = ref();
 const defaultImage = '';
@@ -176,8 +198,10 @@ const pagination = ref([]);
 
 const errors = ref();
 
+
+
 const getAdsListads = (pages) => {
-    
+
     axios.get('api/show-ads').then(response => {
         console.log(response.data);
     })
@@ -223,6 +247,7 @@ const deleteAds = (id) => {
 }
 
 const SaveAds = () => {
+    loading.value = true; // Start loading
     const formData = new FormData();
     formData.append('title', title.value);
     formData.append('file_path', image.value);
@@ -240,8 +265,11 @@ const SaveAds = () => {
             const modalInstance = bootstrap.Modal.getInstance(modalElement);
             if (modalInstance) modalInstance.hide();
         }
+
+        loading.value = false;
     }).catch(error => {
         // If the error response is validation errors, show them using Notyf
+        loading.value = false;
         if (error.response && error.response.data && error.response.data.errors) {
             const errorMessages = error.response.data.errors;
 
@@ -261,10 +289,27 @@ const SaveAds = () => {
 
 function onImageChange(event) {
     const file = event.target.files[0];
+    if (!file) return;
+
+    const isImage = type.value === '1';
+    const isVideo = type.value === '2';
+
+    if (isImage && !file.type.startsWith('image/')) {
+        alert('Please select an image file.');
+        return;
+    }
+    if (isVideo && !file.type.startsWith('video/')) {
+        alert('Please select a video file.');
+        return;
+    }
+
+    // const file = event.target.files[0];
     if (file) {
         image.value = file;
         imageUrl.value = URL.createObjectURL(file); // Generate preview URL
     }
+
+
 }
 onMounted(() => {
     getAdsList();

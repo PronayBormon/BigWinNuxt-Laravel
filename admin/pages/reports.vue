@@ -78,7 +78,9 @@
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
 const globalScript = useGlobalScript();
-import axios from "axios";
+// import axios from "axios";
+const { $axios } = useNuxtApp();
+const axios = $axios;
 
 const matchList = ref([]);
 const pagination = ref([]);

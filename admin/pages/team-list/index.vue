@@ -103,7 +103,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+// import axios from 'axios';
+const { $axios } = useNuxtApp();
+const axios = $axios;
 import { useGlobalScript } from '@/stores/globalScript';
 const globalScript = useGlobalScript();
 import { useNuxtApp } from '#app';

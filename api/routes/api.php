@@ -257,6 +257,7 @@ Route::prefix("link-ads")->controller(LinksAdsApiController::class)->group(funct
 // });
 
 Route::get('/questions/{id}', [QuestionController::class, 'show']);
+Route::get('/questions/user/predict', [QuestionController::class, 'userPredict']);
 
 // Route::middleware('auth:sanctum')->group(function () {
     Route::post('/polls', [PollController::class, 'pollStore']); // admin
@@ -268,3 +269,9 @@ Route::get('/questions/{id}', [QuestionController::class, 'show']);
 // });
 
 Route::get('/polls/{id}', [PollController::class, 'show']);
+Route::get('/polls/user/predict', [PollController::class, 'userPredict']);
+
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return response()->json($request->user());
+});
+
