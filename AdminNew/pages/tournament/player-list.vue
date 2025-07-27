@@ -145,9 +145,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-// import axios from 'axios';
-const { $axios } = useNuxtApp();
-const axios = $axios;
+import { apiFetch } from '~/utils/api'
 
 const route = useRoute();
 const router = useRouter();
@@ -156,7 +154,7 @@ const tournamentId = route.query.tournament_id;
 
 const matchdetails = ref();
 const items = ref("10");
-const searchInput = ref();
+const searchInput = ref('');
 const status = ref('');
 const team_id = ref();
 
@@ -171,28 +169,41 @@ const back = () => {
 }
 
 
-const teamData = (page) => {
-    axios.get(`api/tournament-playerList`, {
-        params: {
-            tournamentId: tournamentId,
-            teamId: teamId,
-            items: items.value,
-            searchInput: searchInput.value,
-            status: status.value,
-            page: page,
-        }
-    }).then(response => {
-        // console.log(response.data.data);
-        playersList.value = response.data.data;
-        pagination.value = response.data.pagination.links;
-
+const teamData = async (page = 1) => {
+  try {
+    const queryParams = new URLSearchParams({
+      tournamentId: tournamentId,
+      teamId: teamId,
+      items: items.value,
+      searchInput: searchInput.value,
+      status: status.value,
+      page: page,
     });
-}
-const teamListselect = () => {
-    axios.get("api/team-list").then(response => {
-        teams.value = response.data;
-    })
-}
+
+    const response = await apiFetch(`/api/tournament-playerList?${queryParams.toString()}`, {
+      method: 'GET',
+    });
+
+    const data = await response.json();
+    playersList.value = data.data;
+    pagination.value = data.pagination.links;
+  } catch (error) {
+    $notyf.error("Failed to load players list.");
+  }
+};
+
+const teamListselect = async () => {
+  try {
+    const response = await apiFetch("/api/team-list", {
+      method: 'GET',
+    });
+    const data = await response.json();
+    teams.value = data;
+  } catch (error) {
+    $notyf.error("Failed to load team list.");
+  }
+};
+
 onMounted(() => {
     teamData();
     teamListselect();

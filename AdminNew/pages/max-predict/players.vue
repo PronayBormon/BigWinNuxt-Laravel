@@ -14,7 +14,7 @@
             <div class="content_section">
                 <div class="d-flex align-items-center justify-content-between">
                     <h1 class="page_title"> <button @click.prevent="back" class="border-0 bg-transparent"
-                            type="button"><i class="fa-solid fa-arrow-left"></i></button> Max Predict Player List </h1>
+                            type="button"><i class="fa-solid fa-arrow-left"></i></button> My Player List </h1>
                     <h1 v-if="teamlist && teamlist.length >= 2" class="m-0 page_title">
                         <span v-if="teamlist[0]?.country?.name && teamlist[1]?.country?.name">
                             {{ teamlist[0].country.name }} vs {{ teamlist[1].country.name }}
@@ -285,10 +285,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-// import axios from "axios";
 
-const { $axios } = useNuxtApp();
-const axios = $axios;
+import { apiFetch } from '~/utils/api'
 import { useNuxtApp } from '#app';
 const { $notyf } = useNuxtApp();
 
@@ -298,7 +296,7 @@ const router = useRouter();
 const id = route.query.predict_id;
 
 const items = ref("10");
-const searchInput = ref();
+const searchInput = ref('');
 const status = ref('');
 
 const teamList = ref([]);
@@ -328,10 +326,9 @@ const result_boll_playeslist = ref([]);
 const back = () => {
     router.back();
 }
-
-const addResultbowlers = () => {
+const addResultbowlers = async () => {
+  try {
     const formData = new FormData();
-
     formData.append('id', result_ball_id.value);
     formData.append('match_id', id);
     formData.append('team_id', result_ball_team_id.value);
@@ -341,54 +338,37 @@ const addResultbowlers = () => {
     formData.append('run', result_ball_run.value);
     formData.append('wicket', result_ball_wicket.value);
 
-    // console.log(formData);
-    axios.post('api/add-boller-result', formData).then(response => {
-        let modalElement = document.getElementById('result');
-        if (modalElement) {
-            let modalInstance = bootstrap.Modal.getInstance(modalElement);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-        }
-        $notyf.success(response.data.message);
-
-        result_ball_team_id.value = "";
-        result_boll_player_id.value = "";
-        result_ball_over.value = "";
-        result_ball_maden_over.value = "";
-        result_ball_run.value = "";
-        result_ball_wicket.value = "";
-
-        teamData();
-
-    }).catch(error => {
-        console.error("Error Response:", error.response);
-
-        if (error.response) {
-            const { status, data } = error.response;
-
-            if (status === 422 && data.errors) {
-                // Validation errors
-                Object.values(data.errors).forEach(messages => {
-                    messages.forEach(msg => $notyf.error(msg));
-                });
-            } else if (status === 409) {
-                // Duplicate entry error
-                $notyf.error(data.message);
-            } else {
-                // General error
-                $notyf.error(data.message || "An error occurred. Please try again.");
-            }
-        } else {
-            // Network or unknown error
-            $notyf.error("Unable to connect to the server. Please check your internet connection.");
-        }
+    const response = await apiFetch('/api/add-boller-result', {
+      method: 'POST',
+      body: formData,
     });
+    const data = await response.json();
 
-}
-const addbatsmanresult = () => {
+    const modalElement = document.getElementById('result');
+    if (modalElement) {
+      const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      if (modalInstance) modalInstance.hide();
+    }
+
+    $notyf.success(data.message);
+
+    result_ball_team_id.value = "";
+    result_boll_player_id.value = "";
+    result_ball_over.value = "";
+    result_ball_maden_over.value = "";
+    result_ball_run.value = "";
+    result_ball_wicket.value = "";
+
+    teamData();
+
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+const addbatsmanresult = async () => {
+  try {
     const formData = new FormData();
-
     formData.append('id', result_bat_id.value);
     formData.append('match_id', id);
     formData.append('team_id', result_bat_team_id.value);
@@ -398,143 +378,154 @@ const addbatsmanresult = () => {
     formData.append('four', result_bat_four.value);
     formData.append('six', result_bat_six.value);
 
-    // console.log(formData);
-    axios.post('api/add-batsman-result', formData).then(response => {
-        let modalElement = document.getElementById('result');
-        if (modalElement) {
-            let modalInstance = bootstrap.Modal.getInstance(modalElement);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-        }
-        $notyf.success(response.data.message);
-        teamData();
-    }).catch(error => {
-        console.error("Error Response:", error.response);
-
-        if (error.response) {
-            const { status, data } = error.response;
-
-            if (status === 422 && data.errors) {
-                // Validation errors
-                Object.values(data.errors).forEach(messages => {
-                    messages.forEach(msg => $notyf.error(msg));
-                });
-            } else if (status === 409) {
-                // Duplicate entry error
-                $notyf.error(data.message);
-            } else {
-                // General error
-                $notyf.error(data.message || "An error occurred. Please try again.");
-            }
-        } else {
-            // Network or unknown error
-            $notyf.error("Unable to connect to the server. Please check your internet connection.");
-        }
+    const response = await apiFetch('/api/add-batsman-result', {
+      method: 'POST',
+      body: formData,
     });
+    const data = await response.json();
 
-}
+    const modalElement = document.getElementById('result');
+    if (modalElement) {
+      const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      if (modalInstance) modalInstance.hide();
+    }
 
+    $notyf.success(data.message);
+    teamData();
+
+  } catch (error) {
+    handleApiError(error);
+  }
+};
 
 const addResult = (items) => {
+  if (items.bat_result != null) {
+    result_bat_id.value = items.bat_result.id;
+    result_bat_run.value = items.bat_result.run;
+    result_bat_ball.value = items.bat_result.ball;
+    result_bat_four.value = items.bat_result.total_4;
+    result_bat_six.value = items.bat_result.total_6;
+  } else {
+    result_bat_id.value = "";
+    result_bat_run.value = "";
+    result_bat_ball.value = "";
+    result_bat_four.value = "";
+    result_bat_six.value = "";
+  }
 
+  if (items.boll_result != null) {
+    result_ball_id.value = items.boll_result.id;
+    result_ball_over.value = items.boll_result.over;
+    result_ball_maden_over.value = items.boll_result.maden_over;
+    result_ball_run.value = items.boll_result.run;
+    result_ball_wicket.value = items.boll_result.wicket;
+  } else {
+    result_ball_id.value = "";
+    result_ball_over.value = "";
+    result_ball_maden_over.value = "";
+    result_ball_run.value = "";
+    result_ball_wicket.value = "";
+  }
 
-    if (items.bat_result != null) {
+  result_ball_team_id.value = items.predict_team_id;
+  result_bat_team_id.value = items.predict_team_id;
 
-        result_bat_id.value = items.bat_result.id;
-        result_bat_run.value = items.bat_result.run;
-        result_bat_ball.value = items.bat_result.ball;
-        result_bat_four.value = items.bat_result.total_4;
-        result_bat_six.value = items.bat_result.total_6;
-        // console.log(items.bat_result);
+  resultplayersData();
+  resultplayersDataboll();
 
-    } else {
-        result_bat_id.value = "";
-        result_bat_run.value = "";
-        result_bat_ball.value = "";
-        result_bat_four.value = "";
-        result_bat_six.value = "";
-    }
-    // console.log(items);
+  result_boll_player_id.value = items.id;
+  result_bat_player_id.value = items.id;
+};
 
-    if (items.boll_result != null) {
-
-        result_ball_id.value = items.boll_result.id;
-        result_ball_over.value = items.boll_result.over;
-        result_ball_maden_over.value = items.boll_result.maden_over;
-        result_ball_run.value = items.boll_result.run;
-        result_ball_wicket.value = items.boll_result.wicket;
-
-    } else {
-        result_ball_id.value = "";
-        result_ball_over.value = "";
-        result_ball_maden_over.value = "";
-        result_ball_run.value = "";
-        result_ball_wicket.value = "";
-    }
-
-
-
-    result_ball_team_id.value = items.predict_team_id;
-    result_bat_team_id.value = items.predict_team_id;
-
-    resultplayersData();
-    resultplayersDataboll();
-    result_boll_player_id.value = items.id;
-    result_bat_player_id.value = items.id;
-
-
-}
-
-const teamData = (page) => {
-    axios.get(`api/maxpredict-playerList`, {
-        params: {
-            id: id,
-            items: items.value,
-            searchInput: searchInput.value,
-            status: status.value,
-            page: page,
-        }
-    }).then(response => {
-        // console.log(response.data.data);
-        playersList.value = response.data.data;
-        pagination.value = response.data.pagination.links;
-
+const teamData = async (page = 1) => {
+  try {
+    const query = new URLSearchParams({
+      id: id,
+      items: items.value,
+      searchInput: searchInput.value,
+      status: status.value,
+      page: page,
     });
-}
+
+    const response = await apiFetch(`/api/maxpredict-playerList?${query.toString()}`, {
+      method: 'GET',
+    });
+    const data = await response.json();
+
+    playersList.value = data.data;
+    pagination.value = data.pagination.links;
+  } catch (error) {
+    handleApiError(error);
+  }
+};
 
 const resultplayersData = async () => {
-    const mid = id;
-    axios.get("api/max-match-players", {
-        params: {
-            match_id: mid,
-            team_id: result_bat_team_id.value,
-        }
-    }).then(response => {
-        // console.log(response.data);
-        result_bat_playeslist.value = response.data;
-    })
-}
-const resultplayersDataboll = async () => {
-    const mid = id;
-    axios.get("api/max-match-players", {
-        params: {
-            match_id: mid,
-            team_id: result_ball_team_id.value,
-        }
-    }).then(response => {
-        // console.log(response.data);
-        result_boll_playeslist.value = response.data;
-    })
-}
-
-const teamsdata = () => {
-    const mid = id;
-    axios.get(`api/team-data/${mid}`).then(response => {
-        // console.log(response.data);
-        teamlist.value = response.data.teams;
+  try {
+    const query = new URLSearchParams({
+      match_id: id,
+      team_id: result_bat_team_id.value,
     });
+
+    const response = await apiFetch(`/api/max-match-players?${query.toString()}`, {
+      method: 'GET',
+    });
+    const data = await response.json();
+
+    result_bat_playeslist.value = data;
+  } catch (error) {
+    handleApiError(error);
+  }
 };
+
+const resultplayersDataboll = async () => {
+  try {
+    const query = new URLSearchParams({
+      match_id: id,
+      team_id: result_ball_team_id.value,
+    });
+
+    const response = await apiFetch(`/api/max-match-players?${query.toString()}`, {
+      method: 'GET',
+    });
+    const data = await response.json();
+
+    result_boll_playeslist.value = data;
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+const teamsdata = async () => {
+  try {
+    const response = await apiFetch(`/api/team-data/${id}`, {
+      method: 'GET',
+    });
+    const data = await response.json();
+    teamlist.value = data.teams;
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+// Helper function for error handling
+const handleApiError = (error) => {
+  if (error.response) {
+    const { status, data } = error.response;
+
+    if (status === 422 && data.errors) {
+      Object.values(data.errors).forEach(messages => {
+        messages.forEach(msg => $notyf.error(msg));
+      });
+    } else if (status === 409) {
+      $notyf.error(data.message);
+    } else {
+      $notyf.error(data.message || "An error occurred. Please try again.");
+    }
+  } else {
+    $notyf.error("Unable to connect to the server. Please check your internet connection.");
+  }
+};
+
 onMounted(() => {
     teamData();
     teamsdata();

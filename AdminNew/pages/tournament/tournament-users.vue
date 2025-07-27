@@ -561,7 +561,7 @@ const addFinalPredictionResult = () => {
   formData.append('match_id', tid);
   formData.append('team_one', result_team_one.value);
   formData.append('team_two', result_team_two.value);
-  formData.append('hwt', result_hwt.value);
+//   formData.append('hwt', result_hwt.value);
   formData.append('hs', result_hs.value);
 
   handleFormSubmit('/api/result/final', formData, 'result');

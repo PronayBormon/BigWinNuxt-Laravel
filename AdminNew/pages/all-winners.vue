@@ -363,7 +363,7 @@ const searchInputBoll = ref('');
 const tournamentList = ref([]);
 const Tpagination = ref([]);
 const Titems = ref('10');
-const TsearchInput = ref();
+const TsearchInput = ref('');
 const getMaxPredict = async (page = 1) => {
     const query = new URLSearchParams({
         searchInput: searchInputBoll.value,

@@ -145,8 +145,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 // import axios from 'axios';
-const { $axios } = useNuxtApp();
-const axios = $axios;
+import { apiFetch } from '~/utils/api'
 
 const route = useRoute();
 const router = useRouter();
@@ -154,7 +153,7 @@ const matchId = route.query.id;
 
 const matchdetails = ref();
 const items = ref("10");
-const searchInput = ref();
+const searchInput = ref('');
 const status = ref('');
 const team_id = ref();
 
@@ -166,68 +165,91 @@ const selectedTeamsid = ref([]);
 const back = () => {
     router.back();
 }
-const addTeams = () =>{
-    const formData = new FormData();
-    formData.append('tournament_id', matchId);
-    selectedTeamsid.value.forEach(team => {
-        formData.append('teams[]', team); // Send teams as an array
+const addTeams = async () => {
+  const formData = new FormData();
+  formData.append('tournament_id', matchId);
+
+  selectedTeamsid.value.forEach(team => {
+    formData.append('teams[]', team);
+  });
+
+  try {
+    const response = await apiFetch('/api/add-tournament-teams', {
+      method: 'POST',
+      body: formData,
     });
-    // console.log(formData);
-    axios.post('api/add-tournament-teams', formData).then( response =>{
-        // console.log(response.data);
-        let modalElement = document.getElementById('editList');
-        if (modalElement) {
-            let modalInstance = bootstrap.Modal.getInstance(modalElement);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-        }
-        teamData();
-        teamListselect();
-        selectedTeamsid.value = "";
-    })
-}
-const removeTeam = (id) =>{
-    
-    const team_id = id;
-    const formData = new FormData();
-    formData.append('tournament_id', matchId);
-    formData.append('team_id', team_id);
+    const data = await response.json();
 
-    axios.post('api/remove-team', formData).then(response =>{
-        // console.log((response.data));
-        // let modalElement = document.getElementById('editList');
-        // if (modalElement) {
-        //     let modalInstance = bootstrap.Modal.getInstance(modalElement);
-        //     if (modalInstance) {
-        //         modalInstance.hide();
-        //     }
-        // }
-        teamData();
-        teamListselect();
-    })
-}
+    const modalElement = document.getElementById('editList');
+    if (modalElement) {
+      const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      if (modalInstance) {
+        modalInstance.hide();
+      }
+    }
 
-const teamData = (page) => {
-    axios.get(`api/tournament-teams/${matchId}`, {
-        params: {
-            items: items.value,
-            searchInput: searchInput.value,
-            status: status.value,
-            page: page,
-        }
-    }).then(response => {
-        // console.log(response.data.data);
-        teamList.value = response.data.data;
-        pagination.value = response.data.pagination.links;
+    teamData();
+    teamListselect();
+    selectedTeamsid.value = "";
+    $notyf.success(data.message);
+  } catch (error) {
+    $notyf.error("An error occurred while adding teams.");
+  }
+};
 
+const removeTeam = async (id) => {
+  const formData = new FormData();
+  formData.append('tournament_id', matchId);
+  formData.append('team_id', id);
+
+  try {
+    const response = await apiFetch('/api/remove-team', {
+      method: 'POST',
+      body: formData,
     });
-}
-const teamListselect = () => {
-    axios.get("api/team-list").then(response => {
-        teams.value = response.data;
-    })
-}
+    const data = await response.json();
+
+    teamData();
+    teamListselect();
+    $notyf.success(data.message);
+  } catch (error) {
+    $notyf.error("Failed to remove the team.");
+  }
+};
+
+const teamData = async (page = 1) => {
+  try {
+    const queryParams = new URLSearchParams({
+      items: items.value,
+      searchInput: searchInput.value,
+      status: status.value,
+      page: page,
+    });
+
+    const response = await apiFetch(`/api/tournament-teams/${matchId}?${queryParams.toString()}`, {
+      method: 'GET',
+    });
+    const data = await response.json();
+
+    teamList.value = data.data;
+    pagination.value = data.pagination.links;
+  } catch (error) {
+    $notyf.error("Failed to load team data.");
+  }
+};
+
+const teamListselect = async () => {
+  try {
+    const response = await apiFetch("/api/team-list", {
+      method: 'GET',
+    });
+    const data = await response.json();
+    teams.value = data;
+  } catch (error) {
+    $notyf.error("Unable to load teams.");
+  }
+};
+
 onMounted(() => {
     teamData();
     teamListselect();

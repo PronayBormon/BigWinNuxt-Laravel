@@ -246,6 +246,8 @@ const previewImage = (event) => {
     if (file) {
         match_image.value = file;
         preview_image.value = URL.createObjectURL(file); // Generate preview URL
+        console.log('Selected file:', match_image.value);
+
     }
 };
 const previewImageupdate = (event) => {
@@ -308,11 +310,14 @@ const getdetails = async (id) => {
     editstatus.value = data.status;
     editId.value = data.id;
     preview_image1.value = data.image;
+
+
+    
   } catch (error) {
     await handleError(error);
   }
 };
-
+ 
 const addMatch = async () => {
   const formData = new FormData();
 
@@ -322,11 +327,25 @@ const addMatch = async () => {
   formData.append('dateTime', dateTime.value);
   formData.append('enddateTime', enddateTime.value);
 
+
   try {
     const response = await apiFetch('/api/add-match', {
       method: 'POST',
       body: formData,
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      if (errorData.errors) {
+        // Loop through Laravel-style validation errors
+        for (const field in errorData.errors) {
+          errorData.errors[field].forEach((msg) => $notyf.error(msg));
+        }
+      } else {
+        $notyf.error(errorData.message || 'Something went wrong.');
+      }
+      return; // Stop further execution
+    }
     const data = await response.json();
 
     getMatchList();
