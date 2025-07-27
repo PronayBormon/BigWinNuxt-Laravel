@@ -212,24 +212,27 @@ const getAdsListads = async () => {
 };
 
 const getAdsList = async (pages = 1) => {
-  const params = new URLSearchParams({
+  const query = new URLSearchParams({
     perPage: items.value,
     search: searchInput.value,
     page: pages,
   });
-  
-  
-  const res = await apiFetch(`/api/get-ads`, { method: 'GET', body: params });
-  
-  if (!res.ok) {
+
+  try {
+    const res = await apiFetch(`/api/get-ads?${query.toString()}`, { method: 'GET' });
+
+    const data = await res.json(); // ✅ wait for the parsed JSON
+
+    // console.log(data.data);
+
+    creditList.value = data.data;
+    pagination.value = data.pagination.links;
+  } catch (error) {
     $notyf.error("Failed to fetch ads.");
-    return;
   }
-  
-  const data = await res.json();
-  creditList.value = data.data;
-  pagination.value = data.pagination.links;
 };
+
+
 
 const deleteAds = async (id) => {
   const res = await apiFetch(`/api/delete-ads/${id}`, { method: 'GET' });
@@ -313,7 +316,7 @@ function onImageChange(event) {
 }
 onMounted(() => {
     getAdsList();
-    getAdsListads();
+    // getAdsListads();
 })
 
 

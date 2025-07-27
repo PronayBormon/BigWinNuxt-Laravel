@@ -332,8 +332,8 @@ import { useGlobalScript } from '@/stores/globalScript';
 import { useRoute, useRouter } from 'vue-router';
 import { apiFetch } from '~/utils/api'
 // import axios from 'axios';
-const { $axios } = useNuxtApp();
-const axios = $axios;
+// const { $axios } = useNuxtApp();
+// const axios = $axios;
 import { useNuxtApp } from '#app';
 
 const globalScript = useGlobalScript();
@@ -365,62 +365,68 @@ const Tpagination = ref([]);
 const Titems = ref('10');
 const TsearchInput = ref();
 const getMaxPredict = async (page = 1) => {
+    const query = new URLSearchParams({
+        searchInput: searchInputBoll.value,
+        items: itemsBoll.value,
+        page: page,
+    });
+
     try {
-        const response = await axios.get('api/get-maxpredictList', {
-            params: {
-                searchInput: searchInputBoll.value,
-                items: itemsBoll.value,
-                page: page,
-            }
-        });
-        maxPredictList.value = response.data.data;
-        paginationBoll.value = response.data.pagination.links;
+        const res = await apiFetch(`/api/get-maxpredictList?${query.toString()}`, { method: 'GET' });
+        const data = await res.json();
+        maxPredictList.value = data.data;
+        paginationBoll.value = data.pagination.links;
     } catch (error) {
         $notyf.error("Failed to load max predict list.");
     }
 };
 
-const getPredictBollerBatsmanResult = async () => {
-    const id = 1;
-    try {
-        const response = await axios.get(`/api/predict-match-result/${id}`);
-        console.log(response.data);
-    } catch (error) {
-        $notyf.error("Failed to fetch prediction result.");
-    }
-};
+// const getPredictBollerBatsmanResult = async () => {
+//     const id = 1;
+//     try {
+//         const res = await apiFetch(`/api/predict-match-result/${id}`, { method: 'GET' });
+//         console.log(res);
+//     } catch (error) {
+//         $notyf.error("Failed to fetch prediction result.");
+//     }
+// };
 
 const getMatchList = async (pages = 1) => {
+    const query = new URLSearchParams({
+        items: items.value,
+        search: searchInput.value,
+        page: pages,
+    });
+
     try {
-        const response = await axios.get('api/get-matchList', {
-            params: {
-                items: items.value,
-                search: searchInput.value,
-                page: pages,
-            }
-        });
-        matchList.value = response.data.data;
-        pagination.value = response.data.pagination.links;
+        const res = await apiFetch(`/api/get-matchList?${query.toString()}`, { method: 'GET' });
+        const data = await res.json();
+
+        matchList.value = data.data;
+        pagination.value = data.pagination.links;
     } catch (error) {
         $notyf.error("Failed to load match list.");
     }
 };
 
 const getTournamentList = async (pages = 1) => {
+    const query = new URLSearchParams({
+        items: Titems.value,
+        search: TsearchInput.value,
+        page: pages,
+    });
+
     try {
-        const response = await axios.get('api/get-tournamentList', {
-            params: {
-                items: Titems.value,
-                search: TsearchInput.value,
-                page: pages,
-            }
-        });
-        tournamentList.value = response.data.data;
-        Tpagination.value = response.data.pagination.links;
+        const res = await apiFetch(`/api/get-tournamentList?${query.toString()}`, { method: 'GET' });
+        
+        const data = await res.json();
+        tournamentList.value = data.data;
+        Tpagination.value = data.pagination.links;
     } catch (error) {
         $notyf.error("Failed to load tournament list.");
     }
 };
+
 
 
 onMounted(() => {

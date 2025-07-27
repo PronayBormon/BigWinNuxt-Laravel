@@ -55,7 +55,8 @@
                                     <tr>
                                         <th>Message</th>
                                         <th>Created at </th>
-                                        <th class="text-center">Action</th>
+                                        <!-- <th class="text-center">Action</th>-->
+
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -63,10 +64,11 @@
                                         v-for="(item, index) in notificationList">
                                         <td class="">{{ item.message }}</td>
                                         <td>{{ item.created }}</td>
-                                        <td class="text-center">
-                                            <button class="btn btn_default" data-bs-toggle="modal" @click="messageDetails(item.id)" data-bs-target="#editMassg"><i
+                                        <!-- <td class="text-center">
+                                            <button class="btn btn_default" data-bs-toggle="modal"
+                                                @click="messageDetails(item.id)" data-bs-target="#editMassg"><i
                                                     class="fa-regular fa-pencil-square"></i></button>
-                                        </td>
+                                        </td> -->
                                     </tr>
                                     <tr v-else>
                                         <td colspan="4" class="text-center">No Data Available</td>
@@ -142,36 +144,37 @@
 
     </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useGlobalScript } from '@/stores/globalScript';
-// import axios from 'axios';	
-const { $axios } = useNuxtApp();
-const axios = $axios;
 import { useNuxtApp } from '#app';
-const { $notyf } = useNuxtApp();
 
 import { apiFetch } from '~/utils/api'
+const { $notyf } = useNuxtApp();
 const globalScript = useGlobalScript();
 
 const items = ref('10');
-const searchInput = ref();
+const searchInput = ref('');
 const errors = ref();
-const message = ref();
-const editId = ref();
-const editmessage = ref();
+const message = ref('');
+const editId = ref('');
+const editmessage = ref('');
 const notificationList = ref([]);
 const pagination = ref([]);
+
 const addmessage = async () => {
     const formData = new FormData();
     formData.append('message', message.value);
 
     try {
-        const response = await axios.post('api/new-message', formData);
+        const res = await apiFetch('/api/new-message', {
+            method: 'POST',
+            body: formData
+        });
+
+        message.value = '';
+        errors.value = '';
         getNotificaitonList(1);
-        errors.value = "";
-        message.value = "";
 
         const modalElement = document.getElementById("addnotification");
         if (modalElement) {
@@ -179,38 +182,45 @@ const addmessage = async () => {
             if (modalInstance) modalInstance.hide();
         }
 
-        $notyf.success(response.data.message);
+        $notyf.success(res.message);
     } catch (error) {
-        handleValidationError(error);
+        if (error?.response?.status === 422 && error.data?.errors) {
+            for (const field in error.data.errors) {
+                error.data.errors[field].forEach(msg => $notyf.error(msg));
+            }
+        } else {
+            $notyf.error("An error occurred. Please try again.");
+        }
     }
 };
 
 const messageDetails = async (id) => {
     try {
-        const response = await axios.get(`api/message-details/${id}`);
-        editmessage.value = response.data.message;
-        editId.value = response.data.id;
+        const res = await apiFetch(`/api/message-details/${id}`);
+        editmessage.value = res.message;
+        editId.value = res.id;
     } catch (error) {
         console.error("Error fetching message details:", error);
-        $notyf.error("Failed to fetch message details.");
+        $notyf.error("Failed to load message details.");
     }
 };
 
 const getNotificaitonList = async (pages = 1) => {
-    try {
-        const response = await axios.get('api/notificaion-list', {
-            params: {
-                item: items.value,
-                searchInput: searchInput.value,
-                page: pages,
-            }
-        });
+    const query = new URLSearchParams({
+        item: items.value,
+        searchInput: searchInput.value,
+        page: pages,
+    });
 
-        notificationList.value = response.data.data;
-        pagination.value = response.data.pagination.links;
+    try {
+        const res = await apiFetch(`/api/notificaion-list?${query.toString()}`, { method: 'GET' });
+
+        const data = await res.json(); 
+        notificationList.value = data.data;
+        pagination.value = data.pagination.links;
     } catch (error) {
-        console.error("Error fetching notification list:", error);
-        $notyf.error("Failed to load notifications.");
+        console.error("Error loading notification list:", error);
+        $notyf.error("Failed to load notification list.");
     }
 };
 
@@ -220,10 +230,13 @@ const UpdateMessage = async () => {
     formData.append('id', editId.value);
 
     try {
-        const response = await axios.post('api/update-message', formData);
+        const res = await apiFetch('/api/update-message', {
+            method: 'POST',
+            body: formData
+        });
 
-        editmessage.value = "";
-        editId.value = "";
+        editmessage.value = '';
+        editId.value = '';
 
         const modalElement = document.getElementById("editMassg");
         if (modalElement) {
@@ -232,31 +245,19 @@ const UpdateMessage = async () => {
         }
 
         getNotificaitonList();
-        $notyf.success(response.data.message);
+        $notyf.success(res.message);
     } catch (error) {
-        handleValidationError(error);
-    }
-};
-
-// Utility function for consistent error display
-const handleValidationError = (error) => {
-    if (error?.response?.data?.errors) {
-        const errorMessages = error.response.data.errors;
-        for (const field in errorMessages) {
-            if (Object.hasOwn(errorMessages, field)) {
-                errorMessages[field].forEach((msg) => $notyf.error(msg));
+        if (error?.response?.status === 422 && error.data?.errors) {
+            for (const field in error.data.errors) {
+                error.data.errors[field].forEach(msg => $notyf.error(msg));
             }
+        } else {
+            $notyf.error("An error occurred. Please try again.");
         }
-    } else {
-        $notyf.error("An error occurred. Please try again.");
     }
 };
 
 onMounted(() => {
     getNotificaitonList(1);
-})
-
-
-
-
+});
 </script>

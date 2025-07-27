@@ -85,7 +85,7 @@
 
                                 </tbody>
                             </table>
-                            <!-- <ul class="pagination">
+                            <ul class="pagination">
                                 <li v-for="link in pagination" :key="link.label"
                                     :class="{ 'active page-item': link.active, 'disabled page-item': !link.url }">
                                     <a v-if="link.url" href="#" @click.prevent="getSpinList(link.url.split('page=')[1])"
@@ -94,7 +94,7 @@
                                     </a>
                                     <span v-else>{{ link.label }}</span>  
                                 </li>
-                            </ul> -->
+                            </ul>
 
 
                         </div>
@@ -205,7 +205,7 @@ const status = ref('');
 const getsingleData = async (id) => {
     try {
         const response = await apiFetch(`/api/get-spin/${id}`);
-    const data = await response.json();
+        const data = await response.json();
         // console.log(data)
         editname.value = data.name;
         editprize.value = data.prize;
@@ -290,9 +290,9 @@ const getSpinList = async (page = 1) => {
     }
 
     const data = await res.json();
-        spinList.value = data.data;
-        count.value = data.count;
-        pagination.value = data.pagination.links;
+    spinList.value = data.data;
+    count.value = data.count;
+    pagination.value = data.pagination.links;
 
 };
 
