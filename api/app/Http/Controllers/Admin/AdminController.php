@@ -609,17 +609,20 @@ class AdminController extends Controller
         }
     }
 
-
     public function saveTournament(Request $request)
     {
+        // Decode each team JSON string to array if teams come as JSON strings
+        if (isset($request->teams)) {
+            $teams = collect($request->teams)->map(function ($team) {
+                // If team is a JSON string, decode it; otherwise, assume array
+                return is_string($team) ? json_decode($team, true) : $team;
+            })->toArray();
 
-        $teams = collect($request->teams)->map(function ($team) {
-            return json_decode($team, true);
-        })->toArray();
+            // Replace the request input with the decoded teams array
+            $request->merge(['teams' => $teams]);
+        }
 
-        // Replace the request input with properly formatted teams
-        $request->merge(['teams' => $teams]);
-
+        // Custom validation messages
         $messages = [
             'tname.required' => 'Tournament name is required.',
             'tdate.required' => 'Tournament Start date is required.',
@@ -631,50 +634,53 @@ class AdminController extends Controller
             'teams.*.players.required' => 'Each team must have at least one player.',
             'teams.*.players.*.required' => 'Each player in the team is required.',
             'teams.*.players.*.exists' => 'The selected player is invalid.',
+            't_image.required' => 'Tournament image is required.',
+            't_image.image' => 'File must be an image.',
+            't_image.mimes' => 'Image must be a PNG or WEBP.',
+            't_image.dimensions' => 'Image dimensions must be 700px width and 350px height.',
         ];
-        // Validate the request
-        $Validate = $request->validate([
-            'tname' => 'required|string',
+
+        // Validate the incoming request data
+        $validated = $request->validate([
+            'tname' => 'required|string|max:255',
             'tdate' => 'required|date',
-            'tenddate' => 'required|date',
-            "t_image" => "required|image|mimes:png,webp|dimensions:height=350,width=700",
+            'tenddate' => 'required|date|after_or_equal:tdate',
+            't_image' => 'required|image|mimes:png,webp|dimensions:width=700,height=350',
             'teams' => 'required|array|min:1',
-            'teams.*.team_id' => 'required|integer|exists:countries,id', // Ensure team exists
+            'teams.*.team_id' => 'required|integer|exists:countries,id',
             'teams.*.players' => 'required|array|min:1',
-            'teams.*.players.*' => 'required|integer|exists:team_players,id', // Ensure players exist
+            'teams.*.players.*' => 'required|integer|exists:team_players,id',
         ], $messages);
 
-
+        // Handle the image upload
         if ($request->hasFile('t_image')) {
-
-            $image = $request->t_image;
-            $imageName = time() . "." . $image->getClientOriginalExtension();
+            $image = $request->file('t_image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('uploads'), $imageName);
-
-            // Set the image path to save in the database
             $imagePath = 'uploads/' . $imageName;
-            // Create the tournament
-            $tournament = Tournament::create([
-                'name' => $request->tname,
-                'start_date' => $request->tdate,
-                'end_date' => $request->tenddate,
-                'image' => $imagePath,
-                'status' => '0',
-            ]);
         } else {
-            return response()->json(['message' => 'image not found']);
+            return response()->json(['message' => 'Image file not found.'], 422);
         }
 
+        // Create the tournament record
+        $tournament = Tournament::create([
+            'name' => $validated['tname'],
+            'start_date' => $validated['tdate'],
+            'end_date' => $validated['tenddate'],
+            'image' => $imagePath,
+            'status' => 0,  // default status inactive
+        ]);
 
-        // Save teams and players
-        foreach ($request->teams as $teamData) {
+        // Save teams and players linked to the tournament
+        foreach ($validated['teams'] as $teamData) {
+            // Create a tournament-team pivot
             $tournamentTeam = TournamentTeam::create([
                 'tournament_id' => $tournament->id,
                 'team_id' => $teamData['team_id'],
-                'status' => '1',
+                'status' => 1, // active
             ]);
 
-            // Save players in TournamentTeamsPlayers
+            // Attach players to this tournament team
             foreach ($teamData['players'] as $playerId) {
                 TournamentTeamsPlayers::create([
                     'tournament_id' => $tournament->id,
@@ -684,11 +690,13 @@ class AdminController extends Controller
             }
         }
 
+        // Return success response
         return response()->json([
-            'message' => 'Tournament, teams, and players created successfully',
+            'message' => 'Tournament, teams, and players created successfully.',
             'tournament' => $tournament,
-        ]);
+        ], 201);
     }
+
 
     public function updateTournamentStatus(Request $request)
     {
@@ -2071,7 +2079,7 @@ class AdminController extends Controller
 
         // $data = $query->orderBy('run', 'desc')->paginate($request->items ?? 10);
         $data = $query
-        // ->orderByRaw('match_report.user_id = ? DESC', [$request->user_id])
+            // ->orderByRaw('match_report.user_id = ? DESC', [$request->user_id])
             ->orderBy('run', 'desc')
             ->paginate($request->items ?? 10);
 
