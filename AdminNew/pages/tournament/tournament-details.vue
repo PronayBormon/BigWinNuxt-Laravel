@@ -38,7 +38,7 @@
                                                 
                                                 <td>{{ champion.team.team.name }}</td>
                                                 <!-- <td class="text-center">{{champion.mom.player.player_name}}</td> -->
-                                                <td class="text-center">{{champion.mot.player.player_name}}</td>
+                                                <td class="text-center">{{champion.manofturnament.player.player_name}}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -65,7 +65,7 @@
                                                 <td>{{Final.team_one.team.name}}</td>
                                                 <td class="text-center">{{Final.team_two.team.name}}</td>
                                                 <!-- <td class="text-center">{{Final.hwt?? 'N/A'}}</td> -->
-                                                <td class="text-center">{{Final.hs.player.player_name}}</td>
+                                                <td class="text-center">{{Final.highscoor.player.player_name}}</td>
                                             </tr>
                                         </tbody>
                                     </table>

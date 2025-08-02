@@ -22,12 +22,12 @@
                                         <div class="row">
                                             <div class="col-md-3 col-sm-6 col-12">
                                                 <div class="form-group mb-3">
-                                                    <input type="datetime-local" required  class="form-control" v-model="tdate" />
+                                                    <input type="datetime-local" class="form-control" v-model="tdate" />
                                                 </div>
                                             </div>
                                             <div class="col-md-3 col-sm-6 col-12">
                                                 <div class="form-group mb-3">
-                                                    <input type="datetime-local" required class="form-control"
+                                                    <input type="datetime-local" class="form-control"
                                                         v-model="tenddate" />
                                                 </div>
                                             </div>
@@ -37,73 +37,38 @@
                                         <div class="form-group mb-3">
                                             <div class="team_list">
                                                 <div class="row">
-                                                    <div class="col-md-12">
-                                                        <h6 class="select_title">Team </h6>
+                                                    <div class="col-md-12" v-for="(team, teamIndex) in teams"
+                                                        :key="teamIndex">
+                                                        <h6 class="select_title">Team {{ teamIndex + 1 }}</h6>
                                                         <div class="row">
                                                             <!-- Team Selection -->
                                                             <div class="col-md-3 col-sm-6">
                                                                 <div class="form-group">
                                                                     <label class="select_title">Select Team</label>
-
-                                                                    <select id="teamA" required class="js-example-basic-single"
-                                                                        style="width: 100%;">
+                                                                    <select v-model="team.team_id"
+                                                                        class="form-control mb-3 js-example-basic-single">
                                                                         <option value="">Select Team</option>
-                                                                        <option v-for="team in teamOptions"
-                                                                            :key="team.id" :value="team.id">{{ team.name
-                                                                            }}</option>
+                                                                        <option v-for="teamOption in teamOptions"
+                                                                            :key="teamOption.id" :value="teamOption.id">
+                                                                            {{ teamOption.name }}
+                                                                        </option>
                                                                     </select>
                                                                 </div>
                                                             </div>
 
                                                             <!-- Player Selection (Minimum 15 Players) -->
-                                                            <div v-for="n in 15" :key="'a' + n"
-                                                                class="col-md-3 col-sm-6">
-                                                                <label class="select_title">Player {{ n }}</label>
-                                                                <select :id="'team0player' + (n - 1)" required
-                                                                    class="js-example-basic-single"
-                                                                    style="width: 100%;">
-                                                                    <option value="">Select Player</option>
-                                                                    <option v-for="player in playerOptions"
-                                                                        :key="player.id" :value="player.id">{{
-                                                                            player.player_name }}</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <hr>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row">
-                                                    <div class="col-md-12">
-                                                        <h6 class="select_title">Team B</h6>
-                                                        <div class="row">
-                                                            <!-- Team Selection -->
-                                                            <div class="col-md-3 col-sm-6">
-                                                                <div class="form-group">
-                                                                    <label class="select_title">Select Team</label>
-
-
-                                                                    <select id="teamB" required class="js-example-basic-single"
-                                                                        style="width: 100%;">
-                                                                        <option value="">Select Team</option>
-                                                                        <option v-for="team in teamOptions"
-                                                                            :key="team.id" :value="team.id">{{ team.name
-                                                                            }}</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Player Selection (Minimum 15 Players) -->
-                                                            <div v-for="n in 15" :key="'b' + n"
-                                                                class="col-md-3 col-sm-6">
-                                                                <label class="select_title">Player {{ n }}</label>
-                                                                <select :id="'team1player' + (n - 1)" required
-                                                                    class="js-example-basic-single"
-                                                                    style="width: 100%;">
-                                                                    <option value="">Select Player</option>
-                                                                    <option v-for="player in playerOptions"
-                                                                        :key="player.id" :value="player.id">{{
-                                                                        player.player_name }}</option>
+                                                            <div class="col-md-3 col-sm-6"
+                                                                v-for="(player, playerIndex) in 15" :key="playerIndex">
+                                                                <label class="select_title">Select Player {{ playerIndex
+                                                                    + 1 }}</label>
+                                                                <select v-model="team.players[playerIndex]"
+                                                                    class="form-control mb-3 js-example-basic-single">
+                                                                    <option value="" selected disabled>Select Player
+                                                                    </option>
+                                                                    <option v-for="playerOption in playerOptions"
+                                                                        :key="playerOption.id" :value="playerOption.id">
+                                                                        {{ playerOption.player_name }}
+                                                                    </option>
                                                                 </select>
                                                             </div>
                                                         </div>
@@ -206,10 +171,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref } from 'vue';
 import { apiFetch } from '~/utils/api';
 import { useNuxtApp } from '#app';
-
 const { $notyf } = useNuxtApp();
 
 const tdate = ref('');
@@ -218,70 +182,91 @@ const status = ref('');
 const searchInput = ref('');
 const itemsperpage = ref('10');
 
-const teamOptions = ref([]);
-const playerOptions = ref([]);
-const maxPredictList = ref([]);
-const pagination = ref([]);
 
+
+// Fixed 2 Teams with Minimum 15 Players Each
 const teams = ref([
     { team_id: '', players: Array(15).fill('') },
     { team_id: '', players: Array(15).fill('') }
 ]);
 
-const teamsdata = async () => {
-    try {
-        const res = await apiFetch('/api/team-list');
-        teamOptions.value = await res.json();
-    } catch (error) {
-        await handleError(error);
-    }
-};
+// Sample Team & Player Options (Fetch from API if needed)
+const teamOptions = ref([]);
+//
+const playerOptions = ref([]);
+const maxPredictList = ref([]);
+const pagination = ref([]);
 
-const playersdata = async () => {
-    try {
-        const res = await apiFetch('/api/player-list');
-        playerOptions.value = await res.json();
-    } catch (error) {
-        await handleError(error);
-    }
-};
+const teamsdata = () => {
+    // axios.get('api/team-list').then(response => {
+    //     // console.log(response.data);
+    //     teamOptions.value = response.data;
+    // })
 
-const getMaxPredict = async (page = 1) => {
-    try {
-        const query = new URLSearchParams({
+    const response =  apiFetch(`/api/team-list`, {
+        method: 'GET',
+    });
+    const data =  response.json();
+
+     teamOptions.value = data.data;
+}
+const playersdata = () => {
+    // axios.get('api/player-list').then(response => {
+    //     // console.log(response.data);
+    //     playerOptions.value = response.data;
+    // })
+    
+    const response =  apiFetch(`/api/player-list`, {
+        method: 'GET',
+    });
+    const data =  response.json();
+
+     playerOptions.value = data.data;
+}
+const chageStatus = (id) => {
+    axios.get('api/update-max-predict', {
+        params: {
+            id: id,
+        }
+    }).then(response => {
+        // console.log(response.data.errors.status);
+        $notyf.success(response.data.message);
+        getMaxPredict();
+    }).catch(error => {
+        console.log("Error:", error.response);
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errorMessages = error.response.data.errors;
+            for (const field in errorMessages) {
+                errorMessages[field].forEach((msg) => {
+                    $notyf.error(msg); // make sure $notyf is defined
+                });
+            }
+        } else {
+            $notyf.error("An error occurred. Please try again.");
+        }
+    });
+
+}
+
+const getMaxPredict = (page) => {
+    axios.get('api/get-maxpredictList', {
+        params: {
             searchInput: searchInput.value,
             items: itemsperpage.value,
             status: status.value,
-            page
-        });
-        const res = await apiFetch(`/api/get-maxpredictList?${query.toString()}`);
-        const data = await res.json();
-        maxPredictList.value = data.data;
-        pagination.value = data.pagination.links;
-    } catch (error) {
-        await handleError(error);
-    }
-};
-
-const chageStatus = async (id) => {
-    try {
-        const res = await apiFetch(`/api/update-max-predict?id=${id}`);
-        const data = await res.json();
-        if (data.status == 200) {
-            $notyf.success(data.message);
-            getMaxPredict();
-        } else {
-            $notyf.error(data.errors.status[0]);
+            page: page,
         }
-    } catch (error) {
-        const err = error?.response?._data?.errors || {};
-        for (const field in err) {
-            err[field].forEach(msg => $notyf.error(msg));
-        }
-    }
-};
+    }).then(response => {
+        // console.log(response.data);
+        maxPredictList.value = response.data.data;
+        pagination.value = response.data.pagination.links;
+    })
+}
+// Form Submission with Validation
+const addmaxpredict = () => {
+    // console.log("Submitting Form...");
 
-const addmaxpredict = async () => {
+    // Validation: Ensure each team is selected and has at least 15 players
     for (let i = 0; i < teams.value.length; i++) {
         if (!teams.value[i].team_id) {
             alert(`Please select a team for Team ${i + 1}.`);
@@ -297,71 +282,50 @@ const addmaxpredict = async () => {
     formData.append("start_date", tdate.value);
     formData.append("end_date", tenddate.value);
 
-    teams.value.forEach((team, i) => {
-        formData.append(`teams[${i}][team_id]`, team.team_id);
-        team.players.forEach((player, j) => {
-            formData.append(`teams[${i}][players][${j}]`, player);
+    teams.value.forEach((team, teamIndex) => {
+        formData.append(`teams[${teamIndex}][team_id]`, team.team_id);
+        team.players.forEach((player, playerIndex) => {
+            formData.append(`teams[${teamIndex}][players][${playerIndex}]`, player);
         });
     });
 
-    try {
-        const res = await apiFetch('/api/add-max-predict', {
-            method: 'POST',
-            body: formData,
-        });
-        const data = await res.json();
-        console.log(data);
-        $notyf.success(data.message);
-        getMaxPredict();
-    } catch (error) {
-        const err = error?.response?._data?.errors || {};
-        for (const field in err) {
-            err[field].forEach(msg => $notyf.error(msg));
-        }
+    // console.log("FormData Entries:");
+    for (let [key, value] of formData.entries()) {
+        console.log(key, value);
     }
-};
 
-function initSelect2() {
-    if (window.$ && typeof window.$.fn.select2 === 'function') {
-        // Team selectors
-        const $teamA = window.$('#teamA');
-        const $teamB = window.$('#teamB');
+    axios.post("api/add-max-predict", formData)
+        .then(response => {
+            $notyf.success(response.data.message);
+            getMaxPredict();
+        }).catch(error => {
+            // If the error response is validation errors, show them using Notyf
+            if (error.response && error.response.data && error.response.data.errors) {
+                const errorMessages = error.response.data.errors;
 
-        $teamA.select2().on('change', (e) => {
-            teams.value[0].team_id = e.target.value;
-        });
-
-        $teamB.select2().on('change', (e) => {
-            teams.value[1].team_id = e.target.value;
-        });
-
-        // Player selectors
-        for (let teamIndex = 0; teamIndex < 2; teamIndex++) {
-            for (let playerIndex = 0; playerIndex < 15; playerIndex++) {
-                const id = `#team${teamIndex}player${playerIndex}`;
-                const $player = window.$(id);
-                $player.select2().on('change', (e) => {
-                    teams.value[teamIndex].players[playerIndex] = e.target.value;
-                });
+                // Loop through the errors object and show each error message
+                for (const field in errorMessages) {
+                    if (errorMessages.hasOwnProperty(field)) {
+                        errorMessages[field].forEach((msg) => {
+                            $notyf.error(msg); // Show each error message using Notyf
+                        });
+                    }
+                }
+            } else {
+                $notyf.error("An error occurred. Please try again.");
             }
-        }
+        });
+};
+onMounted(() => {
+    if (window.$ && typeof window.$.fn.select2 === 'function') {
+        window.$('.js-example-basic-single').select2()
     } else {
-        console.warn('Select2 or jQuery not loaded.');
+        console.warn('Select2 or jQuery not loaded.')
     }
-}
-
-onMounted(async () => {
-    await teamsdata();
-    await playersdata();
-    await nextTick(); // Ensure DOM is updated
-    initSelect2();
+    teamsdata();
+    playersdata();
     getMaxPredict();
-});
-
-watch([teamOptions, playerOptions], async () => {
-    await nextTick();
-    initSelect2();
-});
+})
 </script>
 
 <style>
