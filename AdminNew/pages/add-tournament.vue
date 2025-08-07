@@ -18,13 +18,13 @@
             <form @submit.prevent="addTournament">
               <div class="row mb-3">
                 <div class="col-md-3 col-sm-6 col-12">
-                  <input type="text" class="form-control" v-model="tname" placeholder="Tournament Name" />
+                  <input type="text" required class="form-control" v-model="tname" placeholder="Tournament Name" />
                 </div>
                 <div class="col-md-3 col-sm-6 col-12">
-                  <input type="datetime-local" class="form-control" v-model="tdate" />
+                  <input type="datetime-local" required class="form-control" v-model="tdate" />
                 </div>
                 <div class="col-md-3 col-sm-6 col-12">
-                  <input type="datetime-local" class="form-control" v-model="tenddate" />
+                  <input type="datetime-local" required class="form-control" v-model="tenddate" />
                 </div>
 
                 <div class="form-group my-3 w-100">
@@ -33,7 +33,7 @@
                   <p class="text-small text-danger" style="font-size: 10px;">
                     Image Dimension must be Height <strong>350px</strong> and Width <strong>700px</strong>.
                   </p>
-                  <input type="file" class="form-control" @change="previewImageupdate" />
+                  <input type="file" required class="form-control" @change="previewImageupdate" />
                 </div>
               </div>
 
@@ -45,7 +45,7 @@
                   <!-- Team select with unique ID -->
                   <div class="col-xl-4 col-lg-5 col-md-6 mb-3 mb-md-0">
                     <label class="text-white mb-2">Team</label>
-                    <select :id="`team-select-${teamIndex}`" class="form-control" v-model="teamEntry.team">
+                    <select :id="`team-select-${teamIndex}`" required class="form-control" v-model="teamEntry.team">
                       <option disabled value="">Select Team</option>
                       <option v-for="teamOption in availableTeams" :key="teamOption.id" :value="teamOption.id">
                         {{ teamOption.name }}
@@ -57,7 +57,7 @@
                   <div class="col-xl-8 col-lg-7 col-md-6">
                     <label class="text-white mb-2">Players</label>
                     <div v-for="(playerId, playerIndex) in teamEntry.players" :key="playerIndex" class="mb-2">
-                      <select :id="`player-select-${teamIndex}-${playerIndex}`" class="form-control"
+                      <select :id="`player-select-${teamIndex}-${playerIndex}`" required class="form-control"
                         v-model="teamEntry.players[playerIndex]">
                         <option disabled value="">Select Player</option>
                         <option v-for="playerOption in availablePlayers" :key="playerOption.id"
@@ -262,6 +262,53 @@ const getTournamentList = async (pages = 1) => {
 };
 
 const addTournament = async () => {
+  // Frontend validations
+  if (!tname.value.trim()) {
+    $notyf.error("Tournament name is required.");
+    return;
+  }
+
+  if (!tdate.value) {
+    $notyf.error("Start date is required.");
+    return;
+  }
+
+  if (!tenddate.value) {
+    $notyf.error("End date is required.");
+    return;
+  }
+
+  if (!t_image.value) {
+    $notyf.error("Tournament image is required.");
+    return;
+  }
+
+  if (!teams.value.length) {
+    $notyf.error("At least one team is required.");
+    return;
+  }
+
+  for (let i = 0; i < teams.value.length; i++) {
+    const team = teams.value[i];
+
+    if (!team.team || team.team === '') {
+      $notyf.error(`Team ${i + 1} must be selected.`);
+      return;
+    }
+
+    if (!Array.isArray(team.players) || !team.players.length) {
+      $notyf.error(`Team ${i + 1} must have at least one player.`);
+      return;
+    }
+
+    for (let j = 0; j < team.players.length; j++) {
+      if (!team.players[j] || team.players[j] === '') {
+        $notyf.error(`Player ${j + 1} in Team ${i + 1} is missing.`);
+        return;
+      }
+    }
+  }
+
   try {
     const formData = new FormData();
     formData.append('tname', tname.value);
@@ -276,24 +323,32 @@ const addTournament = async () => {
       });
     });
 
-    // For debugging: list FormData entries
-    for (const pair of formData.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
-    }
-
-    // Uncomment to send request
     const response = await apiFetch('/api/make-tournament', {
       method: 'POST',
       body: formData,
     });
 
     const data = await response.json();
-    $notyf.success(data.message);
-    getTournamentList();
-  } catch {
-    $notyf.error('Failed to add tournament.');
+
+    if (response.ok) {
+      $notyf.success(data.message || "Tournament created successfully.");
+      getTournamentList();
+
+      // Optionally reset the form
+      tname.value = '';
+      tdate.value = '';
+      tenddate.value = '';
+      t_image.value = null;
+      preview_image1.value = '';
+      teams.value = [{ team: '', players: [''] }];
+    } else {
+      $notyf.error(data.message || "Something went wrong.");
+    }
+  } catch (err) {
+    $notyf.error(err?.message || "Submission failed. Please try again.");
   }
 };
+
 
 const previewImageupdate = (e) => {
   const file = e.target.files[0];

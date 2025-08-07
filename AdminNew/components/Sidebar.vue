@@ -133,6 +133,12 @@
                         <img src="/assets/icons/gear-solid.svg" alt="" class="img-fluid"> Pre Settings
                     </NuxtLink>
                 </li>
+                
+                <li class="menu_group" :class="{ active: route.path === '/content' }">
+                    <NuxtLink class="menu_link" to="/content">
+                        <img src="/assets/icons/gear-solid.svg" alt="" class="img-fluid"> Pages Settings
+                    </NuxtLink>
+                </li>
 
 
                 <li class="menu_group active position-sticky bottom-0 mt-2" @click="handleLogout()">

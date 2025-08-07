@@ -22,7 +22,8 @@
                                         <div class="row">
                                             <div class="col-md-3 col-sm-6 col-12">
                                                 <div class="form-group mb-3">
-                                                    <input type="datetime-local" required  class="form-control" v-model="tdate" />
+                                                    <input type="datetime-local" required class="form-control"
+                                                        v-model="tdate" />
                                                 </div>
                                             </div>
                                             <div class="col-md-3 col-sm-6 col-12">
@@ -45,7 +46,8 @@
                                                                 <div class="form-group">
                                                                     <label class="select_title">Select Team</label>
 
-                                                                    <select id="teamA" required class="js-example-basic-single"
+                                                                    <select id="teamA" required
+                                                                        class="js-example-basic-single"
                                                                         style="width: 100%;">
                                                                         <option value="">Select Team</option>
                                                                         <option v-for="team in teamOptions"
@@ -83,7 +85,8 @@
                                                                     <label class="select_title">Select Team</label>
 
 
-                                                                    <select id="teamB" required class="js-example-basic-single"
+                                                                    <select id="teamB" required
+                                                                        class="js-example-basic-single"
                                                                         style="width: 100%;">
                                                                         <option value="">Select Team</option>
                                                                         <option v-for="team in teamOptions"
@@ -103,7 +106,7 @@
                                                                     <option value="">Select Player</option>
                                                                     <option v-for="player in playerOptions"
                                                                         :key="player.id" :value="player.id">{{
-                                                                        player.player_name }}</option>
+                                                                            player.player_name }}</option>
                                                                 </select>
                                                             </div>
                                                         </div>
@@ -284,13 +287,16 @@ const chageStatus = async (id) => {
 const addmaxpredict = async () => {
     for (let i = 0; i < teams.value.length; i++) {
         if (!teams.value[i].team_id) {
-            alert(`Please select a team for Team ${i + 1}.`);
+            $notyf.success("Please select team");
             return;
         }
         if (teams.value[i].players.includes('')) {
-            alert(`Please select at least 15 players for Team ${i + 1}.`);
+            $notyf.success("Please select match");
             return;
         }
+    }
+    if(tdate.value == tenddate.value){
+            $notyf.success("Please select match");
     }
 
     const formData = new FormData();
@@ -310,7 +316,6 @@ const addmaxpredict = async () => {
             body: formData,
         });
         const data = await res.json();
-        console.log(data);
         $notyf.success(data.message);
         getMaxPredict();
     } catch (error) {
