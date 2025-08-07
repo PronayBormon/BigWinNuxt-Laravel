@@ -1,145 +1,195 @@
 <template>
-    <div class="main_container">
-        <Sidebar />
+  <div class="main_container">
+    <Sidebar />
 
-        <div class="main_content">
-            <Navbar />
+    <div class="main_content">
+      <Navbar />
 
-            <div class="content_section">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center my-2">
-                        <h3 class="page_title my-0"><span> Pre Settings </span></h3>
-                    </div>
-                </div>
-
-                <div class="card app_card">
-                    <div class="card-body p-4">
-                        <div class="row">
-                            <div class="col-md-8 m-auto">
-                                <form action="" method="post" @submit.prevent="updateSettings">
-
-                                    <div class="mb-3">
-                                        <label class="form-label text-white">How it's Work</label>
-                                        <textarea class="form-control" v-model="form.metaDescription"
-                                            placeholder="Meta Description" rows="3"></textarea>
-                                    </div>
-
-                                    <!-- Submit Button -->
-                                    <div class="text-center mt-4">
-                                        <button type="submit" class="btn btn-primary px-5">Save Settings</button>
-                                    </div>
-
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <div class="content_section">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center my-2">
+            <h3 class="page_title my-0"><span>Content settings</span></h3>
+          </div>
         </div>
+
+        <!-- App Link Section -->
+        <div class="card app_card">
+          <div class="card-body p-4">
+            <div class="row">
+              <div class="col-md-8 m-auto">
+                <form @submit.prevent="updateLinkSettings">
+                  <div class="mb-3">
+                    <label class="form-label text-white">Share your app</label>
+                    <textarea
+                      class="form-control"
+                      v-model="link.description"
+                      placeholder="Meta Description"
+                      rows="3"
+                    ></textarea>
+                  </div>
+                  <div class="text-start mt-4">
+                    <button type="submit" class="btn btn-primary px-5">Update</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rules Section -->
+        <div class="card app_card my-3">
+          <div class="card-body p-4">
+            <div class="row">
+              <div class="col-md-8 m-auto">
+                <form @submit.prevent="updateRuleSettings">
+                  <div class="mb-3">
+                    <label class="form-label text-white">How it Works</label>
+                    <textarea
+                      class="form-control"
+                      id="summernote"
+                      placeholder="Description"
+                      rows="3"
+                    ></textarea>
+                  </div>
+                  <div class="text-start mt-4">
+                    <button type="submit" class="btn btn-primary px-5">Update</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
-
-
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useNuxtApp } from '#app';
-const { $notyf } = useNuxtApp();
+import { onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useNuxtApp } from '#app'
 
-const route = useRoute();
-const router = useRouter();  // Initialize router
+const { $notyf } = useNuxtApp()
+const route = useRoute()
+const router = useRouter()
 
-const tid = route.query.id;
-const tournamename = route.query.tournament;
+// ✅ Declare refs first
+const form = ref({ description: '' })
+const link = ref({ description: '' })
 
-
-const form = ref({
-    spin_creadit: '',
-});
-
-const logoFile = ref(null); // for file
-const logoPreview = ref('');
-
-
-onMounted(() => {
-    fetchSettings();
-});
-
-
-const updateSettings = async () => {
-    const formData = new FormData();
-    formData.append('website_name', form.value.websiteName);
-
-    if (logoFile.value) {
-        formData.append('logo', logoFile.value);
+// ✅ Watch summernote-bound content and update editor
+watch(
+  () => form.value.description,
+  (val) => {
+    if (process.client && window.$ && $('#summernote').length) {
+      $('#summernote').summernote('code', val)
     }
+  }
+)
 
-    const res = await apiFetch('/settings/rule', {
-        method: 'POST',
-        body: formData,
-    });
+// ✅ API: Get rule details
+const getRolesDetails = async () => {
+  const res = await apiFetch('/settings/rule', { method: 'GET' })
 
-    if (!res.ok) {
-        const error = await res.json();
-        if (error?.errors) {
-            for (const messages of Object.values(error.errors)) {
-                messages.forEach((msg) => $notyf.error(msg));
-            }
-        } else if (error?.error) {
-            $notyf.error(error.error);
-        } else {
-            $notyf.error("An unexpected error occurred.");
-        }
-        return;
+  if (!res.ok) {
+    $notyf.error('Failed to load rule settings')
+    return
+  }
+
+  const data = await res.json()
+  form.value.description = data.data.description
+}
+
+// ✅ API: Get app link details
+const getappLinkDetails = async () => {
+  const res = await apiFetch('/settings/applink', { method: 'GET' })
+
+  if (!res.ok) {
+    $notyf.error('Failed to load app link')
+    return
+  }
+
+  const data = await res.json()
+  link.value.description = data.data.description
+}
+
+// ✅ API: Update rule settings
+const updateRuleSettings = async () => {
+  if (process.client && window.$ && $('#summernote').length) {
+    form.value.description = $('#summernote').summernote('code')
+  }
+
+  const formData = new FormData()
+  formData.append('description', form.value.description)
+
+  const res = await apiFetch('/settings/rule', {
+    method: 'POST',
+    body: formData,
+  })
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    if (data?.errors) {
+      Object.values(data.errors).forEach((messages) =>
+        messages.forEach((msg) => $notyf.error(msg))
+      )
+    } else {
+      $notyf.error(data?.error || 'Unexpected error')
     }
+    return
+  }
 
-    const data = await res.json();
-    $notyf.success(data.message || "Settings updated successfully");
-};
+  $notyf.success(data.message || 'Settings updated successfully')
+  await getRolesDetails()
+}
 
+// ✅ API: Update app link settings
+const updateLinkSettings = async () => {
+  const formData = new FormData()
+  formData.append('description', link.value.description)
 
-const fetchSettings = async () => {
-    const res = await apiFetch('/api/settings', {
-        method: 'GET',
-    });
+  const res = await apiFetch('/settings/applink', {
+    method: 'POST',
+    body: formData,
+  })
 
-    if (!res.ok) {
-        $notyf.error('Failed to load settings');
-        return;
+  const data = await res.json()
+
+  if (!res.ok) {
+    if (data?.errors) {
+      Object.values(data.errors).forEach((messages) =>
+        messages.forEach((msg) => $notyf.error(msg))
+      )
+    } else {
+      $notyf.error(data?.error || 'Unexpected error')
     }
+    return
+  }
 
-    const data = await res.json();
+  $notyf.success(data.message || 'Settings updated successfully')
+  await getappLinkDetails()
+}
 
-    logoPreview.value = data.logo_url;
+// ✅ Lifecycle hook
+onMounted(async () => {
+  if (process.client && window.$) {
+    await getRolesDetails()
+    await getappLinkDetails()
 
-    form.value = {
-        websiteName: data.website_name || '',
-        spin_creadit: data.spin_creadit || '',
-        question_credit: data.question_credit || '',
-        pull_credit: data.pull_credit || '',
-        registerBonus: data.register_bonus || '',
-        singleMatchBonus: data.single_match_bonus || '',
-        maxPredictBonus: data.max_predict_bonus || '',
-        tournamentBonus: data.tournament_bonus || '',
-        adminEmail: data.admin_email || '',
-        supportEmail: data.support_email || '',
-        phone: data.phone || '',
-        facebook: data.facebook || '',
-        whatsapp: data.whatsapp || '',
-        telegram: data.telegram || '',
-        instagram: data.instagram || '',
-        twitter: data.twitter || '',
-        linkedin: data.linkedin || '',
-        youtube: data.youtube || '',
-        metaTitle: data.meta_title || '',
-        metaDescription: data.meta_description || '',
-        metaKeywords: data.meta_keywords || '',
-        ads_prize: data.ads_prize || '',
-    };
-};
+    // Init Summernote
+    $('#summernote').summernote({
+    //   height: 300,
+      placeholder: 'Write something...',
+      callbacks: {
+        onChange: function (contents) {
+          form.value.description = contents
+        },
+      },
+    })
 
-onMounted(() => {
-    fetchSettings();
-});
+    // Set initial content
+    $('#summernote').summernote('code', form.value.description)
+  }
+})
 </script>
