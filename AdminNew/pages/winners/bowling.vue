@@ -64,8 +64,10 @@
                             <table class="table">
                                 <thead class="thead">
                                     <tr>
+                                        <th class="text-start">SL.</th>
                                         <th class="text-start">User</th>
                                         <th class="text-start">Email</th>
+                                        <th class="text-start">Phone</th>
                                         <!-- <th class="text-center">Spin Run </th>
                                         <th class="text-center">Match </th>
                                         <th class="text-center">(PDT) </th>
@@ -75,13 +77,19 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-if="matchList && matchList.length" v-for="item in matchList">
+                                    <tr v-if="matchList && matchList.length" v-for="(item, index) in matchList">
                                         <!-- {{ item }} -->
+                                        <td class="text-start">
+                                            <span>{{ index + 1 }}</span>
+                                        </td>
                                         <td class="text-start">
                                             <p class="mb-0">{{ item.user.email }}</p>
                                         </td>
                                         <td class="text-start">
                                             <p class="mb-0">{{ item.user.email }}</p>
+                                        </td>
+                                        <td class="text-start">
+                                            <p class="mb-0">{{ item.user.phone ?? 'N/A' }}</p>
                                         </td>
                                         <!-- <td class="text-center">
                                             <span>{{ item.run }} Run</span>
@@ -166,24 +174,24 @@ const back = () => {
 }
 
 const getSingleMatchWinner = async () => {
-  try {
-    const queryParams = new URLSearchParams({
-      items: items.value,
-      search: searchInput.value,
-      id: matchId,
-    });
+    try {
+        const queryParams = new URLSearchParams({
+            items: items.value,
+            search: searchInput.value,
+            id: matchId,
+        });
 
-    const response = await apiFetch(`/api/bowler-winner-users?${queryParams.toString()}`, {
-      method: 'GET',
-    });
+        const response = await apiFetch(`/api/bowler-winner-users?${queryParams.toString()}`, {
+            method: 'GET',
+        });
 
-    const data = await response.json();
+        const data = await response.json();
 
-    matchList.value = data.data;
-    pagination.value = data.pagination.links;
-  } catch (error) {
-    $notyf.error("An error occurred while loading the data.");
-  }
+        matchList.value = data.data;
+        pagination.value = data.pagination.links;
+    } catch (error) {
+        $notyf.error("An error occurred while loading the data.");
+    }
 };
 
 

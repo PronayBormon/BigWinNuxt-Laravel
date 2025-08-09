@@ -179,7 +179,7 @@ onMounted(async () => {
 
     // Init Summernote
     $('#summernote').summernote({
-    //   height: 300,
+      height: 300,
       placeholder: 'Write something...',
       callbacks: {
         onChange: function (contents) {

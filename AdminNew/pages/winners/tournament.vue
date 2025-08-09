@@ -64,17 +64,25 @@
                             <table class="table">
                                 <thead class="thead">
                                     <tr>
+                                        <th class="text-start">SL.</th>
                                         <th class="text-start">User</th>
                                         <th class="text-start">Email </th>
+                                        <th class="text-start">Phone </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-if="matchList && matchList.length" v-for="item in matchList">
+                                    <tr v-if="matchList && matchList.length" v-for="(item, index) in matchList">
+                                        <td class="text-start">
+                                            <span>{{ index + 1 }}</span>
+                                        </td>
                                         <td class="text-start">
                                             <p class="mb-0">{{ item.username }}</p>
                                         </td>
                                         <td class="text-start">
                                             <p class="mb-0">{{ item.email }}</p>
+                                        </td>
+                                        <td class="text-start">
+                                            <p class="mb-0">{{ item.phone ?? 'N/A' }}</p>
                                         </td>
                                     </tr>
                                     <tr v-else>

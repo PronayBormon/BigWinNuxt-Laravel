@@ -64,6 +64,7 @@
                             <table class="table">
                                 <thead class="thead">
                                     <tr>
+                                        <th class="text-start">SL.</th>
                                         <th class="text-start">User</th>
                                         <th class="text-center">Spin Run </th>
                                         <th class="text-center">Match </th>
@@ -74,10 +75,15 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-if="matchList && matchList.length" v-for="item in matchList">
+                                    <tr v-if="matchList && matchList.length" v-for="(item , index) in matchList">
+                                        
+                                        <td class="text-start">
+                                            <span>{{ index+1 }}</span>
+                                        </td>
                                         <td class="text-start">
                                             <p class="mb-0">{{ item.user.username }}</p>
                                             <p class="mb-0">{{ item.user.email }}</p>
+                                            <p class="mb-0">{{ item.user.phone }}</p>
                                         </td>
                                         <td class="text-center">
                                             <span>{{ item.run }} Run</span>

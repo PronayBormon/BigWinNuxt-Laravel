@@ -9,14 +9,15 @@
 
             <!-- navbar section  -->
             <Navbar />
+
             <!-- content setion  -->
             <div class="content_section">
-
                 <div class="d-flex align-items-center my-2">
                     <button type="button" @click="back" class="btn btn-default py-0"><i
                             class="fa-solid fa-arrow-left"></i></button>
-                    <h3 class="page_title my-0">Tournament</h3>
+                    <h3 class="page_title my-0">{{ tournamentName }} result</h3>
                 </div>
+
                 <div class="card app_card ">
                     <div class="card-body card_report_body">
                         <div class="card card_report mb-3">
@@ -29,16 +30,16 @@
                                         <thead>
                                             <tr>
                                                 <th>Team</th>
-                                                <!-- <th class="text-center">Man of the Match</th> -->
                                                 <th class="text-center">Man of the Tournament</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr v-if="champion">
-                                                
-                                                <td>{{ champion.team.team.name }}</td>
+
+                                                <td>{{ champion.team }}</td>
                                                 <!-- <td class="text-center">{{champion.mom.player.player_name}}</td> -->
-                                                <td class="text-center">{{champion.manofturnament.player.player_name}}</td>
+                                                <td class="text-center">{{ champion.mot }}
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -56,16 +57,14 @@
                                             <tr>
                                                 <th>Team A</th>
                                                 <th class="text-center">Team B</th>
-                                                <!-- <th class="text-center">Highest Wicket Taker</th> -->
                                                 <th class="text-center">Man of the match</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-if="Final">
-                                                <td>{{Final.team_one.team.name}}</td>
-                                                <td class="text-center">{{Final.team_two.team.name}}</td>
-                                                <!-- <td class="text-center">{{Final.hwt?? 'N/A'}}</td> -->
-                                                <td class="text-center">{{Final.highscoor.player.player_name}}</td>
+                                            <tr v-if="finals">
+                                                <td>{{ finals.teamA }}</td>
+                                                <td class="text-center">{{ finals.teamB }}</td>
+                                                <td class="text-center">{{ finals.hs }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -89,13 +88,11 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="item in semiFinal">
+                                            <tr v-for="item in semi">
                                                 <!-- {{ item }} -->
-                                                <td>{{item.team.team.name}}</td>
-                                                <td class="text-center">{{item.win}}</td>
-                                                <td class="text-center">{{item.pts}}</td>
-                                                <!-- <td class="text-center">{{item.los}}</td>
-                                                <td class="text-center">{{item.tie}}</td> -->
+                                                <td>{{ item.team }}</td>
+                                                <td class="text-center">{{ item.win }}</td>
+                                                <td class="text-center">{{ item.pts }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -104,7 +101,6 @@
                         </div>
                     </div>
                 </div>
-
 
             </div>
 
@@ -115,47 +111,48 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+const router = useRouter();
 import { apiFetch } from '~/utils/api'
-
-import { useNuxtApp } from '#app';
-import PlayerList from '../player-list.vue';
 const { $notyf } = useNuxtApp();
-
 const route = useRoute();
-const router = useRouter();  // Initialize router
+const id = route.query.id;
+const tournamentName = route.query.tournament;
 
-const user_id = route.query.id;
-// console.log(user_id + "===============");
-
-const semiFinal = ref('');
-const Final = ref('');
-const champion = ref('');
-
+const champion = ref();
+const semi = ref([]);
+const finals = ref();
 
 
 const back = () => {
-    router.back();
+      router.go(-1); // works like back()
 }
-const fetchData = async () => {
-  try {
-    const response = await apiFetch(`/api/getUserPredictions/${user_id}`, { method: 'GET' });
+
+const getTournamentResult = async (pages) => {
+    const response = await apiFetch(`/tournament/result/${id}`, {
+        method: 'GET'
+    });
     const data = await response.json();
+    // console.log(data.code);
+    if (data.code == 404) {
+        $notyf.error(data.message || 'Settings updated successfully')
+    }
 
-    console.log(data.semi_final)
 
-    semiFinal.value = data.semi_final;
-    Final.value = data.final;
     champion.value = data.champion;
-  } catch (error) {
-    await handleError(error);
-  }
+    semi.value = data.semi;
+    finals.value = data.finals;
+
+    console.log('Champion:', champion.value);
+    console.log('Semi:', semi.value);
+    console.log('Finals:', finals.value);
 };
 
 onMounted(() => {
-    fetchData();
+    getTournamentResult();
 })
+
 
 
 </script>

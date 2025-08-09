@@ -55,6 +55,11 @@
                         <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Tournament Reports
                     </NuxtLink>
                 </li>
+                <li class="menu_group" :class="{ active: route.path === '/tournament-result' }">
+                    <NuxtLink class="menu_link" to="/tournament-result">
+                        <img src="/assets/icons/report.svg" alt="" class="img-fluid"> Tournament Result
+                    </NuxtLink>
+                </li>
                 <li class="menu_group" :class="{ active: route.path === '/spin-list' }">
                     <NuxtLink class="menu_link" to="/spin-list">
                         <img src="/assets/icons/spinList.svg" alt="" class="img-fluid"> Spin List
