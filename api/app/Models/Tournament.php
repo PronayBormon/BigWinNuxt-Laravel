@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\TournamentTeam;
+use App\Models\TournamentTeamsPlayers;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Request;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Tournament extends Model
 {
@@ -27,4 +30,17 @@ class Tournament extends Model
     {
         return $this->hasMany(TournamentTeamsPlayers::class, 'tournament_id');
     }
+    public function champion()
+    {
+        return $this->hasOne(Champion::class, 'match_id');
+    }
+
+    
+
+    // public function getImageAttribute($v){
+    //     if(Request::is('api/*')){
+    //         return url($v);
+    //     }
+    //     return $v;
+    // }
 }

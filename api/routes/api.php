@@ -14,6 +14,7 @@ use App\Http\Controllers\API\QuestionController;
 use App\Http\Controllers\API\LinksAdsApiController;
 use App\Http\Controllers\User\UnauthenticateController;
 use App\Http\Controllers\API\AdminController\BigshortController;
+use App\Http\Controllers\API\Tournament\TournamentApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -100,7 +101,7 @@ Route::prefix('api')->group(function () {
     // New route to get users who have made predictions in all categories
     // Route::get('/predictions/users', [AdminController::class, 'getUsersWithPredictions']);
     Route::get('/users-with-predictions', [AdminController::class, 'getUsersWithPredictions']);
-    
+
     Route::post('/add-single-match-result', [AdminController::class, 'SingleMatchResult']);
     Route::post('/add-batsman-result', [AdminController::class, 'BatsmanResult']);
     Route::post('/add-boller-result', [AdminController::class, 'BollerResult']);
@@ -177,7 +178,7 @@ Route::prefix('api')->group(function () {
 
     // Winner 
     Route::get('/single-match-winner/{id}', [AdminController::class, 'singleWinner']);
-    
+
     // spin list 
 
     // Route::post('/getspinList', [AdminController::class, 'SpinList']);
@@ -204,6 +205,7 @@ Route::prefix('api')->group(function () {
     Route::get('/batsman-winner-users', [AdminController::class, 'maxpredictBatsmanmathwinner']);
     Route::get('/tournament-winners', [AdminController::class, 'TournamentWinnersUsers']);
     Route::get('/notificaion-list', [AdminController::class, 'messageList']);
+    Route::get('/message-list', [AdminController::class, 'unreadnotification']);
     Route::get('/credit-list', [AdminController::class, 'creditList']);
     Route::get('/credit-details/{id}', [AdminController::class, 'creditDetalis']);
     Route::post('/update-user', [AdminController::class, 'update_user_address']);
@@ -242,30 +244,30 @@ Route::prefix("link-ads")->controller(LinksAdsApiController::class)->group(funct
     Route::get("/link-ads-details/{id}", 'linkAdsDetails');
     Route::post("/update-link-ads", 'updateLinkAds');
     Route::get("/delete-link-ads/{id}", 'deleteLinkAds');
-    
+
     Route::get("/link-ads", 'activelinkAdsList');
     Route::get("/verify-follow", 'verifyFollow');
 });
 
 // Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/questions', [QuestionController::class, 'questionStore']); // admin
-    Route::get('/question-list', [QuestionController::class, 'question']); // admin
-    Route::get('/question/active', [QuestionController::class, 'getQuestion']); 
-    Route::post('/update-question', [QuestionController::class, 'updateQuestion']);
-    Route::post('/submit-answer', [QuestionController::class, 'submitAnsware']);
-    Route::get('/questions/{id}/results', [QuestionController::class, 'getResults']); // admin
+Route::post('/questions', [QuestionController::class, 'questionStore']); // admin
+Route::get('/question-list', [QuestionController::class, 'question']); // admin
+Route::get('/question/active', [QuestionController::class, 'getQuestion']);
+Route::post('/update-question', [QuestionController::class, 'updateQuestion']);
+Route::post('/submit-answer', [QuestionController::class, 'submitAnsware']);
+Route::get('/questions/{id}/results', [QuestionController::class, 'getResults']); // admin
 // });
 
 Route::get('/questions/{id}', [QuestionController::class, 'show']);
 Route::get('/questions/user/predict', [QuestionController::class, 'userPredict']);
 
 // Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/polls', [PollController::class, 'pollStore']); // admin
-    Route::get('/poll-list', [PollController::class, 'pollList']); // admin
-    Route::get('/poll/active', [PollController::class, 'getPollActive']); 
-    Route::post('/update-poll', [PollController::class, 'updatePoll']);
-    Route::post('/polls/submit', [PollController::class, 'submitAnswer']);
-    Route::get('/polls/{id}/results', [PollController::class, 'getResults']); // admin
+Route::post('/polls', [PollController::class, 'pollStore']); // admin
+Route::get('/poll-list', [PollController::class, 'pollList']); // admin
+Route::get('/poll/active', [PollController::class, 'getPollActive']);
+Route::post('/update-poll', [PollController::class, 'updatePoll']);
+Route::post('/polls/submit', [PollController::class, 'submitAnswer']);
+Route::get('/polls/{id}/results', [PollController::class, 'getResults']); // admin
 // });
 
 Route::get('/polls/{id}', [PollController::class, 'show']);
@@ -275,3 +277,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return response()->json($request->user());
 });
 
+Route::get('/user/tournament-report', [AdminController::class, 'tournamentReport']);
+Route::get('/user/tournament-report/{id}', [AdminController::class, 'tournamentReportDetails']);
+Route::get('/settings/rule', [AdminController::class, 'rules']);
+Route::post('/settings/rule', [AdminController::class, 'updateRule']);
+Route::get('/settings/applink', [AdminController::class, 'appLink']);
+Route::post('/settings/applink', [AdminController::class, 'updateappLink']);
+
+/**
+ * ============================== Tournament ==================
+ */
+
+Route::get('/tournament/result/{id}', [TournamentApiController::class, 'tournamentResult']);

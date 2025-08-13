@@ -87,6 +87,14 @@ class UnauthenticateController extends Controller
             'six' => 'required|integer',
         ]);
 
+        $exists =  Batsman::where('match_id', $validated['match_id'])->where('user_id', $validated['user_id'])->first();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Already predicted this match please check history'
+            ], 409);
+        }
+
         // Save the data in the batsman or boller table based on the request (assuming you're saving to the Batsman table)
         $batsman = Batsman::create([
             'match_id' => $validated['match_id'],
@@ -128,6 +136,14 @@ class UnauthenticateController extends Controller
             'wicket' => 'required|numeric',
         ]);
 
+        $exists =  Boller::where('match_id', $validated['match_id'])->where('user_id', $validated['user_id'])->first();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Already predicted this match please check history'
+            ], 409);
+        }
+
         // Save the bowler data
         $bowler = Boller::create([
             'match_id' => $validated['match_id'],
@@ -140,7 +156,7 @@ class UnauthenticateController extends Controller
             'wicket' => $validated['wicket'],
         ]);
 
-        
+
         $batsman = Batsman::where('user_id', $request->user_id)->where('match_id', $request->match_id)->first();
 
         if ($batsman != null) {

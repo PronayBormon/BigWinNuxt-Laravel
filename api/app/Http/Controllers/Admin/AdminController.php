@@ -36,7 +36,9 @@ use App\Models\SemiFinalResult;
 use App\Models\NotificationUser;
 use App\Models\singleMatchReport;
 use App\Models\SingleMatchResult;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Events\Validated;
 use App\Models\TournamentTeamsPlayers;
 use Illuminate\Support\Facades\Validator;
@@ -220,7 +222,7 @@ class AdminController extends Controller
     }
     public function getSpinList(Request $request)
     {
-        $data = SpinList::get();
+        $data = SpinList::where('status', 1)->get();
 
         return response()->json($data);
     }
@@ -313,6 +315,8 @@ class AdminController extends Controller
 
             $messageList = NotificationUser::where("user_id", $request->user_id)->with('message')->orderBy('created_at', 'desc')->paginate($request->items);
 
+            $unread = NotificationUser::where("user_id", $request->user_id)->where('status', 'unread')->count();
+
             if ($messageList) {
                 $data = NotificationUser::where("user_id", $request->user_id)->with('message')->get();
                 foreach ($data as $item) {
@@ -328,6 +332,7 @@ class AdminController extends Controller
             });
 
             return response()->json([
+                'unread' => $unread,
                 'data' => $messageList->items(),
                 'pagination' => [
                     'current_page' => $messageList->currentPage(),
@@ -366,6 +371,74 @@ class AdminController extends Controller
             ]);
         }
     }
+
+
+    public function unreadnotification(Request $request)
+    {
+        $query = Notification::query();
+
+
+        if ($request->filled('user_id')) {
+
+            $messageList = NotificationUser::where("user_id", $request->user_id)->with('message')->orderBy('created_at', 'desc')->paginate($request->items);
+
+            $unread = NotificationUser::where("user_id", $request->user_id)->where('status', 'unread')->count();
+
+            // if ($messageList) {
+            //     $data = NotificationUser::where("user_id", $request->user_id)->with('message')->get();
+            //     foreach ($data as $item) {
+            //         $item->update([
+            //             'status' => 'read',
+            //         ]);
+            //     }
+            // }
+
+            $messageList->getCollection()->transform(function ($item) {
+                $item->created = $item->created_at->format('d M Y h:i A');
+                return $item;
+            });
+
+            return response()->json([
+                'unread' => $unread,
+                'data' => $messageList->items(),
+                'pagination' => [
+                    'current_page' => $messageList->currentPage(),
+                    'last_page' => $messageList->lastPage(),
+                    'per_page' => $messageList->perPage(),
+                    'total' => $messageList->total(),
+                    'next_page_url' => $messageList->nextPageUrl(),
+                    'prev_page_url' => $messageList->previousPageUrl(),
+                    'links' => $this->generatePaginationLinks($messageList),
+                ]
+            ]);
+        } else {
+            if ($request->has('searchInput')) {
+                $query->where('message', 'like', '%' . $request->searchInput . '%');
+            }
+
+            $data = $query->orderBy('id', 'desc')->paginate($request->items);
+
+            $data->getCollection()->transform(function ($item) {
+                $item->created = $item->created_at->format('d M Y h:i A');
+                return $item;
+            });
+            // dd($data);
+
+            return response()->json([
+                'data' => $data->items(),
+                'pagination' => [
+                    'current_page' => $data->currentPage(),
+                    'last_page' => $data->lastPage(),
+                    'per_page' => $data->perPage(),
+                    'total' => $data->total(),
+                    'next_page_url' => $data->nextPageUrl(),
+                    'prev_page_url' => $data->previousPageUrl(),
+                    'links' => $this->generatePaginationLinks($data),
+                ]
+            ]);
+        }
+    }
+
 
 
 
@@ -1473,10 +1546,10 @@ class AdminController extends Controller
             ->with(['team.team'])
             ->get();
         $finalPredictions = Finalist::where('user_id', $userId)
-            ->with(['teamOne.team', 'teamTwo.team', 'hs.player'])
+            ->with(['teamOne.team', 'teamTwo.team', 'highscoor.player'])
             ->first();
         $championPredictions = Champion::where('user_id', $userId)
-            ->with(['team.team', 'mot.player'])
+            ->with(['team.team', 'manofturnament.player'])
             ->first();
 
         if ($semiFinalPredictions->isEmpty() && $finalPredictions->isEmpty() && $championPredictions->isEmpty()) {
@@ -1566,6 +1639,16 @@ class AdminController extends Controller
             ], 422);
         }
 
+        $exists = SemiFinal::where('user_id', $request->user_id)->where('match_id', $request->match_id)->first();
+
+        if ($exists) {
+            return response()->json([
+                "code" => 409,
+                "success" => false,
+                "message" => "already exists",
+            ], 409);
+        }
+
         try {
             // Store SemiFinal data
             foreach ($request->SemiFinal as $team) {
@@ -1628,7 +1711,7 @@ class AdminController extends Controller
 
     public function predictMatchget()
     {
-        $data = PredictMatch::orderBy('id', 'desc')->with(["teams", "teams.country"])->first();
+        $data = PredictMatch::orderBy('id', 'desc')->where('status', 'active')->with(["teams", "teams.country"])->first();
         if ($data) {
             $baseUrl = url('uploads/');
 
@@ -1653,6 +1736,7 @@ class AdminController extends Controller
             ->orWhereHas('Batsman', function ($query) use ($id) {
                 $query->where('user_id', $id);
             })
+            ->orderBy('id', 'desc')
             ->get();
         return response()->json($data);
     }
@@ -1663,28 +1747,38 @@ class AdminController extends Controller
         $match_id = $request->match_id;
         $id = $request->user_id;
 
-        $data = PredictMatch::with([
-            'Boller.TeamPlayers.player.team',
-            'Batsman.TeamPlayers.player.team',
-            'teams.country'
-        ])
-            ->where('id', $match_id)
-            ->where(function ($query) use ($id) {
-                $query->whereHas('Boller', function ($subQuery) use ($id) {
-                    $subQuery->where('user_id', $id);
-                })
-                    ->orWhereHas('Batsman', function ($subQuery) use ($id) {
-                        $subQuery->where('user_id', $id);
-                    });
-            })
-            ->first();
+        $bollar = Boller::where('match_id', $match_id)->where('user_id', $id)->with('TeamPlayers.player.team')->get();
+        $batsman =  Batsman::where('match_id', $match_id)->where('user_id', $id)->with('TeamPlayers.player.team')->get();
 
-        if (!$data) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No data found for this match and user'
-            ], 404);
-        }
+        $data = [
+            'bollar' => $bollar,
+            'batsman' => $batsman,
+        ];
+
+        // dd($bollar);
+
+        // $data = PredictMatch::with([
+        //     'Boller.TeamPlayers.player.team',
+        //     'Batsman.TeamPlayers.player.team',
+        //     'teams.country'
+        // ])
+        //     ->where('id', $match_id)
+        //     ->where(function ($query) use ($id) {
+        //         $query->whereHas('Boller', function ($subQuery) use ($id) {
+        //             $subQuery->where('user_id', $id);
+        //         })
+        //             ->orWhereHas('Batsman', function ($subQuery) use ($id) {
+        //                 $subQuery->where('user_id', $id);
+        //             });
+        //     })
+        //     ->first();
+
+        // if (!$data) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'No data found for this match and user'
+        //     ], 404);
+        // }
 
         return response()->json([
             'success' => true,
@@ -2017,74 +2111,36 @@ class AdminController extends Controller
         return response()->json($run);
     }
 
-
     public function userpredictionrun(Request $request)
     {
+        $query = singleMatchReport::where('match_report.match_id', $request->match_id)
+            ->join('match_run', function ($join) {
+                $join->on('match_report.match_id', '=', 'match_run.match_id');
+            })
+            ->with([
+                'user',
+                'result.team',
+                'team',
+                'match',
+                'match.teamA',
+                'match.teamB'
+            ])
+            ->select([
+                'match_report.*',
+                'match_run.run as run',
+            ]);
 
-
-        $winner = SingleMatchResult::where('match_id', $request->match_id)->first();
-
-        $winner_team_id = $winner->team_id ?? null;
-
-
-        if ($winner_team_id != null) {
-            $query = singleMatchReport::where('match_report.match_id', $request->match_id)
-                ->where('match_report.predict_team_id', $winner_team_id)
-                ->join('match_run', function ($join) {
-                    $join->on('match_report.match_id', '=', 'match_run.match_id')
-                        ->on('match_report.user_id', '=', 'match_run.user_id');
-                })
-                ->with([
-                    'user',
-                    'result.team',
-                    'team',
-                    'match',
-                    'match.teamA',
-                    'match.teamB'
-                ])
-                ->select([
-                    'match_report.*',
-                    'match_run.run as run',
-                ]);
-        } else {
-            $query = singleMatchReport::where('match_report.match_id', $request->match_id)
-                ->join('match_run', function ($join) {
-                    $join->on('match_report.match_id', '=', 'match_run.match_id')
-                        ->on('match_report.user_id', '=', 'match_run.user_id');
-                })
-                ->with([
-                    'user',
-                    'result.team',
-                    'team',
-                    'match',
-                    'match.teamA',
-                    'match.teamB'
-                ])
-                ->select([
-                    'match_report.*',
-                    'match_run.run as run',
-                ]);
-        }
-
-        if ($request->has('searchInput')) {
+        // Optional: Search by username
+        if ($request->has('searchInput') && !empty($request->searchInput)) {
             $searchInput = $request->searchInput;
-
-            $query->where(function ($q) use ($searchInput) {
-                $q->whereHas('user', function ($teamQuery) use ($searchInput) {
-                    $teamQuery->where('username', 'like', "%{$searchInput}%");
-                });
+            $query->whereHas('user', function ($q) use ($searchInput) {
+                $q->where('username', 'like', "%{$searchInput}%");
             });
         }
 
-
-        // $data = $query->orderBy('run', 'desc')->paginate($request->items ?? 10);
         $data = $query
-            // ->orderByRaw('match_report.user_id = ? DESC', [$request->user_id])
             ->orderBy('run', 'desc')
             ->paginate($request->items ?? 10);
-
-
-        // dd($data);
 
         return response()->json([
             'data' => $data->items(),
@@ -2099,6 +2155,88 @@ class AdminController extends Controller
             ]
         ]);
     }
+
+    // public function userpredictionrun(Request $request)
+    // {
+
+
+    //     $winner = SingleMatchResult::where('match_id', $request->match_id)->first();
+
+    //     $winner_team_id = $winner->team_id ?? null;
+
+
+    //     if ($winner_team_id != null) {
+    //         $query = singleMatchReport::where('match_report.match_id', $request->match_id)
+    //             ->where('match_report.predict_team_id', $winner_team_id)
+    //             ->join('match_run', function ($join) {
+    //                 $join->on('match_report.match_id', '=', 'match_run.match_id')
+    //                     ->on('match_report.user_id', '=', 'match_run.user_id');
+    //             })
+    //             ->with([
+    //                 'user',
+    //                 'result.team',
+    //                 'team',
+    //                 'match',
+    //                 'match.teamA',
+    //                 'match.teamB'
+    //             ])
+    //             ->select([
+    //                 'match_report.*',
+    //                 'match_run.run as run',
+    //             ]);
+    //     } else {
+    //         $query = singleMatchReport::where('match_report.match_id', $request->match_id)
+    //             ->join('match_run', function ($join) {
+    //                 $join->on('match_report.match_id', '=', 'match_run.match_id')
+    //                     ->on('match_report.user_id', '=', 'match_run.user_id');
+    //             })
+    //             ->with([
+    //                 'user',
+    //                 'result.team',
+    //                 'team',
+    //                 'match',
+    //                 'match.teamA',
+    //                 'match.teamB'
+    //             ])
+    //             ->select([
+    //                 'match_report.*',
+    //                 'match_run.run as run',
+    //             ]);
+    //     }
+
+    //     if ($request->has('searchInput')) {
+    //         $searchInput = $request->searchInput;
+
+    //         $query->where(function ($q) use ($searchInput) {
+    //             $q->whereHas('user', function ($teamQuery) use ($searchInput) {
+    //                 $teamQuery->where('username', 'like', "%{$searchInput}%");
+    //             });
+    //         });
+    //     }
+
+
+    //     // $data = $query->orderBy('run', 'desc')->paginate($request->items ?? 10);
+    //     $data = $query
+    //         // ->orderByRaw('match_report.user_id = ? DESC', [$request->user_id])
+    //         ->orderBy('run', 'desc')
+    //         ->paginate($request->items ?? 10);
+
+
+    //     // dd($data);
+
+    //     return response()->json([
+    //         'data' => $data->items(),
+    //         'pagination' => [
+    //             'current_page' => $data->currentPage(),
+    //             'last_page' => $data->lastPage(),
+    //             'per_page' => $data->perPage(),
+    //             'total' => $data->total(),
+    //             'next_page_url' => $data->nextPageUrl(),
+    //             'prev_page_url' => $data->previousPageUrl(),
+    //             'links' => $this->generatePaginationLinks($data),
+    //         ]
+    //     ]);
+    // }
     public function getResultStatus(request $request)
     {
         // dd($request->all());
@@ -2718,5 +2856,103 @@ class AdminController extends Controller
         return response()->json(['message' => 'success', 'data' => $user]);
     }
 
-    public function cmsMatchPage() {}
+    public function tournamentReport(Request $request)
+    {
+        // $user = Auth::user();
+
+        // dd($request->id);
+
+        $tournamentIds = Champion::where('user_id', $request->id)
+            ->pluck('match_id')
+            ->unique();
+
+        $tournaments = Tournament::whereIn('id', $tournamentIds)->get();
+
+        foreach ($tournaments as $item) {
+            $item->start_date = \Carbon\Carbon::parse($item->start_date)->format("d M Y, h:i A");
+            $item->image = url($item->image);
+        }
+
+        return response()->json(['message' => 'success', 'data' => $tournaments], 200);
+    }
+    public function tournamentReportDetails(Request $request, $id)
+    {
+        // $user = Auth::user();
+        $matchId = $id;
+
+
+
+
+        // Fetch SemiFinal predictions
+        $semiFinals = SemiFinal::with('team.team') // assuming you have team() relation
+            ->where('user_id', $request->id)
+            ->where('match_id', $matchId)
+            ->get();
+
+
+        // Fetch Finalist data
+        $finalist = Finalist::with(['teamOne.team', 'teamTwo.team', 'highscoor.player']) // assuming relationships exist
+            ->where('user_id', $request->id)
+            ->where('match_id', $matchId)
+            ->first();
+
+        // Fetch Champion data
+        $champion = Champion::with('team.team', 'manofturnament.player')
+            ->where('user_id', $request->id)
+            ->where('match_id', $matchId)
+            ->first();
+
+        // If nothing found, return not found response
+        if ($semiFinals->isEmpty() && !$finalist && !$champion) {
+            return response()->json([
+                'message' => 'No report found for this match.'
+            ], 404);
+        }
+
+        return response()->json([
+            'match_id' => $matchId,
+            'semi_finals' => $semiFinals,
+            'finalist' => $finalist,
+            'champion' => $champion,
+        ]);
+    }
+
+    public function rules()
+    {
+        $page = DB::table('dynamic_pages')->where('slug', 'rules')->first();
+        return response()->json(['message' => 'success', 'data' => $page], 200);
+    }
+
+    public function updateRule(Request $request)
+    {
+        DB::table('dynamic_pages')->updateOrInsert(
+            ['slug' => 'rules'],
+            [
+                'title' => 'Rules',
+                'description' => $request->input('description'),
+                'updated_at' => now(),
+            ]
+        );
+        return response()->json(['message' => 'Rules updated successfully'], 200);
+    }
+
+    public function appLink()
+    {
+        $page = DB::table('dynamic_pages')->where('slug', 'app-link')->first();
+        return response()->json(['message' => 'success', 'data' => $page], 200);
+    }
+
+    public function updateAppLink(Request $request)
+    {
+        DB::table('dynamic_pages')->updateOrInsert(
+            ['slug' => 'app-link'],
+            [
+                'title' => 'App Link',
+                'description' => $request->input('description'),
+                'updated_at' => now(),
+            ]
+        );
+
+        return response()->json(['message' => 'App link updated successfully'], 200);
+    }
 }

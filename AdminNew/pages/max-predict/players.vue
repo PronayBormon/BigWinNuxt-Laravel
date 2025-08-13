@@ -374,8 +374,8 @@ const addbatsmanresult = async () => {
     formData.append('team_id', result_bat_team_id.value);
     formData.append('player_id', result_bat_player_id.value);
     formData.append('run', result_bat_run.value);
-    formData.append('ball', result_bat_ball.value);
-    formData.append('four', result_bat_four.value);
+    // formData.append('ball', result_bat_ball.value);
+    // formData.append('four', result_bat_four.value);
     formData.append('six', result_bat_six.value);
 
     const response = await apiFetch('/api/add-batsman-result', {

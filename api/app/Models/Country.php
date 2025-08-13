@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Request;
 
 class Country extends Model
 {
@@ -14,6 +15,13 @@ class Country extends Model
         'image',
         'status',
     ];
+    // public function getImageAttribute($v)
+    // {
+    //     if (Request::is('api/*')) {
+    //         return url("/uploads/".$v);
+    //     }
+    //     return $v;
+    // }
     public function batsman()
     {
         return $this->hasMany(Batsman::class, 'team_id');

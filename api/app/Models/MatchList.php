@@ -35,6 +35,11 @@ class MatchList extends Model
     public function report(){
         return $this->hasMany(singleMatchReport::class, 'match_id', 'id');
     }
+
+        public function result()
+    {
+        return $this->hasMany(SemiFinalResult::class, 'match_id', 'id');
+    }
     
   
 }

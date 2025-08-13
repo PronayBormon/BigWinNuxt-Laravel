@@ -21,4 +21,13 @@ class SemiFinalResult extends Model
         'pts',
         'status'
     ];
+
+    public function match()
+    {
+        return $this->belongsTo(MatchList::class, 'match_id', 'id');
+    }
+    public function team()
+    {
+        return $this->belongsTo(TournamentTeam::class, 'team_id');
+    }
 }

@@ -19,7 +19,7 @@ class ChampionResult extends Model
     ];
     public function match()
     {
-        return $this->belongsTo(PredictMatch::class, 'match_id');
+        return $this->belongsTo(Tournament::class, 'match_id');
     }
 
     public function team()
@@ -32,6 +32,10 @@ class ChampionResult extends Model
         return $this->belongsTo(PredictPlayer::class, 'mom', 'id');
     }
     public function mot()
+    {
+        return $this->belongsTo(PredictPlayer::class, 'mot', 'id');
+    }
+    public function manot()
     {
         return $this->belongsTo(PredictPlayer::class, 'mot', 'id');
     }

@@ -108,7 +108,7 @@ class PollController extends Controller
             $seting = SiteSetting::first();
 
             $userDetails = User::where('id', $user->id)->first();
-            $total = $user->credit_points + $seting->question_credit;
+            $total = $user->credit_points + $seting->pull_credit;
 
             $userDetails->update([
                 'credit_points' => $total,

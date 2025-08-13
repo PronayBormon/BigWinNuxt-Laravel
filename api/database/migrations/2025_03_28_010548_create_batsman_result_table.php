@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('batsmanResult', function (Blueprint $table) {
+        Schema::create('batsmanresult', function (Blueprint $table) {
             $table->id();
             $table->integer('match_id')->nullable();
             $table->integer('team_id')->nullable();

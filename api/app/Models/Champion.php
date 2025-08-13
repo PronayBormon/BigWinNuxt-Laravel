@@ -34,4 +34,8 @@ class Champion extends Model
     {
         return $this->belongsTo(TournamentTeamsPlayers::class, 'mot', 'id');
     }
+    public function manofturnament()
+    {
+        return $this->belongsTo(TournamentTeamsPlayers::class, 'mot', 'id');
+    }
 }

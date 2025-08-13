@@ -40,4 +40,8 @@ class Finalist extends Model
     {
         return $this->belongsTo(TournamentTeamsPlayers::class, 'hs', 'id');
     }
+        public function highscoor()
+    {
+        return $this->belongsTo(TournamentTeamsPlayers::class, 'hs', 'id');
+    }
 }

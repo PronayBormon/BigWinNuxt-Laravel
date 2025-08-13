@@ -6,6 +6,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Database\Seeders\PrizeBannerSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -49,5 +50,7 @@ class DatabaseSeeder extends Seeder
         $this->call(countriesSeeder::class);
         $this->call(TeamPlayersSeeder::class);
         $this->call(SiteSettingsSeeder::class);
+        $this->call(PrizeBannerSeeder::class);
+        $this->call(DynamicPageSeeder::class);
     }
 }
