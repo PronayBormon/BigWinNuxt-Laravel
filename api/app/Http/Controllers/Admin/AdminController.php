@@ -2111,118 +2111,40 @@ class AdminController extends Controller
         return response()->json($run);
     }
 
-    public function userpredictionrun(Request $request)
-    {
-        $query = singleMatchReport::where('match_report.match_id', $request->match_id)
-            ->join('match_run', function ($join) {
-                $join->on('match_report.match_id', '=', 'match_run.match_id');
-            })
-            ->with([
-                'user',
-                'result.team',
-                'team',
-                'match',
-                'match.teamA',
-                'match.teamB'
-            ])
-            ->select([
-                'match_report.*',
-                'match_run.run as run',
-            ]);
-
-        // Optional: Search by username
-        if ($request->has('searchInput') && !empty($request->searchInput)) {
-            $searchInput = $request->searchInput;
-            $query->whereHas('user', function ($q) use ($searchInput) {
-                $q->where('username', 'like', "%{$searchInput}%");
-            });
-        }
-
-        $data = $query
-            ->orderBy('run', 'desc')
-            ->paginate($request->items ?? 10);
-
-        return response()->json([
-            'data' => $data->items(),
-            'pagination' => [
-                'current_page' => $data->currentPage(),
-                'last_page' => $data->lastPage(),
-                'per_page' => $data->perPage(),
-                'total' => $data->total(),
-                'next_page_url' => $data->nextPageUrl(),
-                'prev_page_url' => $data->previousPageUrl(),
-                'links' => $this->generatePaginationLinks($data),
-            ]
-        ]);
-    }
-
     // public function userpredictionrun(Request $request)
     // {
+    //     $query = singleMatchReport::where('match_report.match_id', $request->match_id)->with('match')->get();
 
+    //     $report =  DB::table('match_report')->where('match_id', '$request->match_id');
 
-    //     $winner = SingleMatchResult::where('match_id', $request->match_id)->first();
+    //     dd($query);
+    //         // ->join('match_run', function ($join) {
+    //         //     $join->on('match_report.match_id', '=', 'match_run.match_id');
+    //         // })
+    //         // ->with([
+    //         //     'user',
+    //         //     'result.team',
+    //         //     'team',
+    //         //     'match',
+    //         //     'match.teamA',
+    //         //     'match.teamB'
+    //         // ])
+    //         // ->select([
+    //         //     'match_report.*',
+    //         //     'match_run.run as run',
+    //         // ]);
 
-    //     $winner_team_id = $winner->team_id ?? null;
-
-
-    //     if ($winner_team_id != null) {
-    //         $query = singleMatchReport::where('match_report.match_id', $request->match_id)
-    //             ->where('match_report.predict_team_id', $winner_team_id)
-    //             ->join('match_run', function ($join) {
-    //                 $join->on('match_report.match_id', '=', 'match_run.match_id')
-    //                     ->on('match_report.user_id', '=', 'match_run.user_id');
-    //             })
-    //             ->with([
-    //                 'user',
-    //                 'result.team',
-    //                 'team',
-    //                 'match',
-    //                 'match.teamA',
-    //                 'match.teamB'
-    //             ])
-    //             ->select([
-    //                 'match_report.*',
-    //                 'match_run.run as run',
-    //             ]);
-    //     } else {
-    //         $query = singleMatchReport::where('match_report.match_id', $request->match_id)
-    //             ->join('match_run', function ($join) {
-    //                 $join->on('match_report.match_id', '=', 'match_run.match_id')
-    //                     ->on('match_report.user_id', '=', 'match_run.user_id');
-    //             })
-    //             ->with([
-    //                 'user',
-    //                 'result.team',
-    //                 'team',
-    //                 'match',
-    //                 'match.teamA',
-    //                 'match.teamB'
-    //             ])
-    //             ->select([
-    //                 'match_report.*',
-    //                 'match_run.run as run',
-    //             ]);
-    //     }
-
-    //     if ($request->has('searchInput')) {
+    //     // Optional: Search by username
+    //     if ($request->has('searchInput') && !empty($request->searchInput)) {
     //         $searchInput = $request->searchInput;
-
-    //         $query->where(function ($q) use ($searchInput) {
-    //             $q->whereHas('user', function ($teamQuery) use ($searchInput) {
-    //                 $teamQuery->where('username', 'like', "%{$searchInput}%");
-    //             });
+    //         $query->whereHas('user', function ($q) use ($searchInput) {
+    //             $q->where('username', 'like', "%{$searchInput}%");
     //         });
     //     }
 
-
-    //     // $data = $query->orderBy('run', 'desc')->paginate($request->items ?? 10);
     //     $data = $query
-    //         // ->orderByRaw('match_report.user_id = ? DESC', [$request->user_id])
     //         ->orderBy('run', 'desc')
     //         ->paginate($request->items ?? 10);
-
-
-    //     // dd($data);
 
     //     return response()->json([
     //         'data' => $data->items(),
@@ -2237,6 +2159,88 @@ class AdminController extends Controller
     //         ]
     //     ]);
     // }
+
+    public function userpredictionrun(Request $request)
+    {
+
+
+        // $winner = SingleMatchResult::where('match_id', $request->match_id)->first();
+
+        // $winner_team_id = $winner->team_id ?? null;
+
+
+        // if ($winner_team_id != null) {
+            $query = singleMatchReport::where('match_report.match_id', $request->match_id)
+                // ->where('match_report.predict_team_id', $winner_team_id)
+                ->join('match_run', function ($join) {
+                    $join->on('match_report.match_id', '=', 'match_run.match_id')
+                        ->on('match_report.user_id', '=', 'match_run.user_id');
+                })
+                ->with([
+                    'user',
+                    'result.team',
+                    'team',
+                    'match',
+                    'match.teamA',
+                    'match.teamB'
+                ])
+                ->select([
+                    'match_report.*',
+                    'match_run.run as run',
+                ]);
+        // } else {
+        //     $query = singleMatchReport::where('match_report.match_id', $request->match_id)
+        //         ->join('match_run', function ($join) {
+        //             $join->on('match_report.match_id', '=', 'match_run.match_id')
+        //                 ->on('match_report.user_id', '=', 'match_run.user_id');
+        //         })
+        //         ->with([
+        //             'user',
+        //             'result.team',
+        //             'team',
+        //             'match',
+        //             'match.teamA',
+        //             'match.teamB'
+        //         ])
+        //         ->select([
+        //             'match_report.*',
+        //             'match_run.run as run',
+        //         ]);
+        // }
+
+        if ($request->has('searchInput')) {
+            $searchInput = $request->searchInput;
+
+            $query->where(function ($q) use ($searchInput) {
+                $q->whereHas('user', function ($teamQuery) use ($searchInput) {
+                    $teamQuery->where('username', 'like', "%{$searchInput}%");
+                });
+            });
+        }
+
+
+        // $data = $query->orderBy('run', 'desc')->paginate($request->items ?? 10);
+        $data = $query
+            // ->orderByRaw('match_report.user_id = ? DESC', [$request->user_id])
+            ->orderBy('run', 'desc')
+            ->paginate($request->items ?? 10);
+
+
+        // dd($data);
+
+        return response()->json([
+            'data' => $data->items(),
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'next_page_url' => $data->nextPageUrl(),
+                'prev_page_url' => $data->previousPageUrl(),
+                'links' => $this->generatePaginationLinks($data),
+            ]
+        ]);
+    }
     public function getResultStatus(request $request)
     {
         // dd($request->all());
@@ -2314,6 +2318,8 @@ class AdminController extends Controller
             }
 
             $boller = $bollerQuery->first();
+          
+          //dd($boller);
 
             if ($boller && $boller->user) {
                 $matchedUsers[] = [
@@ -2322,6 +2328,7 @@ class AdminController extends Controller
                     'maden_over' => $boller->maden_over,
                     'run' => $boller->run,
                     'wicket' => $boller->wicket,
+                    'player' => $boller->TeamPlayers->player->player_name,
                 ];
             }
         }
@@ -2375,6 +2382,7 @@ class AdminController extends Controller
             }
 
             $boller = $bollerQuery->first();
+          
 
             if ($boller && $boller->user) {
                 $matchedUsers[] = [
@@ -2383,6 +2391,7 @@ class AdminController extends Controller
                     'ball' => $boller->ball,
                     'total_4' => $boller->total_4,
                     'total_6' => $boller->total_6,
+                    'player' => $boller->TeamPlayers->player->player_name,
                 ];
             }
         }
